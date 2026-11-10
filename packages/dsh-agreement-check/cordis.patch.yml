@@ -1,0 +1,4 @@
+# One package adds a scenario route next to the Host API.
+- insert:
+    - id: contract-check
+      name: 'dsh-contract-check'
