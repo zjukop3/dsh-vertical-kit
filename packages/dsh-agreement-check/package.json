@@ -1,6 +1,6 @@
 {
   "name": "dsh-agreement-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Contract structure checks for Chinese agreements: parties, date, amount consistency (uppercase vs digits), signature blocks, dispute resolution, breach clauses.",
   "type": "module",
   "main": "./src/index.js",
@@ -17,7 +17,8 @@
     }
   },
   "engines": {
-    "node": ">=22.19.0"
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
   },
   "files": [
     "src",
