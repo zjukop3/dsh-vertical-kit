@@ -1,6 +1,6 @@
 {
   "name": "dsh-listing-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "E-commerce listing hygiene from CSV/JSON exports: title length bounds, keyword stuffing, price validity and bounds, SKU completeness and duplicates.",
   "type": "module",
   "main": "./src/index.js",

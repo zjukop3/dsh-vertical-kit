@@ -1,6 +1,6 @@
 {
   "name": "dsh-invoice-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Invoice field checks for Chinese e-invoices: credit-code format, amount relationships (net + tax = total), uppercase/digit amount agreement, invoice number shapes.",
   "type": "module",
   "main": "./src/index.js",
