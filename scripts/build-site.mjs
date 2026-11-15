@@ -4,6 +4,7 @@
 // enforce, so the page cannot drift from the tool.
 
 import { mkdir, writeFile } from 'node:fs/promises'
+import { readIndexNowConfig } from './indexnow-config.mjs'
 import { resolve } from 'node:path'
 
 const ORIGIN = process.env.PUBLIC_ORIGIN || 'https://zjukop3.github.io/dsh-vertical-kit'
@@ -129,6 +130,7 @@ function home() {
 }
 
 const root = resolve(import.meta.dirname, '..')
+const indexNow = await readIndexNowConfig(root).catch(() => null)
 await mkdir(resolve(root, 'site'), { recursive: true })
 await writeFile(resolve(root, 'site/index.html'), home())
 for (const check of CHECKS) {
@@ -137,5 +139,6 @@ for (const check of CHECKS) {
 }
 const urls = [`${ORIGIN}/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
+if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)
 console.log(JSON.stringify({ ok: true, pages: urls.length }))
