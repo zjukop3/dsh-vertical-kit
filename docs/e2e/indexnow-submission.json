@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "submittedAt": "2026-11-15T06:49:43.759Z",
+  "submittedAt": "2026-11-15T12:00:37.001Z",
   "endpoint": "https://www.bing.com/indexnow",
   "keyLocation": "https://zjukop3.github.io/dsh-vertical-kit/ee14deb916c64199dfe653693e8aeabc.txt",
   "urlList": [
@@ -30,7 +30,7 @@
       }
     ]
   },
-  "responseStatus": 202,
+  "responseStatus": 200,
   "responseBody": null,
   "indexingStatus": "unknown",
   "externalActivationClaim": false
