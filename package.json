@@ -8,7 +8,9 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "node --test packages/*/test/*.test.js"
+    "test": "node --test packages/*/test/*.test.js",
+    "audit:links": "node scripts/audit-site-links.mjs",
+    "check": "npm run audit:links"
   },
   "license": "MIT",
   "author": "zjukop3"
