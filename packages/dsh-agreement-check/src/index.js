@@ -5,7 +5,7 @@
 
 import { readFile } from 'node:fs/promises'
 
-export const name = 'contract-check'
+export const name = 'agreement-check'
 export const inject = ['webServer']
 
 const DIGITS = { 零: 0, 壹: 1, 贰: 2, 叁: 3, 肆: 4, 伍: 5, 陆: 6, 柒: 7, 捌: 8, 玖: 9 }
@@ -134,7 +134,7 @@ export function lintContract(text, rules = {}) {
 }
 
 export function apply(ctx, config = {}) {
-  const prefix = config.path || '/contract-check/api'
+  const prefix = config.path || '/agreement-check/api'
   const handler = async (req, res) => {
     const send = (status, body) => {
       res.statusCode = status
