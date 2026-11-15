@@ -57,7 +57,7 @@ export const CHECKS = [
     ],
     example: {
       "command": "invoice-check invoice-sample.txt",
-      "fixture": "发票号码：24512000000123456789\n不含税金额（小写）：¥11,320.75\n税额（小写）：¥679.25\n价税合计（小写）：¥12,001.00\n价税合计（大写）：壹万贰仟元整",
+      "fixture": "发票号码：24512000000123456789\n统一社会信用代码：91330106MA27X8XXXX\n购买方名称：甲科技有限公司\n销售方名称：乙网络工作室\n不含税金额（小写）：¥11,320.75\n税额（小写）：¥679.25\n价税合计（小写）：¥12,001.00\n价税合计（大写）：壹万贰仟元整",
       "output": "$ invoice-check invoice-sample.txt\nerror amount-sum 第 5 行勾稽不平：不含税 11320.75 + 税额 679.25 = 12000，价税合计却是 12001（容差 0.02）\nerror amount-uppercase 大写金额 12000（第 8 行）与价税合计 12001（第 7 行）不一致\nfail: 2 errors, 0 warnings",
       "exit": "1"
 },
