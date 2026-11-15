@@ -8,6 +8,20 @@
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-short / title-long</code></td><td>标题字符数越界（默认 10–60，可配）→ error，报行号与字数</td></tr><tr><td><code>title-stuffing</code></td><td>同一关键词连写三遍或分隔出现三次以上 → warn，报词与次数</td></tr><tr><td><code>title-missing</code></td><td>没有标题列或该行为空 → error</td></tr><tr><td><code>price-invalid</code></td><td>价格不是 ≥ 0.01 的数字 → error</td></tr><tr><td><code>price-high</code></td><td>价格超过上限（--max-price 配置）→ warn</td></tr><tr><td><code>sku-missing / sku-empty</code></td><td>SKU 列缺失或为空 → error</td></tr><tr><td><code>sku-duplicate</code></td><td>SKU 与更早的行重复 → error，报两行行号</td></tr></table>
 <h2>用法</h2>
 <pre><code>npx listing-check listings.csv --json</code></pre><pre><code>npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code>title,price,sku
+全自动懒人支架手机桌面通用, 29.9, SKU001
+手机支架手机支架手机支架通用, 9.9, SKU002
+超便宜, 0, SKU003
+便宜货, 39.9, SKU002</code></pre></details>
+<pre><code>$ listing-check listings.csv
+error title-short 第3行 第 3 行标题 3 字，少于下限 10：「超便宜…」
+error price-invalid 第3行 第 3 行价格「0」不是 ≥ 0.01 的数字
+error title-short 第4行 第 4 行标题 3 字，少于下限 10：「便宜货…」
+error sku-duplicate 第4行 第 4 行 SKU「SKU002」与第 2 行重复
+warn title-stuffing 第2行 第 2 行关键词「手机支架」重复 3 次（上限 3）
+fail: 4 rows, 4 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /listing-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
 <small>堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>

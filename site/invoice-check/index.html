@@ -8,6 +8,17 @@
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>credit-code</code></td><td>18 位统一社会信用代码字符集校验（数字 + A-HJ-NPQRTUWXY，排除 I/O/S/V/Z）→ error</td></tr><tr><td><code>invoice-number</code></td><td>发票号码 20 位（数电票）或 8 位（纸质票）之外 → warn</td></tr><tr><td><code>amount-sum</code></td><td>不含税 + 税额 ≠ 价税合计（超出容差）→ error，报三项的值</td></tr><tr><td><code>amount-partial</code></td><td>勾稽三项缺一 → warn，点名缺哪个</td></tr><tr><td><code>amount-uppercase</code></td><td>大写金额与价税合计不一致 → error</td></tr><tr><td><code>amount-ambiguous</code></td><td>出现多个大写金额 → warn</td></tr><tr><td><code>buyer / seller</code></td><td>没有购买方/销售方名称栏 → error</td></tr></table>
 <h2>用法</h2>
 <pre><code>npx invoice-check invoice.txt --json</code></pre><pre><code>npx invoice-check invoice.txt --tolerance 0.02</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code>发票号码：24512000000123456789
+不含税金额（小写）：¥11,320.75
+税额（小写）：¥679.25
+价税合计（小写）：¥12,001.00
+价税合计（大写）：壹万贰仟元整</code></pre></details>
+<pre><code>$ invoice-check invoice-sample.txt
+error amount-sum 第 5 行勾稽不平：不含税 11320.75 + 税额 679.25 = 12000，价税合计却是 12001（容差 0.02）
+error amount-uppercase 大写金额 12000（第 8 行）与价税合计 12001（第 7 行）不一致
+fail: 2 errors, 0 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /invoice-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
 <small>勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>

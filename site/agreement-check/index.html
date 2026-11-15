@@ -8,6 +8,22 @@
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>party-a / party-b</code></td><td>没有「甲方：/乙方：」行，或名称为空 → error，报行号</td></tr><tr><td><code>date</code></td><td>全文无日期 → error；有日期但没有「签订/签署日期」字样 → warn</td></tr><tr><td><code>amount-uppercase</code></td><td>有数字金额但全文没有大写金额 → error</td></tr><tr><td><code>amount-mismatch</code></td><td>大写金额与所有数字金额都对不上 → error，报两边的值</td></tr><tr><td><code>amount-ambiguous</code></td><td>出现多个大写金额 → warn（自动比对仅在恰好一个时进行）</td></tr><tr><td><code>signature</code></td><td>没有「甲方（盖章）/乙方（盖章）」式签署栏 → error</td></tr><tr><td><code>dispute</code></td><td>没有争议解决条款（仲裁/诉讼/管辖）→ error</td></tr><tr><td><code>breach</code></td><td>没有违约责任条款 → error</td></tr><tr><td><code>term</code></td><td>没有期限条款 → warn</td></tr></table>
 <h2>用法</h2>
 <pre><code>npx agreement-check contract.md --json</code></pre><pre><code>npx agreement-check contract.md --warnings-fail</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code>甲方：甲科技有限公司
+乙方：乙网络工作室
+
+本合同总金额为人民币壹万贰仟元整（¥13,000元）。
+
+甲方（盖章）
+乙方（盖章）</code></pre></details>
+<pre><code>$ agreement-check contract-sample.md
+error date 全文没有任何日期，合同无法锚定生效时间
+error amount-mismatch 大写金额 12000（第 4 行）与所有数字金额（13000@4）都对不上
+error dispute 没有争议解决条款（仲裁/诉讼/管辖）
+error breach 没有违约责任条款
+warn term 没有期限条款（合同期限/有效期/履行期限）
+fail: 4 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /agreement-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
 <small>大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
