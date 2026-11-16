@@ -2,7 +2,7 @@
 
 Industry-scenario checks for deliverables an agent produced and a person is about to accept. The generic defects (ragged tables, broken citations) live in [dsh-verify-kit](https://github.com/zjukop3/dsh-verify-kit); this kit covers the vocabulary of specific trades.
 
-Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) — catalog pages: [dsh-agreement-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-agreement-check/) · [dsh-invoice-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-invoice-check/) · [dsh-listing-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-listing-check/) · [dsh-meeting-notes-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-meeting-notes-check/) · [dsh-resume-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-resume-check/).
+Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) — catalog pages: [dsh-agreement-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-agreement-check/) · [dsh-invoice-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-invoice-check/) · [dsh-listing-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-listing-check/) · [dsh-meeting-notes-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-meeting-notes-check/) · [dsh-resume-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-resume-check/) · [dsh-release-notes-check](https://awesome-dsh-plugin.com/p/zjukop3/dsh-vertical-kit--packages-dsh-release-notes-check/).
 
 | package | trade | what it decides |
 | --- | --- | --- |
@@ -11,6 +11,7 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | [dsh-listing-check](packages/dsh-listing-check) | e-commerce ops | title bounds, keyword repetition, price validity, SKU completeness and duplicates |
 | [dsh-meeting-notes-check](packages/dsh-meeting-notes-check) | white-collar universal | date present, attendees named, decisions recorded, every action item with an owner and a deadline |
 | [dsh-resume-check](packages/dsh-resume-check) | hiring | reachable contact block, valid email/phone shapes, a work timeline that never overlaps itself, education section |
+| [dsh-release-notes-check](packages/dsh-release-notes-check) | dev-facing delivery | version heading, date, breaking changes paired with an upgrade path, newest-first ordering |
 
 Design rules, unchanged from verify-kit:
 

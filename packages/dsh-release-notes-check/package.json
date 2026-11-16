@@ -1,0 +1,47 @@
+{
+  "name": "dsh-release-notes-check",
+  "version": "0.1.0",
+  "description": "Release-note hygiene from markdown: a version heading, a date, breaking changes paired with an upgrade path, and reverse-chronological ordering.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "release-notes-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "release-notes",
+    "changelog",
+    "breaking-changes",
+    "发布说明",
+    "更新日志"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-release-notes-check"
+}

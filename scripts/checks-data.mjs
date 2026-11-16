@@ -150,5 +150,32 @@ export const CHECKS = [
 },
     note: '只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。',
   },
+  {
+    slug: 'release-notes-check',
+    npm: 'dsh-release-notes-check',
+    cli: 'release-notes-check',
+    noun: '发布说明检查 / 更新日志检查',
+    title: '发布说明检查清单',
+    description: 'Changelog 或发布说明发出前的书记检查：版本号标题、发布日期、破坏性变更必须配升级/迁移说明、版本倒序排列（读者依赖的唯一惯例）。每条发现报行号。',
+    decides: '这份发布说明是否交代了哪个版本、何时、什么会坏、怎么迁移',
+    rules: [
+      ['version-missing', '没有版本号标题（## 1.2.0 / ## v1.2.0）或「版本：」行 → error'],
+      ['date-missing', '全文没有完整日期 → error'],
+      ['order', '更新的版本标题出现在更旧版本之后 → error，报两处'],
+      ['breaking-without-upgrade', '声明了破坏性变更但没有升级/迁移段 → error（读者被留在原地）'],
+      ['upgrade-missing', '没有升级/迁移说明 → warn（信息里写明：没有破坏性变更就忽略）'],
+    ],
+    usage: [
+      'npx release-notes-check notes.md --json',
+      'npx release-notes-check notes.md --no-require-upgrade',
+    ],
+    example: {
+      "command": "release-notes-check release-sample.md",
+      "fixture": "# Changelog\n\n## 2.1.0 — 2026-11-17\n\n### Breaking\n\n- 配置文件键「endpoint」改名「server」\n\n## 1.9.0 — 2026-10-01\n\n- 修了几个问题",
+      "output": "$ release-notes-check release-sample.md\nerror breaking-without-upgrade 第0行 声明了破坏性变更但没有升级/迁移说明——读者被留在原地\nwarn upgrade-missing 第0行 没有升级/迁移说明（认得：## 升级、## 迁移、upgrade guide）——如果这次没有破坏性变更，忽略这条\nfail: 2 version headings, 1 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。',
+  },
 ]
 

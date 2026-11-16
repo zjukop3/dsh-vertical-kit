@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>发布说明检查清单 · dsh-release-notes-check</title><meta name="description" content="Changelog 或发布说明发出前的书记检查：版本号标题、发布日期、破坏性变更必须配升级/迁移说明、版本倒序排列（读者依赖的唯一惯例）。每条发现报行号。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 发布说明检查 / 更新日志检查</p>
+<h1>发布说明检查清单</h1>
+<p><strong>它决定一件事：</strong>这份发布说明是否交代了哪个版本、何时、什么会坏、怎么迁移。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-release-notes-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>version-missing</code></td><td>没有版本号标题（## 1.2.0 / ## v1.2.0）或「版本：」行 → error</td></tr><tr><td><code>date-missing</code></td><td>全文没有完整日期 → error</td></tr><tr><td><code>order</code></td><td>更新的版本标题出现在更旧版本之后 → error，报两处</td></tr><tr><td><code>breaking-without-upgrade</code></td><td>声明了破坏性变更但没有升级/迁移段 → error（读者被留在原地）</td></tr><tr><td><code>upgrade-missing</code></td><td>没有升级/迁移说明 → warn（信息里写明：没有破坏性变更就忽略）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx release-notes-check notes.md --json</code></pre><pre><code>npx release-notes-check notes.md --no-require-upgrade</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># Changelog
+
+## 2.1.0 — 2026-11-17
+
+### Breaking
+
+- 配置文件键「endpoint」改名「server」
+
+## 1.9.0 — 2026-10-01
+
+- 修了几个问题</code></pre></details>
+<pre><code>$ release-notes-check release-sample.md
+error breaking-without-upgrade 第0行 声明了破坏性变更但没有升级/迁移说明——读者被留在原地
+warn upgrade-missing 第0行 没有升级/迁移说明（认得：## 升级、## 迁移、upgrade guide）——如果这次没有破坏性变更，忽略这条
+fail: 2 version headings, 1 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /release-notes-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>
