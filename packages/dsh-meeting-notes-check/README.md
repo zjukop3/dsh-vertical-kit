@@ -2,6 +2,42 @@
 
 Meeting-note hygiene from markdown. A note is decidable: it must say **when** the meeting happened, **who** was in the room, **what was decided**, and every action item must carry **an owner and a deadline**. This verifies exactly those and names the line that is missing whom.
 
+<!-- example:start -->
+## 真实输入输出
+
+输入：
+
+```markdown
+# 项目周会
+
+- 日期：2026-11-15
+- 与会人：张三、李四、王五
+
+## 议程
+
+1. 讨论登录页改版
+2. 评审导出性能
+
+## 行动项
+
+- [ ] 登录页模板替换
+- [ ] 导出性能基线测试 负责人：李四
+```
+
+真实运行（逐字输出，由测试与工具保持同步）：
+
+```text
+$ meeting-notes-check meeting-sample.md
+error action-no-owner 第13行 第 13 行行动项没有负责人（认得：负责人：…、@名字、X 负责）：「- [ ] 登录页模板替换…」
+error action-no-deadline 第13行 第 13 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
+error action-no-deadline 第14行 第 14 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
+warn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条
+fail: 2 action items, 3 errors, 1 warnings
+```
+
+出口码：1。
+<!-- example:start -->
+
 Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin).
 
 ## What it decides

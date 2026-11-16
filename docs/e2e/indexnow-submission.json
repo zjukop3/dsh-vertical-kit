@@ -1,13 +1,15 @@
 {
   "ok": true,
-  "submittedAt": "2026-11-15T12:00:37.001Z",
+  "submittedAt": "2026-11-16T14:09:24.785Z",
   "endpoint": "https://www.bing.com/indexnow",
   "keyLocation": "https://zjukop3.github.io/dsh-vertical-kit/ee14deb916c64199dfe653693e8aeabc.txt",
   "urlList": [
     "https://zjukop3.github.io/dsh-vertical-kit/",
     "https://zjukop3.github.io/dsh-vertical-kit/agreement-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
-    "https://zjukop3.github.io/dsh-vertical-kit/listing-check/"
+    "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/resume-check/"
   ],
   "preflight": {
     "keyFileVerified": true,
@@ -26,6 +28,14 @@
       },
       {
         "url": "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
+        "status": 200
+      },
+      {
+        "url": "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
+        "status": 200
+      },
+      {
+        "url": "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
         "status": 200
       }
     ]

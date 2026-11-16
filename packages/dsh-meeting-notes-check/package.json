@@ -1,6 +1,6 @@
 {
   "name": "dsh-meeting-notes-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Meeting-note hygiene from markdown: a date, the people in the room, recorded decisions, and every action item carrying an owner and a deadline.",
   "type": "module",
   "main": "./src/index.js",

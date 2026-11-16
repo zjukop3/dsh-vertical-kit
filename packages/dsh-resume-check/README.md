@@ -2,6 +2,41 @@
 
 Resume hygiene from markdown. A resume is decidable in its **bookkeeping**: the reader must be able to **reach the person**, the contact shapes must be **valid**, and the work timeline must **never overlap itself**. This verifies exactly those and names the line that is wrong.
 
+<!-- example:start -->
+## 真实输入输出
+
+输入：
+
+```markdown
+# 李四
+
+- 邮箱：lisi..wrong@site
+- 电话：12345
+
+## 工作经历
+
+**A公司** 工程师 2020.1 - 2022.6
+**B公司** 工程师 2021.5 - 2023.1
+**C公司** 工程师 2022.3 - 至今
+**D公司** 工程师 2023.2 - 2024.1
+```
+
+真实运行（逐字输出，由测试与工具保持同步）：
+
+```text
+$ resume-check resume-sample.md
+error email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）
+error phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间
+error dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与上一段（2020.1 - 2022.6）时间重叠
+error dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与上一段（2021.5 - 2023.1）时间重叠
+error dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期
+warn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）
+fail: 4 stints, 5 errors, 1 warnings
+```
+
+出口码：1。
+<!-- example:start -->
+
 Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin).
 
 ## What it decides
