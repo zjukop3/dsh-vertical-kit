@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>简历检查清单 · dsh-resume-check</title><meta name="description" content="简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/resume-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 简历检查 / 求职简历检查</p>
+<h1>简历检查清单</h1>
+<p><strong>它决定一件事：</strong>这份简历在书记层面是否可读、可达、时间自洽。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-resume-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>contact-missing</code></td><td>没有电话/手机/邮箱/微信/Email/Phone → error</td></tr><tr><td><code>email-invalid</code></td><td>邮箱过不了严格形态（连续点、域缺尾）→ error，报行号；检测宽松、验证严格，坏地址必被检出</td></tr><tr><td><code>phone-invalid</code></td><td>电话位数不在 7-15 位 → error，报行号</td></tr><tr><td><code>dates-overlap</code></td><td>两段经历时间重叠 → error，报两段区间</td></tr><tr><td><code>dates-order</code></td><td>一段封闭经历开始于「至今」之后 → error（真矛盾，不是文档顺序问题）</td></tr><tr><td><code>date-gap</code></td><td>两段之间空窗 &gt;12 个月 → warn，仅 --no-allow-gaps 时判</td></tr><tr><td><code>education-missing</code></td><td>没有教育/学历段 → warn</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx resume-check resume.md --json</code></pre><pre><code>npx resume-check resume.md --no-allow-gaps</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 李四
+
+- 邮箱：lisi..wrong@site
+- 电话：12345
+
+## 工作经历
+
+**A公司** 工程师 2020.1 - 2022.6
+**B公司** 工程师 2021.5 - 2023.1
+**C公司** 工程师 2022.3 - 至今
+**D公司** 工程师 2023.2 - 2024.1</code></pre></details>
+<pre><code>$ resume-check resume-sample.md
+error email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）
+error phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间
+error dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与上一段（2020.1 - 2022.6）时间重叠
+error dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与上一段（2021.5 - 2023.1）时间重叠
+error dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期
+warn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）
+fail: 4 stints, 5 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /resume-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>

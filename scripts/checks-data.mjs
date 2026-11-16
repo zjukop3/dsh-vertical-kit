@@ -92,5 +92,63 @@ export const CHECKS = [
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
   },
+  {
+    slug: 'meeting-notes-check',
+    npm: 'dsh-meeting-notes-check',
+    cli: 'meeting-notes-check',
+    noun: '会议纪要检查 / 会议记录检查',
+    title: '会议纪要检查清单',
+    description: '会议纪要发出或归档前的书记检查：日期、与会人、决定都有记录，每个行动项都有负责人和截止时间。勾选框和待办标题下的编号项算任务，普通编号讨论点不算。每条发现报行号。',
+    decides: '这份纪要是否交代了谁在何时 carries 什么',
+    rules: [
+      ['date-missing', '全文没有任何日期（2026-11-16、11月16日、11/16、下周三）→ error'],
+      ['attendees-missing', '没有与会人/参会人/出席/Attendees 行或标题 → error'],
+      ['action-no-owner', '行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号'],
+      ['action-no-deadline', '行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号'],
+      ['agenda-missing', '没有议程/议题标题或编号讨论点 → warn'],
+      ['decisions-missing', '没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）'],
+      ['no-action-items', '没有任何行动项 → warn（同样带出口）'],
+    ],
+    usage: [
+      'npx meeting-notes-check notes.md --json',
+      'npx meeting-notes-check notes.md --no-require-agenda',
+    ],
+    example: {
+      "command": "meeting-notes-check meeting-sample.md",
+      "fixture": "# 项目周会\n\n- 日期：2026-11-15\n- 与会人：张三、李四、王五\n\n## 议程\n\n1. 讨论登录页改版\n2. 评审导出性能\n\n## 行动项\n\n- [ ] 登录页模板替换\n- [ ] 导出性能基线测试 负责人：李四",
+      "output": "$ meeting-notes-check meeting-sample.md\nerror action-no-owner 第13行 第 13 行行动项没有负责人（认得：负责人：…、@名字、X 负责）：「- [ ] 登录页模板替换…」\nerror action-no-deadline 第13行 第 13 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）\nerror action-no-deadline 第14行 第 14 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）\nwarn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条\nfail: 2 action items, 3 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。',
+  },
+  {
+    slug: 'resume-check',
+    npm: 'dsh-resume-check',
+    cli: 'resume-check',
+    noun: '简历检查 / 求职简历检查',
+    title: '简历检查清单',
+    description: '简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。',
+    decides: '这份简历在书记层面是否可读、可达、时间自洽',
+    rules: [
+      ['contact-missing', '没有电话/手机/邮箱/微信/Email/Phone → error'],
+      ['email-invalid', '邮箱过不了严格形态（连续点、域缺尾）→ error，报行号；检测宽松、验证严格，坏地址必被检出'],
+      ['phone-invalid', '电话位数不在 7-15 位 → error，报行号'],
+      ['dates-overlap', '两段经历时间重叠 → error，报两段区间'],
+      ['dates-order', '一段封闭经历开始于「至今」之后 → error（真矛盾，不是文档顺序问题）'],
+      ['date-gap', '两段之间空窗 >12 个月 → warn，仅 --no-allow-gaps 时判'],
+      ['education-missing', '没有教育/学历段 → warn'],
+    ],
+    usage: [
+      'npx resume-check resume.md --json',
+      'npx resume-check resume.md --no-allow-gaps',
+    ],
+    example: {
+      "command": "resume-check resume-sample.md",
+      "fixture": "# 李四\n\n- 邮箱：lisi..wrong@site\n- 电话：12345\n\n## 工作经历\n\n**A公司** 工程师 2020.1 - 2022.6\n**B公司** 工程师 2021.5 - 2023.1\n**C公司** 工程师 2022.3 - 至今\n**D公司** 工程师 2023.2 - 2024.1",
+      "output": "$ resume-check resume-sample.md\nerror email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）\nerror phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间\nerror dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与上一段（2020.1 - 2022.6）时间重叠\nerror dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与上一段（2021.5 - 2023.1）时间重叠\nerror dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期\nwarn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）\nfail: 4 stints, 5 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。',
+  },
 ]
 

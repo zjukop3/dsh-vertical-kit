@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>会议纪要检查清单 · dsh-meeting-notes-check</title><meta name="description" content="会议纪要发出或归档前的书记检查：日期、与会人、决定都有记录，每个行动项都有负责人和截止时间。勾选框和待办标题下的编号项算任务，普通编号讨论点不算。每条发现报行号。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 会议纪要检查 / 会议记录检查</p>
+<h1>会议纪要检查清单</h1>
+<p><strong>它决定一件事：</strong>这份纪要是否交代了谁在何时 carries 什么。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-meeting-notes-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>date-missing</code></td><td>全文没有任何日期（2026-11-16、11月16日、11/16、下周三）→ error</td></tr><tr><td><code>attendees-missing</code></td><td>没有与会人/参会人/出席/Attendees 行或标题 → error</td></tr><tr><td><code>action-no-owner</code></td><td>行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号</td></tr><tr><td><code>action-no-deadline</code></td><td>行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号</td></tr><tr><td><code>agenda-missing</code></td><td>没有议程/议题标题或编号讨论点 → warn</td></tr><tr><td><code>decisions-missing</code></td><td>没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）</td></tr><tr><td><code>no-action-items</code></td><td>没有任何行动项 → warn（同样带出口）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx meeting-notes-check notes.md --json</code></pre><pre><code>npx meeting-notes-check notes.md --no-require-agenda</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 项目周会
+
+- 日期：2026-11-15
+- 与会人：张三、李四、王五
+
+## 议程
+
+1. 讨论登录页改版
+2. 评审导出性能
+
+## 行动项
+
+- [ ] 登录页模板替换
+- [ ] 导出性能基线测试 负责人：李四</code></pre></details>
+<pre><code>$ meeting-notes-check meeting-sample.md
+error action-no-owner 第13行 第 13 行行动项没有负责人（认得：负责人：…、@名字、X 负责）：「- [ ] 登录页模板替换…」
+error action-no-deadline 第13行 第 13 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
+error action-no-deadline 第14行 第 14 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
+warn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条
+fail: 2 action items, 3 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /meeting-notes-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>
