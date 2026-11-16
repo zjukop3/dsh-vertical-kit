@@ -39,6 +39,14 @@ npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999
 
 Exit codes: `0` clean, `1` findings, `2` usage or read error. In DSH the same function is behind `POST /listing-check/api` with `{"text":"…"}` or `{"path":"…"}`, so the panel and CI agree by construction.
 
+## What it decides
+
+商品导出表是否达到可上架的结构卫生：标题长度边界、关键词堆砌（连写与分隔重复两种形态）、价格有效性与上限、SKU 完整性与重复。每条发现报行号，边界可配置。
+
+## Honest scope
+
+这是上架前的结构检查，不是运营建议：它说清单**结构上干净**，从不说商品**会卖得好**。堆砌判定认两种形态；单字重复在中文标题里是常态，永不计入。
+
 Part of [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit): industry-scenario checks, each one verb, each runnable without DSH.
 
 MIT.

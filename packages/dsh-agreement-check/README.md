@@ -41,6 +41,14 @@ npx agreement-check contract.md --warnings-fail
 
 Exit codes: `0` clean, `1` findings, `2` usage or read error. In DSH the same function is behind `POST /agreement-check/api` with `{"text":"…"}` or `{"path":"…"}`, so the panel and CI agree by construction.
 
+## What it decides
+
+这份合同在结构上是否可审：甲乙方写没写、日期有没有锚、大写金额和数字对不对得上、签署栏、争议解决、违约责任、期限。每条发现带行号。
+
+## Honest scope
+
+这是结构清单，不是法务意见：它说合同**结构上可审**，从不说合同**是份好合同**——条款是否对你有利、是否覆盖真实风险，是法务的事。大写金额解析按 GB 习惯读，解析不了的串返回 null 并计入歧义，不会编一个数出来。
+
 Part of [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit): industry-scenario checks, each one verb, each runnable without DSH.
 
 MIT.

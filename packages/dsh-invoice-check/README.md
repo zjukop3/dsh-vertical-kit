@@ -39,6 +39,14 @@ npx invoice-check invoice.txt --tolerance 0.02
 
 Exit codes: `0` clean, `1` findings, `2` usage or read error. In DSH the same function is behind `POST /invoice-check/api` with `{"text":"…"}` or `{"path":"…"}`, so the panel and CI agree by construction.
 
+## What it decides
+
+这张发票在算术上是否自洽：统一社会信用代码字符集、不含税 + 税额 = 价税合计（容差可配）、大写金额与价税合计一致、大小写金额、发票号码位数。每条发现带行号。
+
+## Honest scope
+
+这是勾稽检查，不是税务合规：税率是否适用、抬头是否写对、这张发票是否对应真实交易，都不在这五个判定里。它验的是**发票自己的算术**。
+
 Part of [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit): industry-scenario checks, each one verb, each runnable without DSH.
 
 MIT.
