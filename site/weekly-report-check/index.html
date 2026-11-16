@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>周报检查清单 · dsh-weekly-report-check</title><meta name="description" content="周报发出前的结构检查：本周完成与下周计划分开写、风险与阻塞在场、至少一行带量化数字——让读者分得清进展和动作。空泛承诺（下周继续努力）按计划语句计数：在场可判定，空洞不可判定。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 周报检查 / 工作汇报检查</p>
+<h1>周报检查清单</h1>
+<p><strong>它决定一件事：</strong>这份周报是否交代了做完了什么、接下来做什么、什么会卡住、进展是否可检验。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-weekly-report-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>done-missing</code></td><td>没有「本周完成」段或自标识行（已完成…、已上线…）→ error</td></tr><tr><td><code>plan-missing</code></td><td>没有「下周计划」段或自标识行（计划…、下周…）→ error</td></tr><tr><td><code>risks-missing</code></td><td>没有风险/阻塞段 → warn（信息里写明：本周真的没有风险就忽略）</td></tr><tr><td><code>metrics-thin</code></td><td>带量化数字的行数低于下限（默认 1，--min-metrics 可调）→ warn，指出不可检验与可检验的写法</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx weekly-report-check report.md --json</code></pre><pre><code>npx weekly-report-check report.md --min-metrics 3</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 周报 2026-W46
+
+这周很忙，做了很多事情，下周继续努力。</code></pre></details>
+<pre><code>$ weekly-report-check weekly-sample.md
+error done-missing 第0行 没有「本周完成」段或自标识行（认得：## 本周完成、已完成：…、已上线…）——报告没有事实底座
+warn risks-missing 第0行 没有风险/阻塞段（认得：## 风险、阻塞：…、卡在…）——如果本周真的没有风险，忽略这条
+warn metrics-thin 第0行 全文只有 0 行带量化数字（% 、个、条、次、人、天、小时…，下限 1）——「优化了性能」不可检验，「p95 从 820ms 降到 460ms」可以
+fail: 0 done, 1 planned, 0 risks, 1 errors, 2 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /weekly-report-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>

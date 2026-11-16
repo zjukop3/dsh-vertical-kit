@@ -177,5 +177,31 @@ export const CHECKS = [
 },
     note: '只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。',
   },
+  {
+    slug: 'weekly-report-check',
+    npm: 'dsh-weekly-report-check',
+    cli: 'weekly-report-check',
+    noun: '周报检查 / 工作汇报检查',
+    title: '周报检查清单',
+    description: '周报发出前的结构检查：本周完成与下周计划分开写、风险与阻塞在场、至少一行带量化数字——让读者分得清进展和动作。空泛承诺（下周继续努力）按计划语句计数：在场可判定，空洞不可判定。',
+    decides: '这份周报是否交代了做完了什么、接下来做什么、什么会卡住、进展是否可检验',
+    rules: [
+      ['done-missing', '没有「本周完成」段或自标识行（已完成…、已上线…）→ error'],
+      ['plan-missing', '没有「下周计划」段或自标识行（计划…、下周…）→ error'],
+      ['risks-missing', '没有风险/阻塞段 → warn（信息里写明：本周真的没有风险就忽略）'],
+      ['metrics-thin', '带量化数字的行数低于下限（默认 1，--min-metrics 可调）→ warn，指出不可检验与可检验的写法'],
+    ],
+    usage: [
+      'npx weekly-report-check report.md --json',
+      'npx weekly-report-check report.md --min-metrics 3',
+    ],
+    example: {
+      "command": "weekly-report-check weekly-sample.md",
+      "fixture": "# 周报 2026-W46\n\n这周很忙，做了很多事情，下周继续努力。",
+      "output": "$ weekly-report-check weekly-sample.md\nerror done-missing 第0行 没有「本周完成」段或自标识行（认得：## 本周完成、已完成：…、已上线…）——报告没有事实底座\nwarn risks-missing 第0行 没有风险/阻塞段（认得：## 风险、阻塞：…、卡在…）——如果本周真的没有风险，忽略这条\nwarn metrics-thin 第0行 全文只有 0 行带量化数字（% 、个、条、次、人、天、小时…，下限 1）——「优化了性能」不可检验，「p95 从 820ms 降到 460ms」可以\nfail: 0 done, 1 planned, 0 risks, 1 errors, 2 warnings",
+      "exit": "1"
+},
+    note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
+  },
 ]
 

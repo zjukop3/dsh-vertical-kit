@@ -1,6 +1,6 @@
 {
   "ok": true,
-  "submittedAt": "2026-11-16T14:09:24.785Z",
+  "submittedAt": "2026-11-16T16:14:34.132Z",
   "endpoint": "https://www.bing.com/indexnow",
   "keyLocation": "https://zjukop3.github.io/dsh-vertical-kit/ee14deb916c64199dfe653693e8aeabc.txt",
   "urlList": [
@@ -9,7 +9,8 @@
     "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
-    "https://zjukop3.github.io/dsh-vertical-kit/resume-check/"
+    "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/"
   ],
   "preflight": {
     "keyFileVerified": true,
@@ -36,6 +37,10 @@
       },
       {
         "url": "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
+        "status": 200
+      },
+      {
+        "url": "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/",
         "status": 200
       }
     ]
