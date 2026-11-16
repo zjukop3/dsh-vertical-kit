@@ -71,4 +71,14 @@ const urls = [`${ORIGIN}/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
 if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)
+const llms = [
+  `# dsh-vertical-kit`,
+  ``,
+  `> Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.`,
+  ``,
+  ...CHECKS.map(check => `- ${ORIGIN}/${check.slug}/: ${check.title} — ${check.description}`),
+  ``,
+  `- ${REPO}: Public source code, ${CHECKS.length} packages, one implementation per check shared by the CLI and the host route.`,
+].join('\n')
+await writeFile(resolve(root, 'site/llms.txt'), llms)
 console.log(JSON.stringify({ ok: true, pages: urls.length }))

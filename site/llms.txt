@@ -1,0 +1,13 @@
+# dsh-vertical-kit
+
+> Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.
+
+- https://zjukop3.github.io/dsh-vertical-kit/agreement-check/: 合同结构检查清单 — 合同交给法务之前，先把结构定下来：甲乙方写没写、日期有没有锚、大写金额和数字对不对得上、签署栏、争议解决、违约责任。每条发现带行号，可接 CI。
+- https://zjukop3.github.io/dsh-vertical-kit/invoice-check/: 发票字段检查清单 — 发票不需要懂业务就能核对的部分：统一社会信用代码字符集、不含税+税额=价税合计的勾稽、大写金额与小写一致、发票号码位数。容差默认 0.02，可调。
+- https://zjukop3.github.io/dsh-vertical-kit/listing-check/: 电商商品信息检查清单 — 商品导出表（CSV/JSON）交付或上架前的检查：标题长度边界、关键词堆砌、价格有效性与边界、SKU 完整性与重复。每条发现报行号，边界可配置。
+- https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/: 会议纪要检查清单 — 会议纪要发出或归档前的书记检查：日期、与会人、决定都有记录，每个行动项都有负责人和截止时间。勾选框和待办标题下的编号项算任务，普通编号讨论点不算。每条发现报行号。
+- https://zjukop3.github.io/dsh-vertical-kit/resume-check/: 简历检查清单 — 简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。
+- https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/: 发布说明检查清单 — Changelog 或发布说明发出前的书记检查：版本号标题、发布日期、破坏性变更必须配升级/迁移说明、版本倒序排列（读者依赖的唯一惯例）。每条发现报行号。
+- https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/: 周报检查清单 — 周报发出前的结构检查：本周完成与下周计划分开写、风险与阻塞在场、至少一行带量化数字——让读者分得清进展和动作。空泛承诺（下周继续努力）按计划语句计数：在场可判定，空洞不可判定。
+
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 7 packages, one implementation per check shared by the CLI and the host route.
