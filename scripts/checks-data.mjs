@@ -487,5 +487,34 @@ export const CHECKS = [
 },
     note: '只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。',
   },
+  {
+    slug: 'spec-doc-check',
+    npm: 'dsh-spec-doc-check',
+    cli: 'spec-doc-check',
+    noun: '需求文档检查 / 方案文档检查',
+    title: '需求文档检查清单',
+    description: '方案文档的三件事加一条：问题背景、可被检查的验收标准、明确的范围外，以及——验收标准不能写成愿望。「体验良好」「速度合理」既无法通过也无法拒绝。带阈值的愿望词不算违规：p95 从 800ms 降到 200ms 是标准。',
+    decides: '这份方案是否让 reviewer 能精确地反对它',
+    rules: [
+      ['empty', '文档为空 → error'],
+      ['problem-missing', '没有背景/问题/目标段 → error'],
+      ['criteria-missing', '没有验收标准段 → error'],
+      ['criteria-vague', '验收标准含愿望词但没有数字/阈值/可观测对象 → error，报行号'],
+      ['out-of-scope-missing', '没有「不做/非目标/范围外」段 → error'],
+      ['criteria-thin', '验收标准少于下限（默认 2）→ warn'],
+      ['open-questions-empty', '有「待定」标题但下面没条目 → warn'],
+    ],
+    usage: [
+      'npx spec-doc-check spec.md --json',
+      'npx spec-doc-check spec.md --min-criteria 3',
+    ],
+    example: {
+      "command": "spec-doc-check spec-sample.md",
+      "fixture": "# 导出重做\n\n我觉得现在的导出体验不够好，想重做一下。\n\n## 验收标准\n\n- 体验良好\n- 速度合理",
+      "output": "$ spec-doc-check spec-sample.md\nerror problem-missing 第0行 没有背景/问题/目标段——读者不知道这个方案在解决什么\nerror out-of-scope-missing 第0行 没有「不做/范围外」段（认得：## 不做、## 非目标、Out of scope）——没写边界的方案在评审时会被无限扩大\nerror criteria-vague 第7行 第 7 行验收标准含「良好」但没有数字或可观测对象——「体验良好」既无法通过也无法拒绝\nerror criteria-vague 第8行 第 8 行验收标准含「合理」但没有数字或可观测对象——「速度合理」既无法通过也无法拒绝\nfail: 2 criteria, 4 errors, 0 warnings",
+      "exit": "1"
+},
+    note: '愿望词表：良好/优秀/合理/友好/快速/流畅/尽量/适当/完善/稳定/高效/简洁（含英文同级词）。只要同一条里出现数字、阈值或可观测对象（状态码、字段、命令、百分比）就放行——规则只在「只剩下愿望」时才响。只验文档形状，不验方案是否正确：标准是不是错的标准、问题陈述是不是事后合理化、范围外是不是回避了难点，这些评审才能说。',
+  },
 ]
 

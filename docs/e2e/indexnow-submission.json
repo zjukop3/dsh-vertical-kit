@@ -1,52 +1,33 @@
 {
-  "ok": true,
-  "submittedAt": "2026-11-16T16:14:34.132Z",
+  "ok": false,
+  "submittedAt": "2026-11-18T03:52:45.047Z",
   "endpoint": "https://www.bing.com/indexnow",
   "keyLocation": "https://zjukop3.github.io/dsh-vertical-kit/ee14deb916c64199dfe653693e8aeabc.txt",
   "urlList": [
     "https://zjukop3.github.io/dsh-vertical-kit/",
+    "https://zjukop3.github.io/dsh-vertical-kit/compare/",
     "https://zjukop3.github.io/dsh-vertical-kit/agreement-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
     "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
-    "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/"
+    "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/api-doc-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/test-report-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/commit-msg-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/dockerfile-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/env-example-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/license-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/incident-report-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/ops-runbook-check/",
+    "https://zjukop3.github.io/dsh-vertical-kit/pr-description-check/"
   ],
-  "preflight": {
-    "keyFileVerified": true,
-    "urls": [
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/agreement-check/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
-        "status": 200
-      },
-      {
-        "url": "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/",
-        "status": 200
-      }
-    ]
-  },
-  "responseStatus": 200,
+  "preflight": null,
+  "responseStatus": null,
   "responseBody": null,
   "indexingStatus": "unknown",
-  "externalActivationClaim": false
+  "externalActivationClaim": false,
+  "error": "fetch failed"
 }
