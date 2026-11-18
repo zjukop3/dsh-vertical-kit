@@ -35,7 +35,7 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel.
 
 ```bash
-npm test   # 18 tests, no network
+npm test   # 159 tests, no network
 ```
 
 MIT.
@@ -47,6 +47,6 @@ MIT.
 
 1. 打开「插件」，启用实验性「自定义插件索引」。
 2. 「发现 → 添加索引源」，添加：`https://zjukop3.github.io/dsh-review-outbox/plugins.json`
-3. 按名字搜索安装（本仓库的五个：`hashcheck` / `citelint` / `outline-lint` / `tablelint` / `numberlint`；行业三件在 [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit)：`agreement-check` / `invoice-check` / `listing-check`）。
+3. 按名字搜索安装。五个通用检查（`hashcheck` / `citelint` / `outline-lint` / `tablelint` / `numberlint`）在 [dsh-verify-kit](https://github.com/zjukop3/dsh-verify-kit)；本仓库的二十个场景检查见 [README 顶部表格](README.md) 或 [对照表](https://zjukop3.github.io/dsh-vertical-kit/compare/)。
 
 不装 DSH 也可以：`npx <名字> --help` 直接用，或按下面的 CLI 说明。

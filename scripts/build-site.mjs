@@ -50,13 +50,13 @@ function home() {
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>dsh-vertical-kit · 行业场景交付检查</title><meta name="description" content="行业场景的确定性交付检查：合同结构、发票勾稽、电商商品信息。每个一个命令，从文件本身判定，不调用任何模型，出口码可接 CI。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/`)}"><style>${styles}</style></head><body><main>
 <p class="eyebrow">DSH VERTICAL KIT</p>
 <h1>行业场景交付检查</h1>
-<p>Agent 已经产出结果、行业里的人准备接手的那一刻，这三个检查各自决定一件事：合同是否结构可审、发票算术是否成立、商品导出是否可上架。每个都是单个命令，从文件本身判定。</p>
+<p>Agent 已经产出结果、有人准备接手的那一刻，每个检查各自决定一件事：这份文件是否交代了它该交代的东西。${CHECKS.length} 个检查覆盖二十种交付物——合同、发票、商品信息、会议纪要、简历、周报、发布说明、缺陷报告、接口文档、测试报告、提交信息、PR 描述、需求文档、架构决策、Dockerfile、.env 示例、LICENSE、事故复盘、运维手册、上手指南。每个都是单个命令，从文件本身判定，不调用模型。</p>
 <table><tr><th>检查清单</th><th>npm 包</th><th>搜索名词</th><th>它决定什么</th></tr>${rows}</table>
 <p><a href="./compare/">全部 ${CHECKS.length} 个检查一览 →</a>（按文件类型选：合同/发票/纪要/简历/Dockerfile/LICENSE…）</p>
 <h2>定位</h2>
 <p>护城河不在深度——专业产品随时碾压深度。在：离线可跑、出口码接 CI、免费、host 路由与 CLI 调同一函数。定位是「专业人士的前五分钟」，不是「专业人士的替代」。通用的五个检查（哈希/引用/结构/表格/数字）在 <a href="${KIT}">dsh-verify-kit</a>。</p>
-<small><a href="${REPO}">github.com/zjukop3/dsh-vertical-kit</a> · MIT · 18 tests</small>
-<section class="install"><h2>在 DSH 中安装</h2><p>八件作品都在同一个 format 1 索引源里，从 npm registry 解析，装完即用。在「插件」启用「自定义插件索引」，添加 <code>https://zjukop3.github.io/dsh-review-outbox/plugins.json</code>，按名字搜索安装（本仓库三件：agreement-check / invoice-check / listing-check）。</p><p><a href="https://zjukop3.github.io/dsh-review-outbox/">索引源与全部收录说明</a></p></section>
+<small><a href="${REPO}">github.com/zjukop3/dsh-vertical-kit</a> · MIT · ${CHECKS.length} 个检查 · 全部免费</small>
+<section class="install"><h2>在 DSH 中安装</h2><p>本仓库的 ${CHECKS.length} 个检查与 review-outbox、dsh-verify-kit 的五个通用检查共用同一个 format 1 索引源，从 npm registry 解析，装完即用。在「插件」启用「自定义插件索引」，添加 <code>https://zjukop3.github.io/dsh-review-outbox/plugins.json</code>，按名字搜索安装——不知道用哪个就先看 <a href="./compare/">对照表</a>。</p><p><a href="https://zjukop3.github.io/dsh-review-outbox/">索引源与全部收录说明</a></p></section>
 </main></body></html>`
 }
 
