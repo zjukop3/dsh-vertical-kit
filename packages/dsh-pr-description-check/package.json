@@ -1,0 +1,47 @@
+{
+  "name": "dsh-pr-description-check",
+  "version": "0.1.0",
+  "description": "Pull-request description hygiene: what changed, why, how it was verified, the issue it closes, any breaking change paired with a migration note, and no all-unchecked checklist.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "pr-description-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "pull-request",
+    "code-review",
+    "pr",
+    "PR 描述检查",
+    "代码评审"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-pr-description-check"
+}

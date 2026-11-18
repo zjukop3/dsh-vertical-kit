@@ -458,5 +458,34 @@ export const CHECKS = [
 },
     note: '认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。',
   },
+  {
+    slug: 'pr-description-check',
+    npm: 'dsh-pr-description-check',
+    cli: 'pr-description-check',
+    noun: 'PR 描述检查 / 拉取请求描述检查',
+    title: 'PR 描述检查清单',
+    description: 'PR 描述回答 reviewer 的前三个问题，因此可判定：改了什么、为什么、作者怎么知道它能用；加上关联 issue、破坏性变更配迁移说明、以及检查清单是不是真读了。CLI 支持从 stdin 读，可直接接 gh pr view 管道。',
+    decides: '这条 PR 描述是否给了 reviewer 能动手的 what / why / how-verified',
+    rules: [
+      ['empty', '描述为空 → error'],
+      ['what-missing', '没有「做了什么」段 → error'],
+      ['why-missing', '没有「为什么」段 → error（diff 说明改了什么，改不了理由）'],
+      ['test-missing', '没有测试/验证说明 → error（等于让 reviewer 替你验）'],
+      ['issue-unlinked / issue-missing', '没关联 issue → warn（--require-issue 时升级 error）'],
+      ['breaking-without-migration', '提到破坏性变更但没有迁移说明 → error'],
+      ['checklist-unchecked', '检查项一个都没勾 → warn'],
+    ],
+    usage: [
+      'npx pr-description-check body.md --json',
+      'gh pr view 42 --json body --jq .body | npx pr-description-check -',
+    ],
+    example: {
+      "command": "pr-description-check pr-sample.md",
+      "fixture": "修了点东西",
+      "output": "$ pr-description-check pr-sample.md\nerror what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…）——reviewer 只能从 diff 反推意图\nerror why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、因为…）——diff 说明改了什么，改不了改的理由\nerror test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested）——没有验证说明的 PR 让 reviewer 替你验证\nwarn issue-unlinked 第0行 没有关联 issue（认得：Fixes #12、#56）——小改动可以没有，但追溯性会差一些\nfail: 0 checkboxes, 3 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。',
+  },
 ]
 
