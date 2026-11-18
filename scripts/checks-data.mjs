@@ -371,5 +371,36 @@ export const CHECKS = [
 },
     note: '认的占位符形态：空值、<尖括号>、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。',
   },
+  {
+    slug: 'license-check',
+    npm: 'dsh-license-check',
+    cli: 'license-check',
+    noun: '许可证检查 / LICENSE 检查',
+    title: '许可证检查清单',
+    description: 'LICENSE 文件的三个判定：正文是不是可识别的许可证、标题和正文是否一致（标题写 MIT 正文是 Apache 是最坑的一种）、版权行有没有人和一个合理的年份，外加模板占位符有没有填。识别按正文短语而不是标题。',
+    decides: '这个 LICENSE 文件是否说了它看起来在说的那件事',
+    rules: [
+      ['empty', '文件没有内容 → error'],
+      ['unrecognized', '正文不是任何已知许可证条文 → error'],
+      ['title-body-mismatch', '标题写 MIT、正文是 Apache → error'],
+      ['declared-mismatch', '--expected 声明值与正文不一致 → error'],
+      ['copyright-missing', '没有 Copyright 行 → error'],
+      ['copyright-year-missing / copyright-holder-missing', '版权行缺年份或缺人名 → error'],
+      ['copyright-year-future', '年份在未来 → error'],
+      ['copyright-year-stale', '静态过去年份（一次性发布正常）→ warn'],
+      ['placeholder-left', '<year>、[fullname]、{{…}} 没填 → error'],
+    ],
+    usage: [
+      'npx license-check LICENSE --json',
+      'npx license-check LICENSE --expected MIT',
+    ],
+    example: {
+      "command": "license-check LICENSE.sample",
+      "fixture": "MIT License\n\nCopyright (c) 2026\n\nPermission is hereby granted, free of charge, to any person obtaining a copy.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.",
+      "output": "$ license-check LICENSE.sample\nerror copyright-holder-missing 第3行 第 3 行 Copyright 没有版权人名称\nfail: detected=MIT, 1 errors, 0 warnings",
+      "exit": "1"
+},
+    note: '认得 12 种许可证正文（MIT/Apache-2.0/BSD-2/BSD-3/ISC/GPL-2.0/GPL-3.0/LGPL-3.0/AGPL-3.0/MPL-2.0/Unlicense/CC0-1.0），按正文短语匹配而非标题——所以「标题 MIT 正文 GPL」会被抓。只验文件形态与身份，不验法律效力：许可是否合适、依赖是否兼容、版权人是否正确的法律主体，都不是机器能担保的部分。',
+  },
 ]
 
