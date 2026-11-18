@@ -430,5 +430,33 @@ export const CHECKS = [
 },
     note: '只验结构，不验根因是否找对：报告可以写一个听起来合理但错误的根因，这个工具分辨不出。它验证文档给出了时间线、影响、原因与有人负责的后续——读者评估分析前需要的四件事。责任归属是人类实践，代码不编码它。',
   },
+  {
+    slug: 'ops-runbook-check',
+    npm: 'dsh-ops-runbook-check',
+    cli: 'ops-runbook-check',
+    noun: '运维手册检查 / runbook 检查',
+    title: '运维手册检查清单',
+    description: '运维手册是要照着执行的，因此可判定：前置条件、编号步骤（压力下散文没法跟）、回滚路径、验证方式，以及这一条——每个危险命令必须**在同一行**带警告。警告写在三段之前，复制单行到终端时就不在了。',
+    decides: '这份手册是否给了读者前置、步骤、退路、确认方式，以及危险命令旁的警告',
+    rules: [
+      ['prereq-missing', '没有前置条件段 → error'],
+      ['steps-missing', '没有编号步骤 → error'],
+      ['destructive-unwarned', '编号步骤里有危险命令但同行没写注意/备份/不可逆 → error，报行号'],
+      ['rollback-missing', '没有回滚段 → error'],
+      ['verify-missing', '没有验证段 → error'],
+      ['steps-thin / shell-unspecified', '步骤数少于下限 / 没说用哪个 shell → warn'],
+    ],
+    usage: [
+      'npx ops-runbook-check runbook.md --json',
+      'npx ops-runbook-check runbook.md --min-steps 5',
+    ],
+    example: {
+      "command": "ops-runbook-check runbook-sample.md",
+      "fixture": "# 发布手册\n\n1. 停服务\n2. rm -rf /data\n3. 起服务",
+      "output": "$ ops-runbook-check runbook-sample.md\nerror prereq-missing 第0行 没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限\nerror rollback-missing 第0行 没有回滚段（认得：## 回滚、回滚：…、Rollback）——出问题时读者没有退路\nerror verify-missing 第0行 没有验证段（认得：## 验证、确认：…、Verify）——没写怎么确认，读者不知道做完了没有\nerror destructive-unwarned 第4行 第 4 行含 rm -rf 但没有在同一行写明注意/备份/不可逆——这条命令在压力下会被照抄\nwarn shell-unspecified 第0行 没有说明用什么 shell（认得：bash、zsh、PowerShell）——同一条命令在不同 shell 里行为不同\nfail: 3 steps, 4 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。',
+  },
 ]
 

@@ -17,5 +17,6 @@
 - https://zjukop3.github.io/dsh-vertical-kit/env-example-check/: 环境变量示例检查清单 — 提交进仓库的 .env.example 是每个新贡献者先读的契约：每个键只放占位符、没有真凭据顺手提交、没有重复键静默覆盖、有注释说明每个键干什么。
 - https://zjukop3.github.io/dsh-vertical-kit/license-check/: 许可证检查清单 — LICENSE 文件的三个判定：正文是不是可识别的许可证、标题和正文是否一致（标题写 MIT 正文是 Apache 是最坑的一种）、版权行有没有人和一个合理的年份，外加模板占位符有没有填。识别按正文短语而不是标题。
 - https://zjukop3.github.io/dsh-vertical-kit/incident-report-check/: 事故复盘检查清单 — 事故复盘的四个判定：带时间的时间线（条目必须带时间）、影响段（影响谁、多久）、根因段而不是处置、后续行动项每个人都挂负责人。「重启后恢复」是处置不是原因。
+- https://zjukop3.github.io/dsh-vertical-kit/ops-runbook-check/: 运维手册检查清单 — 运维手册是要照着执行的，因此可判定：前置条件、编号步骤（压力下散文没法跟）、回滚路径、验证方式，以及这一条——每个危险命令必须**在同一行**带警告。警告写在三段之前，复制单行到终端时就不在了。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 15 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 16 packages, one implementation per check shared by the CLI and the host route.
