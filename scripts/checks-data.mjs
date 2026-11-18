@@ -343,5 +343,33 @@ export const CHECKS = [
 },
     note: '只验文件文本，不验构建出的镜像：它看不见基础镜像里有什么、最终 stage 是不是你要的那个、镜像里到底有没有那个 USER。它验证文件写下了这些决定；镜像行为对不对，靠扫描和实跑。',
   },
+  {
+    slug: 'env-example-check',
+    npm: 'dsh-env-example-check',
+    cli: 'env-example-check',
+    noun: '环境变量示例检查 / .env 检查',
+    title: '环境变量示例检查清单',
+    description: '提交进仓库的 .env.example 是每个新贡献者先读的契约：每个键只放占位符、没有真凭据顺手提交、没有重复键静默覆盖、有注释说明每个键干什么。',
+    decides: '这份示例文件是否只含占位符、键不重复、有用途说明',
+    rules: [
+      ['empty', '没有任何 KEY=value 行 → error'],
+      ['literal-value', '某键带了字面值（从 .env 复制过来的典型形态）→ error，报行号'],
+      ['duplicate-key', '同一个键出现两次 → error，同时报两行'],
+      ['line-unparsed', '既不是 KEY=value 也不是注释 → warn'],
+      ['key-case', '键名不是全大写下划线 → warn（shell 里大小写是两个变量）'],
+      ['comment-missing / no-comment', '没有任何注释行 → warn（--require-comment 时升级为 error）'],
+    ],
+    usage: [
+      'npx env-example-check .env.example --json',
+      'npx env-example-check .env.example --require-comment',
+    ],
+    example: {
+      "command": "env-example-check env-sample",
+      "fixture": "DATABASE_URL=postgres://user:pass@prod-db:5432/app\nPORT=8080\nAPI_KEY=sk-live-abc123",
+      "output": "$ env-example-check env-sample\nerror literal-value 第1行 第 1 行 DATABASE_URL 带了字面值「postgres://user:pass」——示例文件只放占位符，真值进 .env（不提交）\nerror literal-value 第2行 第 2 行 PORT 带了字面值「8080」——示例文件只放占位符，真值进 .env（不提交）\nerror literal-value 第3行 第 3 行 API_KEY 带了字面值「sk-live-abc123」——示例文件只放占位符，真值进 .env（不提交）\nwarn comment-missing 第0行 没有任何注释行——说明每个键的用途，读者才知道该填什么\nfail: 3 keys, 3 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '认的占位符形态：空值、<尖括号>、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。',
+  },
 ]
 

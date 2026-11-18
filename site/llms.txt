@@ -14,5 +14,6 @@
 - https://zjukop3.github.io/dsh-vertical-kit/test-report-check/: 测试报告检查清单 — 测试报告复盘或交付前的书记检查：通过+失败+跳过必须等于总计（勾稽不平直接报出算式）、测试环境在场、有失败就要有失败详情——数字要能往下看。
 - https://zjukop3.github.io/dsh-vertical-kit/commit-msg-check/: 提交信息检查清单 — 一条提交信息就能判定：类型前缀、主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里。可以直接挂 commit-msg 钩子。
 - https://zjukop3.github.io/dsh-vertical-kit/dockerfile-check/: Dockerfile 检查清单 — 一个文件的判定：基础镜像是否固定、容器是否以 root 收尾、是否有密钥被写进层、普通复制是否误用 ADD、包管理器装完是否清理。反斜杠续行按一条指令算，报到首行。
+- https://zjukop3.github.io/dsh-vertical-kit/env-example-check/: 环境变量示例检查清单 — 提交进仓库的 .env.example 是每个新贡献者先读的契约：每个键只放占位符、没有真凭据顺手提交、没有重复键静默覆盖、有注释说明每个键干什么。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 12 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 13 packages, one implementation per check shared by the CLI and the host route.

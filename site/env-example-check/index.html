@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>环境变量示例检查清单 · dsh-env-example-check</title><meta name="description" content="提交进仓库的 .env.example 是每个新贡献者先读的契约：每个键只放占位符、没有真凭据顺手提交、没有重复键静默覆盖、有注释说明每个键干什么。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/env-example-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 环境变量示例检查 / .env 检查</p>
+<h1>环境变量示例检查清单</h1>
+<p><strong>它决定一件事：</strong>这份示例文件是否只含占位符、键不重复、有用途说明。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-env-example-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>没有任何 KEY=value 行 → error</td></tr><tr><td><code>literal-value</code></td><td>某键带了字面值（从 .env 复制过来的典型形态）→ error，报行号</td></tr><tr><td><code>duplicate-key</code></td><td>同一个键出现两次 → error，同时报两行</td></tr><tr><td><code>line-unparsed</code></td><td>既不是 KEY=value 也不是注释 → warn</td></tr><tr><td><code>key-case</code></td><td>键名不是全大写下划线 → warn（shell 里大小写是两个变量）</td></tr><tr><td><code>comment-missing / no-comment</code></td><td>没有任何注释行 → warn（--require-comment 时升级为 error）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx env-example-check .env.example --json</code></pre><pre><code>npx env-example-check .env.example --require-comment</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code>DATABASE_URL=postgres://user:pass@prod-db:5432/app
+PORT=8080
+API_KEY=sk-live-abc123</code></pre></details>
+<pre><code>$ env-example-check env-sample
+error literal-value 第1行 第 1 行 DATABASE_URL 带了字面值「postgres://user:pass」——示例文件只放占位符，真值进 .env（不提交）
+error literal-value 第2行 第 2 行 PORT 带了字面值「8080」——示例文件只放占位符，真值进 .env（不提交）
+error literal-value 第3行 第 3 行 API_KEY 带了字面值「sk-live-abc123」——示例文件只放占位符，真值进 .env（不提交）
+warn comment-missing 第0行 没有任何注释行——说明每个键的用途，读者才知道该填什么
+fail: 3 keys, 3 errors, 1 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /env-example-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>认的占位符形态：空值、&lt;尖括号&gt;、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>
