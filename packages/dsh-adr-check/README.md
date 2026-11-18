@@ -1,0 +1,74 @@
+# dsh-adr-check
+
+Architecture decision record hygiene from markdown. An ADR is decidable: a **status**, the **context** that forced a choice, the **decision** in one sentence, **consequences that include the cost**, and the **alternatives that lost**. The rule that earns the package is the fourth one — an ADR whose consequences list only benefits did not weigh the trade.
+
+<!-- example:start -->
+## 真实输入输出
+
+输入：
+
+```markdown
+# ADR-0007 用 Postgres 存会话
+
+## 背景
+
+会话要跨实例共享。
+
+## 决定
+
+会话写入 Postgres。
+
+## 后果
+
+- 好处：多副本共享，重启不丢会话
+- 好处：不再需要粘性会话
+```
+
+真实运行（逐字输出，由测试与工具保持同步）：
+
+```text
+$ adr-check adr-sample.md
+error status-missing 第0行 没有状态行（认得：状态：已接受、Status: accepted）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…
+warn alternatives-missing 第0行 没有备选方案段（认得：## 备选、## Alternatives）——只写选中方案，读者无法知道当时有没有别的路
+warn date-missing 第0行 没有日期（认得：2026-11-18）——决策的时间点决定了它的上下文
+warn consequences-one-sided 第13行 后果段只有好处没有代价（缺：代价/缺点/风险/trade-off）——只写收益的 ADR 通常没真正权衡过
+fail: 2 consequences, 1 errors, 3 warnings
+```
+
+出口码：1。
+<!-- example:start -->
+
+Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin).
+
+## What it decides
+
+| rule | level | meaning |
+| --- | --- | --- |
+| `empty` | error | the record has no content |
+| `status-missing` | error | no 状态/Status line — an ADR that does not say whether it took effect is a proposal wearing a record's clothes |
+| `context-missing` | error | no 背景/Context section — without the constraints, nobody can re-evaluate the decision later |
+| `decision-missing` | error | no 决定/Decision section |
+| `consequences-missing` | error | no 后果/Consequences section |
+| `consequences-one-sided` | warn | consequences list benefits with no cost — the trade was not weighed |
+| `consequences-unlabelled` | warn | consequences label neither benefit nor cost, so the reader cannot tell which is which |
+| `alternatives-missing` | warn | no 备选/Alternatives section — only the winning option, so no record that there was a choice |
+| `status-unknown` | warn | a status outside the common set |
+| `date-missing` | warn | no date — when it was decided is part of its context |
+
+Status values recognized: `proposed` `accepted` `rejected` `deprecated` `superseded` (and 提议/已接受/已采纳/已拒绝/已废弃/已取代/草案/draft).
+
+Cost words: 代价 缺点 劣势 风险 成本 不利 / trade-off downside drawback risk cost negative.
+Benefit words: 好处 优点 优势 收益 / benefit advantage upside positive.
+
+## Use
+
+```bash
+npx adr-check docs/adr/0007-postgres-sessions.md --json
+npx adr-check - < adr.md
+```
+
+Same function over HTTP: `POST /adr-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
+
+## Honest scope
+
+This checks the record's **shape**, not whether the decision was right: it cannot tell that the context omits a constraint everyone knew, that the alternatives were strawmen, or that the cost was understated to get the decision approved. It verifies the record states a status, a context, a decision, consequences that name a cost, and the alternatives — the five things a future reader needs to disagree with it. Whether the decision was good shows up in the consequences, later.
