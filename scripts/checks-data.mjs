@@ -547,5 +547,33 @@ export const CHECKS = [
 },
     note: '状态取值：proposed/accepted/rejected/deprecated/superseded（含中文同级词）。代价词：代价/缺点/劣势/风险/成本/trade-off/downside；好处词：好处/优点/优势/收益/benefit/upside。只验记录形状，不验决策对不对：背景是否漏了大家都知道的约束、备选是不是稻草人、代价是否被压低——这些只有后果本身会在后来揭晓。',
   },
+  {
+    slug: 'onboarding-check',
+    npm: 'dsh-onboarding-check',
+    cli: 'onboarding-check',
+    noun: '上手指南检查 / 新人文档检查',
+    title: '上手指南检查清单',
+    description: '上手文档的五件事：先装什么、一条能粘贴的命令、成功长什么样、失败去哪儿问、以及要花多久。最后一条是本包存在的理由——没写耗时的文档不会被开始打开。代码块按内容判断：显示版本号的 text 块不算命令块。',
+    decides: '这份上手文档是否让一个新人今天就能开始',
+    rules: [
+      ['empty', '文档为空 → error'],
+      ['prereq-missing', '没有前置要求段 → error'],
+      ['command-missing', '没有含安装命令的代码块 → error（只能读的文档不是上手文档）'],
+      ['success-missing', '没有「你应该看到」段 → error（分不清成功与静默失败）'],
+      ['help-missing', '没有求助路径 → warn'],
+      ['time-estimate-missing', '全文没有耗时 → warn（没写多久的文档会被收藏然后永不打开）'],
+    ],
+    usage: [
+      'npx onboarding-check README.md --json',
+      'npx onboarding-check - < ONBOARDING.md',
+    ],
+    example: {
+      "command": "onboarding-check onb-sample.md",
+      "fixture": "# 上手\n\n这个项目挺好用的，大家可以看看。",
+      "output": "$ onboarding-check onb-sample.md\nerror prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对\nerror command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做\nerror success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、成功后…、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了\nwarn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项\nwarn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做\nfail: 0/0 blocks runnable, 3 errors, 2 warnings",
+      "exit": "1"
+},
+    note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',
+  },
 ]
 

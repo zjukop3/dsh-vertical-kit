@@ -2,7 +2,7 @@
 
 > Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.
 
-- https://zjukop3.github.io/dsh-vertical-kit/compare/: All 19 checks in one table — which one applies to which file, and how many rules each carries.
+- https://zjukop3.github.io/dsh-vertical-kit/compare/: All 20 checks in one table — which one applies to which file, and how many rules each carries.
 - https://zjukop3.github.io/dsh-vertical-kit/agreement-check/: 合同结构检查清单 — 合同交给法务之前，先把结构定下来：甲乙方写没写、日期有没有锚、大写金额和数字对不对得上、签署栏、争议解决、违约责任。每条发现带行号，可接 CI。
 - https://zjukop3.github.io/dsh-vertical-kit/invoice-check/: 发票字段检查清单 — 发票不需要懂业务就能核对的部分：统一社会信用代码字符集、不含税+税额=价税合计的勾稽、大写金额与小写一致、发票号码位数。容差默认 0.02，可调。
 - https://zjukop3.github.io/dsh-vertical-kit/listing-check/: 电商商品信息检查清单 — 商品导出表（CSV/JSON）交付或上架前的检查：标题长度边界、关键词堆砌、价格有效性与边界、SKU 完整性与重复。每条发现报行号，边界可配置。
@@ -22,5 +22,6 @@
 - https://zjukop3.github.io/dsh-vertical-kit/pr-description-check/: PR 描述检查清单 — PR 描述回答 reviewer 的前三个问题，因此可判定：改了什么、为什么、作者怎么知道它能用；加上关联 issue、破坏性变更配迁移说明、以及检查清单是不是真读了。CLI 支持从 stdin 读，可直接接 gh pr view 管道。
 - https://zjukop3.github.io/dsh-vertical-kit/spec-doc-check/: 需求文档检查清单 — 方案文档的三件事加一条：问题背景、可被检查的验收标准、明确的范围外，以及——验收标准不能写成愿望。「体验良好」「速度合理」既无法通过也无法拒绝。带阈值的愿望词不算违规：p95 从 800ms 降到 200ms 是标准。
 - https://zjukop3.github.io/dsh-vertical-kit/adr-check/: 架构决策记录检查清单 — ADR 的五个判定：状态、逼出这个选择的背景、那一句决定、包含代价的后果、以及落选的备选方案。立身之本是第四条——后果只写好处的 ADR 通常没真正权衡过。
+- https://zjukop3.github.io/dsh-vertical-kit/onboarding-check/: 上手指南检查清单 — 上手文档的五件事：先装什么、一条能粘贴的命令、成功长什么样、失败去哪儿问、以及要花多久。最后一条是本包存在的理由——没写耗时的文档不会被开始打开。代码块按内容判断：显示版本号的 text 块不算命令块。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 19 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 20 packages, one implementation per check shared by the CLI and the host route.

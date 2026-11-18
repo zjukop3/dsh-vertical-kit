@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>上手指南检查清单 · dsh-onboarding-check</title><meta name="description" content="上手文档的五件事：先装什么、一条能粘贴的命令、成功长什么样、失败去哪儿问、以及要花多久。最后一条是本包存在的理由——没写耗时的文档不会被开始打开。代码块按内容判断：显示版本号的 text 块不算命令块。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/onboarding-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 上手指南检查 / 新人文档检查</p>
+<h1>上手指南检查清单</h1>
+<p><strong>它决定一件事：</strong>这份上手文档是否让一个新人今天就能开始。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-onboarding-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>文档为空 → error</td></tr><tr><td><code>prereq-missing</code></td><td>没有前置要求段 → error</td></tr><tr><td><code>command-missing</code></td><td>没有含安装命令的代码块 → error（只能读的文档不是上手文档）</td></tr><tr><td><code>success-missing</code></td><td>没有「你应该看到」段 → error（分不清成功与静默失败）</td></tr><tr><td><code>help-missing</code></td><td>没有求助路径 → warn</td></tr><tr><td><code>time-estimate-missing</code></td><td>全文没有耗时 → warn（没写多久的文档会被收藏然后永不打开）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx onboarding-check README.md --json</code></pre><pre><code>npx onboarding-check - &lt; ONBOARDING.md</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 上手
+
+这个项目挺好用的，大家可以看看。</code></pre></details>
+<pre><code>$ onboarding-check onb-sample.md
+error prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对
+error command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做
+error success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、成功后…、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了
+warn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项
+warn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做
+fail: 0/0 blocks runnable, 3 errors, 2 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /onboarding-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>
