@@ -313,5 +313,35 @@ export const CHECKS = [
 },
     note: '只验信息形状，不验提交内容：它验证信息能被工具解析、在 log 里可读；diff 是否做了主题说的事，靠评审。信息全过规则但描述错了改动，这个工具无话可说，也不假装有。',
   },
+  {
+    slug: 'dockerfile-check',
+    npm: 'dsh-dockerfile-check',
+    cli: 'dockerfile-check',
+    noun: 'Dockerfile 检查 / 镜像构建检查',
+    title: 'Dockerfile 检查清单',
+    description: '一个文件的判定：基础镜像是否固定、容器是否以 root 收尾、是否有密钥被写进层、普通复制是否误用 ADD、包管理器装完是否清理。反斜杠续行按一条指令算，报到首行。',
+    decides: '这个 Dockerfile 是否把可复现与最小权限写进了文件本身',
+    rules: [
+      ['from-missing', '没有 FROM → error'],
+      ['base-unpinned', 'FROM node 或 :latest 浮动标签 → error（@sha256 digest 通过）'],
+      ['user-missing', '没有 USER 指令（默认 root）→ error'],
+      ['user-root', '显式 USER root 等于没写 → error'],
+      ['secret-in-layer', 'ENV/ARG 把疑似密钥写成字面值 → error（${VAR} 引用通过）'],
+      ['add-instead-of-copy', 'ADD 普通本地路径 → warn（tar 包与 URL 豁免）'],
+      ['apt-not-cleaned / apk-not-cleaned', '装完没清理索引 → warn'],
+      ['workdir-missing', '没有 WORKDIR → warn'],
+    ],
+    usage: [
+      'npx dockerfile-check Dockerfile --json',
+      'npx dockerfile-check Dockerfile --allow-latest --no-require-user',
+    ],
+    example: {
+      "command": "dockerfile-check Dockerfile.sample",
+      "fixture": "FROM node\nADD . /app\nENV API_KEY=sk-live-1234567890\nCMD [\"node\", \"index.js\"]",
+      "output": "$ dockerfile-check Dockerfile.sample\nerror user-missing 第0行 没有任何 USER 指令——容器默认以 root 运行，镜像被拿下就是宿主 root\nerror base-unpinned 第1行 第 1 行基础镜像「node」没有固定标签或 digest——「node:latest」这类浮动标签让构建不可复现\nerror secret-in-layer 第3行 第 3 行把疑似密钥「API_KEY」写成了字面值——层历史永久保留，改用构建期 secret 或运行时注入\nwarn workdir-missing 第0行 没有 WORKDIR——相对路径会落在 /，后续 COPY 的位置容易看错\nwarn add-instead-of-copy 第2行 第 2 行用的是 ADD 但源不是 URL 也不是压缩包——COPY 语义更窄，读者不用猜\nfail: 4 instructions, 3 errors, 2 warnings",
+      "exit": "1"
+},
+    note: '只验文件文本，不验构建出的镜像：它看不见基础镜像里有什么、最终 stage 是不是你要的那个、镜像里到底有没有那个 USER。它验证文件写下了这些决定；镜像行为对不对，靠扫描和实跑。',
+  },
 ]
 
