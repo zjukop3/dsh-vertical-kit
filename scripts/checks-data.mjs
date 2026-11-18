@@ -203,5 +203,86 @@ export const CHECKS = [
 },
     note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
   },
+  {
+    slug: 'bug-report-check',
+    npm: 'dsh-bug-report-check',
+    cli: 'bug-report-check',
+    noun: '缺陷报告检查 / bug 报告检查',
+    title: '缺陷报告检查清单',
+    description: '缺陷报告提交前的书记检查：一行能看懂的标题、环境信息、编号复现步骤、预期与实际的对照。没有编号步骤的散文不算复现步骤——散文无法重放。',
+    decides: '这份 bug 报告是否交代了在哪发生、怎么触发、差在哪',
+    rules: [
+      ['title-missing', '第一行没有 `# 标题` → error'],
+      ['env-missing', '没有环境信息（## 环境、版本：、OS：、Node：）→ error'],
+      ['repro-missing', '没有复现步骤标题下的编号步骤 → error'],
+      ['expected-actual-missing', '预期与实际都没写 → error'],
+      ['expected-missing / actual-missing', '只写一边 → error，指出缺哪边'],
+      ['repro-thin', '步骤少于下限（默认 3，可调）→ warn'],
+    ],
+    usage: [
+      'npx bug-report-check report.md --json',
+      'npx bug-report-check report.md --min-steps 5',
+    ],
+    example: {
+      "command": "bug-report-check bug-sample.md",
+      "fixture": "# 登录按钮在 Safari 下无响应\n\n今天有人反馈说登录不行。",
+      "output": "$ bug-report-check bug-sample.md\nerror env-missing 第0行 没有环境信息（认得：## 环境、版本：x.y.z、OS：…、Node：v…）——没有环境的 bug 无法归因\nerror repro-missing 第0行 没有复现步骤（认得：## 复现步骤 + 编号步骤）——没有步骤的 bug 无法验证\nerror expected-actual-missing 第0行 没有「预期」与「实际」的对照（认得：预期：…、实际：…、Expected/Actual）——没有对照就不是 bug 描述\nfail: 0 steps, 3 errors, 0 warnings",
+      "exit": "1"
+},
+    note: '只验书记层面，不验缺陷严重性：它验证报告说了在哪、怎么复现、差在哪；bug 是否真实存在，靠复现。',
+  },
+  {
+    slug: 'api-doc-check',
+    npm: 'dsh-api-doc-check',
+    cli: 'api-doc-check',
+    noun: '接口文档检查 / API 文档检查',
+    title: '接口文档检查清单',
+    description: '接口文档交付前的书记检查：每个端点带方法和路径、有请求或响应示例、鉴权说明在场、错误响应有交代。只有路径没有动词的行不算端点——单独一行路径无法被调用。',
+    decides: '这份接口文档是否交代了怎么调、怎么证明身份、失败长什么样',
+    rules: [
+      ['endpoints-missing', '没有「METHOD + 路径」形式的端点 → error'],
+      ['examples-missing', '没有代码块示例 → error'],
+      ['auth-missing', '没有鉴权说明（鉴权/认证/Authorization/Bearer）→ error'],
+      ['error-shape-missing', '没有错误响应说明（错误/失败/4xx/5xx）→ warn'],
+    ],
+    usage: [
+      'npx api-doc-check api.md --json',
+      'npx api-doc-check api.md --min-endpoints 5',
+    ],
+    example: {
+      "command": "api-doc-check api-sample.md",
+      "fixture": "# 接口说明\n\n我们的接口在 /v1/items 上，可以用。",
+      "output": "$ api-doc-check api-sample.md\nerror endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用\nerror examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例\nerror auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer）——不知道怎么证明身份的接口文档不可用\nwarn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样\nfail: 0 endpoints, 0 examples, 3 errors, 1 warnings",
+      "exit": "1"
+},
+    note: '只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。',
+  },
+  {
+    slug: 'test-report-check',
+    npm: 'dsh-test-report-check',
+    cli: 'test-report-check',
+    noun: '测试报告检查 / 用例统计检查',
+    title: '测试报告检查清单',
+    description: '测试报告复盘或交付前的书记检查：通过+失败+跳过必须等于总计（勾稽不平直接报出算式）、测试环境在场、有失败就要有失败详情——数字要能往下看。',
+    decides: '这份测试报告的算术是否自洽、环境是否可复跑、失败是否有去处',
+    rules: [
+      ['counts-missing', '没有任何用例计数 → error'],
+      ['sum-mismatch', '通过+失败+跳过 ≠ 总计 → error，报出算式与两边数字'],
+      ['env-missing', '没有测试环境 → error'],
+      ['failure-detail-missing', '报了失败但没有失败详情段 → error'],
+      ['total-missing', '有分项没总数 → warn'],
+      ['counts-partial', '有总数没分项 → warn'],
+    ],
+    usage: [
+      'npx test-report-check report.md --json',
+    ],
+    example: {
+      "command": "test-report-check test-sample.md",
+      "fixture": "# 测试报告\n\n今天跑了测试，大部分都过了。",
+      "output": "$ test-report-check test-sample.md\nerror counts-missing 第0行 全文没有任何用例计数（认得：通过 12、失败 3、跳过 1、总计 15）——测试报告没有计数就不是报告\nerror env-missing 第0行 没有测试环境（认得：## 测试环境、环境：…、OS：…、Node：v…）——不写环境的结果无法复跑\nfail: {}, 2 errors, 0 warnings",
+      "exit": "1"
+},
+    note: '只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。',
+  },
 ]
 

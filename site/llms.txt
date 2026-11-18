@@ -9,5 +9,8 @@
 - https://zjukop3.github.io/dsh-vertical-kit/resume-check/: 简历检查清单 — 简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。
 - https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/: 发布说明检查清单 — Changelog 或发布说明发出前的书记检查：版本号标题、发布日期、破坏性变更必须配升级/迁移说明、版本倒序排列（读者依赖的唯一惯例）。每条发现报行号。
 - https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/: 周报检查清单 — 周报发出前的结构检查：本周完成与下周计划分开写、风险与阻塞在场、至少一行带量化数字——让读者分得清进展和动作。空泛承诺（下周继续努力）按计划语句计数：在场可判定，空洞不可判定。
+- https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/: 缺陷报告检查清单 — 缺陷报告提交前的书记检查：一行能看懂的标题、环境信息、编号复现步骤、预期与实际的对照。没有编号步骤的散文不算复现步骤——散文无法重放。
+- https://zjukop3.github.io/dsh-vertical-kit/api-doc-check/: 接口文档检查清单 — 接口文档交付前的书记检查：每个端点带方法和路径、有请求或响应示例、鉴权说明在场、错误响应有交代。只有路径没有动词的行不算端点——单独一行路径无法被调用。
+- https://zjukop3.github.io/dsh-vertical-kit/test-report-check/: 测试报告检查清单 — 测试报告复盘或交付前的书记检查：通过+失败+跳过必须等于总计（勾稽不平直接报出算式）、测试环境在场、有失败就要有失败详情——数字要能往下看。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 7 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 10 packages, one implementation per check shared by the CLI and the host route.
