@@ -284,5 +284,34 @@ export const CHECKS = [
 },
     note: '只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。',
   },
+  {
+    slug: 'commit-msg-check',
+    npm: 'dsh-commit-msg-check',
+    cli: 'commit-msg-check',
+    noun: '提交信息检查 / commit message 检查',
+    title: '提交信息检查清单',
+    description: '一条提交信息就能判定：类型前缀、主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里。可以直接挂 commit-msg 钩子。',
+    decides: '这条提交信息是否可被工具解析、在 log 里可读',
+    rules: [
+      ['type-missing', '没有 type(scope): subject 前缀 → error'],
+      ['type-unknown', '类型不在已知集合（feat/fix/docs/…）→ warn'],
+      ['subject-long', '主题超过上限（默认 72）→ error'],
+      ['subject-empty', '冒号后没有主题 → error'],
+      ['subject-period', '主题以句号结尾 → warn'],
+      ['body-separator', '标题后没有空行 → error'],
+      ['breaking-untrailed', '用了 ! 但正文没有 BREAKING CHANGE: trailer → warn'],
+    ],
+    usage: [
+      'npx commit-msg-check .git/COMMIT_EDITMSG --json',
+      'npx commit-msg-check msg.txt --max-subject 50',
+    ],
+    example: {
+      "command": "commit-msg-check commit-sample.txt",
+      "fixture": "修了几个 bug",
+      "output": "$ commit-msg-check commit-sample.txt\nerror type-missing 第1行 第 1 行没有类型前缀（认得：feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert）——「修了几个 bug」看不出这次改动的性质\nfail: type=- subject=8ch, 1 errors, 0 warnings",
+      "exit": "1"
+},
+    note: '只验信息形状，不验提交内容：它验证信息能被工具解析、在 log 里可读；diff 是否做了主题说的事，靠评审。信息全过规则但描述错了改动，这个工具无话可说，也不假装有。',
+  },
 ]
 

@@ -12,5 +12,6 @@
 - https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/: 缺陷报告检查清单 — 缺陷报告提交前的书记检查：一行能看懂的标题、环境信息、编号复现步骤、预期与实际的对照。没有编号步骤的散文不算复现步骤——散文无法重放。
 - https://zjukop3.github.io/dsh-vertical-kit/api-doc-check/: 接口文档检查清单 — 接口文档交付前的书记检查：每个端点带方法和路径、有请求或响应示例、鉴权说明在场、错误响应有交代。只有路径没有动词的行不算端点——单独一行路径无法被调用。
 - https://zjukop3.github.io/dsh-vertical-kit/test-report-check/: 测试报告检查清单 — 测试报告复盘或交付前的书记检查：通过+失败+跳过必须等于总计（勾稽不平直接报出算式）、测试环境在场、有失败就要有失败详情——数字要能往下看。
+- https://zjukop3.github.io/dsh-vertical-kit/commit-msg-check/: 提交信息检查清单 — 一条提交信息就能判定：类型前缀、主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里。可以直接挂 commit-msg 钩子。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 10 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 11 packages, one implementation per check shared by the CLI and the host route.
