@@ -1,0 +1,902 @@
+{
+  "name": "dsh-vertical-kit",
+  "repository": "https://github.com/zjukop3/dsh-vertical-kit",
+  "origin": "https://zjukop3.github.io/dsh-vertical-kit",
+  "description": "Industry-scenario deliverable checks for DeepSeek Harness. One verb each, deterministic, no model calls, CLI and host route share one implementation.",
+  "license": "MIT",
+  "compare": "https://zjukop3.github.io/dsh-vertical-kit/compare/",
+  "generic": "https://zjukop3.github.io/dsh-verify-kit/",
+  "checks": [
+    {
+      "name": "dsh-agreement-check",
+      "cli": "agreement-check",
+      "slug": "agreement-check",
+      "noun": "合同检查 / 合同审查清单",
+      "title": "合同结构检查清单",
+      "decides": "这份合同在结构上是否可审",
+      "description": "合同交给法务之前，先把结构定下来：甲乙方写没写、日期有没有锚、大写金额和数字对不对得上、签署栏、争议解决、违约责任。每条发现带行号，可接 CI。",
+      "rules": [
+        {
+          "rule": "party-a / party-b",
+          "meaning": "没有「甲方：/乙方：」行，或名称为空 → error，报行号"
+        },
+        {
+          "rule": "date",
+          "meaning": "全文无日期 → error；有日期但没有「签订/签署日期」字样 → warn"
+        },
+        {
+          "rule": "amount-uppercase",
+          "meaning": "有数字金额但全文没有大写金额 → error"
+        },
+        {
+          "rule": "amount-mismatch",
+          "meaning": "大写金额与所有数字金额都对不上 → error，报两边的值"
+        },
+        {
+          "rule": "amount-ambiguous",
+          "meaning": "出现多个大写金额 → warn（自动比对仅在恰好一个时进行）"
+        },
+        {
+          "rule": "signature",
+          "meaning": "没有「甲方（盖章）/乙方（盖章）」式签署栏 → error"
+        },
+        {
+          "rule": "dispute",
+          "meaning": "没有争议解决条款（仲裁/诉讼/管辖）→ error"
+        },
+        {
+          "rule": "breach",
+          "meaning": "没有违约责任条款 → error"
+        },
+        {
+          "rule": "term",
+          "meaning": "没有期限条款 → warn"
+        }
+      ],
+      "usage": [
+        "npx agreement-check contract.md --json",
+        "npx agreement-check contract.md --warnings-fail"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/agreement-check/",
+      "route": "POST /agreement-check/api",
+      "scope": "大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。"
+    },
+    {
+      "name": "dsh-invoice-check",
+      "cli": "invoice-check",
+      "slug": "invoice-check",
+      "noun": "发票检查 / 发票校验",
+      "title": "发票字段检查清单",
+      "decides": "发票上能从文本判定的算术与格式是否成立",
+      "description": "发票不需要懂业务就能核对的部分：统一社会信用代码字符集、不含税+税额=价税合计的勾稽、大写金额与小写一致、发票号码位数。容差默认 0.02，可调。",
+      "rules": [
+        {
+          "rule": "credit-code",
+          "meaning": "18 位统一社会信用代码字符集校验（数字 + A-HJ-NPQRTUWXY，排除 I/O/S/V/Z）→ error"
+        },
+        {
+          "rule": "invoice-number",
+          "meaning": "发票号码 20 位（数电票）或 8 位（纸质票）之外 → warn"
+        },
+        {
+          "rule": "amount-sum",
+          "meaning": "不含税 + 税额 ≠ 价税合计（超出容差）→ error，报三项的值"
+        },
+        {
+          "rule": "amount-partial",
+          "meaning": "勾稽三项缺一 → warn，点名缺哪个"
+        },
+        {
+          "rule": "amount-uppercase",
+          "meaning": "大写金额与价税合计不一致 → error"
+        },
+        {
+          "rule": "amount-ambiguous",
+          "meaning": "出现多个大写金额 → warn"
+        },
+        {
+          "rule": "buyer / seller",
+          "meaning": "没有购买方/销售方名称栏 → error"
+        }
+      ],
+      "usage": [
+        "npx invoice-check invoice.txt --json",
+        "npx invoice-check invoice.txt --tolerance 0.02"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
+      "route": "POST /invoice-check/api",
+      "scope": "勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。"
+    },
+    {
+      "name": "dsh-listing-check",
+      "cli": "listing-check",
+      "slug": "listing-check",
+      "noun": "电商商品信息检查 / listing 检查",
+      "title": "电商商品信息检查清单",
+      "decides": "商品导出表是否达到可上架的结构卫生",
+      "description": "商品导出表（CSV/JSON）交付或上架前的检查：标题长度边界、关键词堆砌、价格有效性与边界、SKU 完整性与重复。每条发现报行号，边界可配置。",
+      "rules": [
+        {
+          "rule": "title-short / title-long",
+          "meaning": "标题字符数越界（默认 10–60，可配）→ error，报行号与字数"
+        },
+        {
+          "rule": "title-stuffing",
+          "meaning": "同一关键词连写三遍或分隔出现三次以上 → warn，报词与次数"
+        },
+        {
+          "rule": "title-missing",
+          "meaning": "没有标题列或该行为空 → error"
+        },
+        {
+          "rule": "price-invalid",
+          "meaning": "价格不是 ≥ 0.01 的数字 → error"
+        },
+        {
+          "rule": "price-high",
+          "meaning": "价格超过上限（--max-price 配置）→ warn"
+        },
+        {
+          "rule": "sku-missing / sku-empty",
+          "meaning": "SKU 列缺失或为空 → error"
+        },
+        {
+          "rule": "sku-duplicate",
+          "meaning": "SKU 与更早的行重复 → error，报两行行号"
+        }
+      ],
+      "usage": [
+        "npx listing-check listings.csv --json",
+        "npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
+      "route": "POST /listing-check/api",
+      "scope": "堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。"
+    },
+    {
+      "name": "dsh-meeting-notes-check",
+      "cli": "meeting-notes-check",
+      "slug": "meeting-notes-check",
+      "noun": "会议纪要检查 / 会议记录检查",
+      "title": "会议纪要检查清单",
+      "decides": "这份纪要是否交代了谁在何时 carries 什么",
+      "description": "会议纪要发出或归档前的书记检查：日期、与会人、决定都有记录，每个行动项都有负责人和截止时间。勾选框和待办标题下的编号项算任务，普通编号讨论点不算。每条发现报行号。",
+      "rules": [
+        {
+          "rule": "date-missing",
+          "meaning": "全文没有任何日期（2026-11-16、11月16日、11/16、下周三）→ error"
+        },
+        {
+          "rule": "attendees-missing",
+          "meaning": "没有与会人/参会人/出席/Attendees 行或标题 → error"
+        },
+        {
+          "rule": "action-no-owner",
+          "meaning": "行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号"
+        },
+        {
+          "rule": "action-no-deadline",
+          "meaning": "行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号"
+        },
+        {
+          "rule": "agenda-missing",
+          "meaning": "没有议程/议题标题或编号讨论点 → warn"
+        },
+        {
+          "rule": "decisions-missing",
+          "meaning": "没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）"
+        },
+        {
+          "rule": "no-action-items",
+          "meaning": "没有任何行动项 → warn（同样带出口）"
+        }
+      ],
+      "usage": [
+        "npx meeting-notes-check notes.md --json",
+        "npx meeting-notes-check notes.md --no-require-agenda"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
+      "route": "POST /meeting-notes-check/api",
+      "scope": "只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。"
+    },
+    {
+      "name": "dsh-resume-check",
+      "cli": "resume-check",
+      "slug": "resume-check",
+      "noun": "简历检查 / 求职简历检查",
+      "title": "简历检查清单",
+      "decides": "这份简历在书记层面是否可读、可达、时间自洽",
+      "description": "简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。",
+      "rules": [
+        {
+          "rule": "contact-missing",
+          "meaning": "没有电话/手机/邮箱/微信/Email/Phone → error"
+        },
+        {
+          "rule": "email-invalid",
+          "meaning": "邮箱过不了严格形态（连续点、域缺尾）→ error，报行号；检测宽松、验证严格，坏地址必被检出"
+        },
+        {
+          "rule": "phone-invalid",
+          "meaning": "电话位数不在 7-15 位 → error，报行号"
+        },
+        {
+          "rule": "dates-overlap",
+          "meaning": "两段经历时间重叠 → error，报两段区间"
+        },
+        {
+          "rule": "dates-order",
+          "meaning": "一段封闭经历开始于「至今」之后 → error（真矛盾，不是文档顺序问题）"
+        },
+        {
+          "rule": "date-gap",
+          "meaning": "两段之间空窗 >12 个月 → warn，仅 --no-allow-gaps 时判"
+        },
+        {
+          "rule": "education-missing",
+          "meaning": "没有教育/学历段 → warn"
+        }
+      ],
+      "usage": [
+        "npx resume-check resume.md --json",
+        "npx resume-check resume.md --no-allow-gaps"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
+      "route": "POST /resume-check/api",
+      "scope": "只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。"
+    },
+    {
+      "name": "dsh-release-notes-check",
+      "cli": "release-notes-check",
+      "slug": "release-notes-check",
+      "noun": "发布说明检查 / 更新日志检查",
+      "title": "发布说明检查清单",
+      "decides": "这份发布说明是否交代了哪个版本、何时、什么会坏、怎么迁移",
+      "description": "Changelog 或发布说明发出前的书记检查：版本号标题、发布日期、破坏性变更必须配升级/迁移说明、版本倒序排列（读者依赖的唯一惯例）。每条发现报行号。",
+      "rules": [
+        {
+          "rule": "version-missing",
+          "meaning": "没有版本号标题（## 1.2.0 / ## v1.2.0）或「版本：」行 → error"
+        },
+        {
+          "rule": "date-missing",
+          "meaning": "全文没有完整日期 → error"
+        },
+        {
+          "rule": "order",
+          "meaning": "更新的版本标题出现在更旧版本之后 → error，报两处"
+        },
+        {
+          "rule": "breaking-without-upgrade",
+          "meaning": "声明了破坏性变更但没有升级/迁移段 → error（读者被留在原地）"
+        },
+        {
+          "rule": "upgrade-missing",
+          "meaning": "没有升级/迁移说明 → warn（信息里写明：没有破坏性变更就忽略）"
+        }
+      ],
+      "usage": [
+        "npx release-notes-check notes.md --json",
+        "npx release-notes-check notes.md --no-require-upgrade"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/",
+      "route": "POST /release-notes-check/api",
+      "scope": "只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。"
+    },
+    {
+      "name": "dsh-weekly-report-check",
+      "cli": "weekly-report-check",
+      "slug": "weekly-report-check",
+      "noun": "周报检查 / 工作汇报检查",
+      "title": "周报检查清单",
+      "decides": "这份周报是否交代了做完了什么、接下来做什么、什么会卡住、进展是否可检验",
+      "description": "周报发出前的结构检查：本周完成与下周计划分开写、风险与阻塞在场、至少一行带量化数字——让读者分得清进展和动作。空泛承诺（下周继续努力）按计划语句计数：在场可判定，空洞不可判定。",
+      "rules": [
+        {
+          "rule": "done-missing",
+          "meaning": "没有「本周完成」段或自标识行（已完成…、已上线…）→ error"
+        },
+        {
+          "rule": "plan-missing",
+          "meaning": "没有「下周计划」段或自标识行（计划…、下周…）→ error"
+        },
+        {
+          "rule": "risks-missing",
+          "meaning": "没有风险/阻塞段 → warn（信息里写明：本周真的没有风险就忽略）"
+        },
+        {
+          "rule": "metrics-thin",
+          "meaning": "带量化数字的行数低于下限（默认 1，--min-metrics 可调）→ warn，指出不可检验与可检验的写法"
+        }
+      ],
+      "usage": [
+        "npx weekly-report-check report.md --json",
+        "npx weekly-report-check report.md --min-metrics 3"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/",
+      "route": "POST /weekly-report-check/api",
+      "scope": "只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。"
+    },
+    {
+      "name": "dsh-bug-report-check",
+      "cli": "bug-report-check",
+      "slug": "bug-report-check",
+      "noun": "缺陷报告检查 / bug 报告检查",
+      "title": "缺陷报告检查清单",
+      "decides": "这份 bug 报告是否交代了在哪发生、怎么触发、差在哪",
+      "description": "缺陷报告提交前的书记检查：一行能看懂的标题、环境信息、编号复现步骤、预期与实际的对照。没有编号步骤的散文不算复现步骤——散文无法重放。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "第一行没有 `# 标题` → error"
+        },
+        {
+          "rule": "env-missing",
+          "meaning": "没有环境信息（## 环境、版本：、OS：、Node：）→ error"
+        },
+        {
+          "rule": "repro-missing",
+          "meaning": "没有复现步骤标题下的编号步骤 → error"
+        },
+        {
+          "rule": "expected-actual-missing",
+          "meaning": "预期与实际都没写 → error"
+        },
+        {
+          "rule": "expected-missing / actual-missing",
+          "meaning": "只写一边 → error，指出缺哪边"
+        },
+        {
+          "rule": "repro-thin",
+          "meaning": "步骤少于下限（默认 3，可调）→ warn"
+        }
+      ],
+      "usage": [
+        "npx bug-report-check report.md --json",
+        "npx bug-report-check report.md --min-steps 5"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/",
+      "route": "POST /bug-report-check/api",
+      "scope": "只验书记层面，不验缺陷严重性：它验证报告说了在哪、怎么复现、差在哪；bug 是否真实存在，靠复现。"
+    },
+    {
+      "name": "dsh-api-doc-check",
+      "cli": "api-doc-check",
+      "slug": "api-doc-check",
+      "noun": "接口文档检查 / API 文档检查",
+      "title": "接口文档检查清单",
+      "decides": "这份接口文档是否交代了怎么调、怎么证明身份、失败长什么样",
+      "description": "接口文档交付前的书记检查：每个端点带方法和路径、有请求或响应示例、鉴权说明在场、错误响应有交代。只有路径没有动词的行不算端点——单独一行路径无法被调用。",
+      "rules": [
+        {
+          "rule": "endpoints-missing",
+          "meaning": "没有「METHOD + 路径」形式的端点 → error"
+        },
+        {
+          "rule": "examples-missing",
+          "meaning": "没有代码块示例 → error"
+        },
+        {
+          "rule": "auth-missing",
+          "meaning": "没有鉴权说明（鉴权/认证/Authorization/Bearer）→ error"
+        },
+        {
+          "rule": "error-shape-missing",
+          "meaning": "没有错误响应说明（错误/失败/4xx/5xx）→ warn"
+        }
+      ],
+      "usage": [
+        "npx api-doc-check api.md --json",
+        "npx api-doc-check api.md --min-endpoints 5"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/api-doc-check/",
+      "route": "POST /api-doc-check/api",
+      "scope": "只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。"
+    },
+    {
+      "name": "dsh-test-report-check",
+      "cli": "test-report-check",
+      "slug": "test-report-check",
+      "noun": "测试报告检查 / 用例统计检查",
+      "title": "测试报告检查清单",
+      "decides": "这份测试报告的算术是否自洽、环境是否可复跑、失败是否有去处",
+      "description": "测试报告复盘或交付前的书记检查：通过+失败+跳过必须等于总计（勾稽不平直接报出算式）、测试环境在场、有失败就要有失败详情——数字要能往下看。",
+      "rules": [
+        {
+          "rule": "counts-missing",
+          "meaning": "没有任何用例计数 → error"
+        },
+        {
+          "rule": "sum-mismatch",
+          "meaning": "通过+失败+跳过 ≠ 总计 → error，报出算式与两边数字"
+        },
+        {
+          "rule": "env-missing",
+          "meaning": "没有测试环境 → error"
+        },
+        {
+          "rule": "failure-detail-missing",
+          "meaning": "报了失败但没有失败详情段 → error"
+        },
+        {
+          "rule": "total-missing",
+          "meaning": "有分项没总数 → warn"
+        },
+        {
+          "rule": "counts-partial",
+          "meaning": "有总数没分项 → warn"
+        }
+      ],
+      "usage": [
+        "npx test-report-check report.md --json"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/test-report-check/",
+      "route": "POST /test-report-check/api",
+      "scope": "只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。"
+    },
+    {
+      "name": "dsh-commit-msg-check",
+      "cli": "commit-msg-check",
+      "slug": "commit-msg-check",
+      "noun": "提交信息检查 / commit message 检查",
+      "title": "提交信息检查清单",
+      "decides": "这条提交信息是否可被工具解析、在 log 里可读",
+      "description": "一条提交信息就能判定：类型前缀、主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里。可以直接挂 commit-msg 钩子。",
+      "rules": [
+        {
+          "rule": "type-missing",
+          "meaning": "没有 type(scope): subject 前缀 → error"
+        },
+        {
+          "rule": "type-unknown",
+          "meaning": "类型不在已知集合（feat/fix/docs/…）→ warn"
+        },
+        {
+          "rule": "subject-long",
+          "meaning": "主题超过上限（默认 72）→ error"
+        },
+        {
+          "rule": "subject-empty",
+          "meaning": "冒号后没有主题 → error"
+        },
+        {
+          "rule": "subject-period",
+          "meaning": "主题以句号结尾 → warn"
+        },
+        {
+          "rule": "body-separator",
+          "meaning": "标题后没有空行 → error"
+        },
+        {
+          "rule": "breaking-untrailed",
+          "meaning": "用了 ! 但正文没有 BREAKING CHANGE: trailer → warn"
+        }
+      ],
+      "usage": [
+        "npx commit-msg-check .git/COMMIT_EDITMSG --json",
+        "npx commit-msg-check msg.txt --max-subject 50"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/commit-msg-check/",
+      "route": "POST /commit-msg-check/api",
+      "scope": "只验信息形状，不验提交内容：它验证信息能被工具解析、在 log 里可读；diff 是否做了主题说的事，靠评审。信息全过规则但描述错了改动，这个工具无话可说，也不假装有。"
+    },
+    {
+      "name": "dsh-dockerfile-check",
+      "cli": "dockerfile-check",
+      "slug": "dockerfile-check",
+      "noun": "Dockerfile 检查 / 镜像构建检查",
+      "title": "Dockerfile 检查清单",
+      "decides": "这个 Dockerfile 是否把可复现与最小权限写进了文件本身",
+      "description": "一个文件的判定：基础镜像是否固定、容器是否以 root 收尾、是否有密钥被写进层、普通复制是否误用 ADD、包管理器装完是否清理。反斜杠续行按一条指令算，报到首行。",
+      "rules": [
+        {
+          "rule": "from-missing",
+          "meaning": "没有 FROM → error"
+        },
+        {
+          "rule": "base-unpinned",
+          "meaning": "FROM node 或 :latest 浮动标签 → error（@sha256 digest 通过）"
+        },
+        {
+          "rule": "user-missing",
+          "meaning": "没有 USER 指令（默认 root）→ error"
+        },
+        {
+          "rule": "user-root",
+          "meaning": "显式 USER root 等于没写 → error"
+        },
+        {
+          "rule": "secret-in-layer",
+          "meaning": "ENV/ARG 把疑似密钥写成字面值 → error（${VAR} 引用通过）"
+        },
+        {
+          "rule": "add-instead-of-copy",
+          "meaning": "ADD 普通本地路径 → warn（tar 包与 URL 豁免）"
+        },
+        {
+          "rule": "apt-not-cleaned / apk-not-cleaned",
+          "meaning": "装完没清理索引 → warn"
+        },
+        {
+          "rule": "workdir-missing",
+          "meaning": "没有 WORKDIR → warn"
+        }
+      ],
+      "usage": [
+        "npx dockerfile-check Dockerfile --json",
+        "npx dockerfile-check Dockerfile --allow-latest --no-require-user"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/dockerfile-check/",
+      "route": "POST /dockerfile-check/api",
+      "scope": "只验文件文本，不验构建出的镜像：它看不见基础镜像里有什么、最终 stage 是不是你要的那个、镜像里到底有没有那个 USER。它验证文件写下了这些决定；镜像行为对不对，靠扫描和实跑。"
+    },
+    {
+      "name": "dsh-env-example-check",
+      "cli": "env-example-check",
+      "slug": "env-example-check",
+      "noun": "环境变量示例检查 / .env 检查",
+      "title": "环境变量示例检查清单",
+      "decides": "这份示例文件是否只含占位符、键不重复、有用途说明",
+      "description": "提交进仓库的 .env.example 是每个新贡献者先读的契约：每个键只放占位符、没有真凭据顺手提交、没有重复键静默覆盖、有注释说明每个键干什么。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "没有任何 KEY=value 行 → error"
+        },
+        {
+          "rule": "literal-value",
+          "meaning": "某键带了字面值（从 .env 复制过来的典型形态）→ error，报行号"
+        },
+        {
+          "rule": "duplicate-key",
+          "meaning": "同一个键出现两次 → error，同时报两行"
+        },
+        {
+          "rule": "line-unparsed",
+          "meaning": "既不是 KEY=value 也不是注释 → warn"
+        },
+        {
+          "rule": "key-case",
+          "meaning": "键名不是全大写下划线 → warn（shell 里大小写是两个变量）"
+        },
+        {
+          "rule": "comment-missing / no-comment",
+          "meaning": "没有任何注释行 → warn（--require-comment 时升级为 error）"
+        }
+      ],
+      "usage": [
+        "npx env-example-check .env.example --json",
+        "npx env-example-check .env.example --require-comment"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/env-example-check/",
+      "route": "POST /env-example-check/api",
+      "scope": "认的占位符形态：空值、<尖括号>、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。"
+    },
+    {
+      "name": "dsh-license-check",
+      "cli": "license-check",
+      "slug": "license-check",
+      "noun": "许可证检查 / LICENSE 检查",
+      "title": "许可证检查清单",
+      "decides": "这个 LICENSE 文件是否说了它看起来在说的那件事",
+      "description": "LICENSE 文件的三个判定：正文是不是可识别的许可证、标题和正文是否一致（标题写 MIT 正文是 Apache 是最坑的一种）、版权行有没有人和一个合理的年份，外加模板占位符有没有填。识别按正文短语而不是标题。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "文件没有内容 → error"
+        },
+        {
+          "rule": "unrecognized",
+          "meaning": "正文不是任何已知许可证条文 → error"
+        },
+        {
+          "rule": "title-body-mismatch",
+          "meaning": "标题写 MIT、正文是 Apache → error"
+        },
+        {
+          "rule": "declared-mismatch",
+          "meaning": "--expected 声明值与正文不一致 → error"
+        },
+        {
+          "rule": "copyright-missing",
+          "meaning": "没有 Copyright 行 → error"
+        },
+        {
+          "rule": "copyright-year-missing / copyright-holder-missing",
+          "meaning": "版权行缺年份或缺人名 → error"
+        },
+        {
+          "rule": "copyright-year-future",
+          "meaning": "年份在未来 → error"
+        },
+        {
+          "rule": "copyright-year-stale",
+          "meaning": "静态过去年份（一次性发布正常）→ warn"
+        },
+        {
+          "rule": "placeholder-left",
+          "meaning": "<year>、[fullname]、{{…}} 没填 → error"
+        }
+      ],
+      "usage": [
+        "npx license-check LICENSE --json",
+        "npx license-check LICENSE --expected MIT"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/license-check/",
+      "route": "POST /license-check/api",
+      "scope": "认得 12 种许可证正文（MIT/Apache-2.0/BSD-2/BSD-3/ISC/GPL-2.0/GPL-3.0/LGPL-3.0/AGPL-3.0/MPL-2.0/Unlicense/CC0-1.0），按正文短语匹配而非标题——所以「标题 MIT 正文 GPL」会被抓。只验文件形态与身份，不验法律效力：许可是否合适、依赖是否兼容、版权人是否正确的法律主体，都不是机器能担保的部分。"
+    },
+    {
+      "name": "dsh-incident-report-check",
+      "cli": "incident-report-check",
+      "slug": "incident-report-check",
+      "noun": "事故复盘检查 / 故障报告检查",
+      "title": "事故复盘检查清单",
+      "decides": "这份复盘是否给出了时间线、影响、根因与有人负责的后续",
+      "description": "事故复盘的四个判定：带时间的时间线（条目必须带时间）、影响段（影响谁、多久）、根因段而不是处置、后续行动项每个人都挂负责人。「重启后恢复」是处置不是原因。",
+      "rules": [
+        {
+          "rule": "timeline-missing / timeline-entry-untimed",
+          "meaning": "没有时间线段，或条目没带时间 → error，报行号"
+        },
+        {
+          "rule": "impact-missing",
+          "meaning": "没有影响段 → error"
+        },
+        {
+          "rule": "root-cause-missing",
+          "meaning": "没有根因段 → error"
+        },
+        {
+          "rule": "actions-missing / action-no-owner",
+          "meaning": "没有后续行动项，或行动项没负责人 → error，报行号"
+        },
+        {
+          "rule": "timeline-thin",
+          "meaning": "时间线条目少于下限（默认 2）→ warn"
+        },
+        {
+          "rule": "duration-missing",
+          "meaning": "全文没有时长 → warn"
+        }
+      ],
+      "usage": [
+        "npx incident-report-check postmortem.md --json",
+        "npx incident-report-check postmortem.md --min-timeline 4"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/incident-report-check/",
+      "route": "POST /incident-report-check/api",
+      "scope": "只验结构，不验根因是否找对：报告可以写一个听起来合理但错误的根因，这个工具分辨不出。它验证文档给出了时间线、影响、原因与有人负责的后续——读者评估分析前需要的四件事。责任归属是人类实践，代码不编码它。"
+    },
+    {
+      "name": "dsh-ops-runbook-check",
+      "cli": "ops-runbook-check",
+      "slug": "ops-runbook-check",
+      "noun": "运维手册检查 / runbook 检查",
+      "title": "运维手册检查清单",
+      "decides": "这份手册是否给了读者前置、步骤、退路、确认方式，以及危险命令旁的警告",
+      "description": "运维手册是要照着执行的，因此可判定：前置条件、编号步骤（压力下散文没法跟）、回滚路径、验证方式，以及这一条——每个危险命令必须**在同一行**带警告。警告写在三段之前，复制单行到终端时就不在了。",
+      "rules": [
+        {
+          "rule": "prereq-missing",
+          "meaning": "没有前置条件段 → error"
+        },
+        {
+          "rule": "steps-missing",
+          "meaning": "没有编号步骤 → error"
+        },
+        {
+          "rule": "destructive-unwarned",
+          "meaning": "编号步骤里有危险命令但同行没写注意/备份/不可逆 → error，报行号"
+        },
+        {
+          "rule": "rollback-missing",
+          "meaning": "没有回滚段 → error"
+        },
+        {
+          "rule": "verify-missing",
+          "meaning": "没有验证段 → error"
+        },
+        {
+          "rule": "steps-thin / shell-unspecified",
+          "meaning": "步骤数少于下限 / 没说用哪个 shell → warn"
+        }
+      ],
+      "usage": [
+        "npx ops-runbook-check runbook.md --json",
+        "npx ops-runbook-check runbook.md --min-steps 5"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/ops-runbook-check/",
+      "route": "POST /ops-runbook-check/api",
+      "scope": "认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。"
+    },
+    {
+      "name": "dsh-pr-description-check",
+      "cli": "pr-description-check",
+      "slug": "pr-description-check",
+      "noun": "PR 描述检查 / 拉取请求描述检查",
+      "title": "PR 描述检查清单",
+      "decides": "这条 PR 描述是否给了 reviewer 能动手的 what / why / how-verified",
+      "description": "PR 描述回答 reviewer 的前三个问题，因此可判定：改了什么、为什么、作者怎么知道它能用；加上关联 issue、破坏性变更配迁移说明、以及检查清单是不是真读了。CLI 支持从 stdin 读，可直接接 gh pr view 管道。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "描述为空 → error"
+        },
+        {
+          "rule": "what-missing",
+          "meaning": "没有「做了什么」段 → error"
+        },
+        {
+          "rule": "why-missing",
+          "meaning": "没有「为什么」段 → error（diff 说明改了什么，改不了理由）"
+        },
+        {
+          "rule": "test-missing",
+          "meaning": "没有测试/验证说明 → error（等于让 reviewer 替你验）"
+        },
+        {
+          "rule": "issue-unlinked / issue-missing",
+          "meaning": "没关联 issue → warn（--require-issue 时升级 error）"
+        },
+        {
+          "rule": "breaking-without-migration",
+          "meaning": "提到破坏性变更但没有迁移说明 → error"
+        },
+        {
+          "rule": "checklist-unchecked",
+          "meaning": "检查项一个都没勾 → warn"
+        }
+      ],
+      "usage": [
+        "npx pr-description-check body.md --json",
+        "gh pr view 42 --json body --jq .body | npx pr-description-check -"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/pr-description-check/",
+      "route": "POST /pr-description-check/api",
+      "scope": "只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。"
+    },
+    {
+      "name": "dsh-spec-doc-check",
+      "cli": "spec-doc-check",
+      "slug": "spec-doc-check",
+      "noun": "需求文档检查 / 方案文档检查",
+      "title": "需求文档检查清单",
+      "decides": "这份方案是否让 reviewer 能精确地反对它",
+      "description": "方案文档的三件事加一条：问题背景、可被检查的验收标准、明确的范围外，以及——验收标准不能写成愿望。「体验良好」「速度合理」既无法通过也无法拒绝。带阈值的愿望词不算违规：p95 从 800ms 降到 200ms 是标准。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "文档为空 → error"
+        },
+        {
+          "rule": "problem-missing",
+          "meaning": "没有背景/问题/目标段 → error"
+        },
+        {
+          "rule": "criteria-missing",
+          "meaning": "没有验收标准段 → error"
+        },
+        {
+          "rule": "criteria-vague",
+          "meaning": "验收标准含愿望词但没有数字/阈值/可观测对象 → error，报行号"
+        },
+        {
+          "rule": "out-of-scope-missing",
+          "meaning": "没有「不做/非目标/范围外」段 → error"
+        },
+        {
+          "rule": "criteria-thin",
+          "meaning": "验收标准少于下限（默认 2）→ warn"
+        },
+        {
+          "rule": "open-questions-empty",
+          "meaning": "有「待定」标题但下面没条目 → warn"
+        }
+      ],
+      "usage": [
+        "npx spec-doc-check spec.md --json",
+        "npx spec-doc-check spec.md --min-criteria 3"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/spec-doc-check/",
+      "route": "POST /spec-doc-check/api",
+      "scope": "愿望词表：良好/优秀/合理/友好/快速/流畅/尽量/适当/完善/稳定/高效/简洁（含英文同级词）。只要同一条里出现数字、阈值或可观测对象（状态码、字段、命令、百分比）就放行——规则只在「只剩下愿望」时才响。只验文档形状，不验方案是否正确：标准是不是错的标准、问题陈述是不是事后合理化、范围外是不是回避了难点，这些评审才能说。"
+    },
+    {
+      "name": "dsh-adr-check",
+      "cli": "adr-check",
+      "slug": "adr-check",
+      "noun": "架构决策记录检查 / ADR 检查",
+      "title": "架构决策记录检查清单",
+      "decides": "这份决策记录是否让后来人能重新评估它",
+      "description": "ADR 的五个判定：状态、逼出这个选择的背景、那一句决定、包含代价的后果、以及落选的备选方案。立身之本是第四条——后果只写好处的 ADR 通常没真正权衡过。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "记录为空 → error"
+        },
+        {
+          "rule": "status-missing",
+          "meaning": "没有状态行（状态：已接受 / Status: accepted）→ error"
+        },
+        {
+          "rule": "context-missing",
+          "meaning": "没有背景段 → error（没有约束，后人无法重新评估）"
+        },
+        {
+          "rule": "decision-missing",
+          "meaning": "没有决定段 → error"
+        },
+        {
+          "rule": "consequences-missing",
+          "meaning": "没有后果段 → error"
+        },
+        {
+          "rule": "consequences-one-sided",
+          "meaning": "后果只有好处没有代价 → warn"
+        },
+        {
+          "rule": "consequences-unlabelled",
+          "meaning": "后果不分好坏 → warn（读者分不清哪条是要接受的成本）"
+        },
+        {
+          "rule": "alternatives-missing",
+          "meaning": "没有备选方案段 → warn（只写赢的那个）"
+        },
+        {
+          "rule": "status-unknown / date-missing",
+          "meaning": "状态不在常见取值 / 没有日期 → warn"
+        }
+      ],
+      "usage": [
+        "npx adr-check docs/adr/0007-postgres-sessions.md --json",
+        "npx adr-check - < adr.md"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/adr-check/",
+      "route": "POST /adr-check/api",
+      "scope": "状态取值：proposed/accepted/rejected/deprecated/superseded（含中文同级词）。代价词：代价/缺点/劣势/风险/成本/trade-off/downside；好处词：好处/优点/优势/收益/benefit/upside。只验记录形状，不验决策对不对：背景是否漏了大家都知道的约束、备选是不是稻草人、代价是否被压低——这些只有后果本身会在后来揭晓。"
+    },
+    {
+      "name": "dsh-onboarding-check",
+      "cli": "onboarding-check",
+      "slug": "onboarding-check",
+      "noun": "上手指南检查 / 新人文档检查",
+      "title": "上手指南检查清单",
+      "decides": "这份上手文档是否让一个新人今天就能开始",
+      "description": "上手文档的五件事：先装什么、一条能粘贴的命令、成功长什么样、失败去哪儿问、以及要花多久。最后一条是本包存在的理由——没写耗时的文档不会被开始打开。代码块按内容判断：显示版本号的 text 块不算命令块。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "文档为空 → error"
+        },
+        {
+          "rule": "prereq-missing",
+          "meaning": "没有前置要求段 → error"
+        },
+        {
+          "rule": "command-missing",
+          "meaning": "没有含安装命令的代码块 → error（只能读的文档不是上手文档）"
+        },
+        {
+          "rule": "success-missing",
+          "meaning": "没有「你应该看到」段 → error（分不清成功与静默失败）"
+        },
+        {
+          "rule": "help-missing",
+          "meaning": "没有求助路径 → warn"
+        },
+        {
+          "rule": "time-estimate-missing",
+          "meaning": "全文没有耗时 → warn（没写多久的文档会被收藏然后永不打开）"
+        }
+      ],
+      "usage": [
+        "npx onboarding-check README.md --json",
+        "npx onboarding-check - < ONBOARDING.md"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/onboarding-check/",
+      "route": "POST /onboarding-check/api",
+      "scope": "耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。"
+    }
+  ]
+}

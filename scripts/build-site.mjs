@@ -108,6 +108,35 @@ for (const check of CHECKS) {
   await mkdir(resolve(root, 'site', check.slug), { recursive: true })
   await writeFile(resolve(root, 'site', check.slug, 'index.html'), page(check))
 }
+// A machine-readable manifest. Every other surface here is for a person: the
+// pages explain, the compare table helps choose. An agent or a script needs the
+// set as data — what exists, what each decides, which file it wants, and how to
+// call it — without parsing HTML.
+const manifest = {
+  name: 'dsh-vertical-kit',
+  repository: REPO,
+  origin: ORIGIN,
+  description: 'Industry-scenario deliverable checks for DeepSeek Harness. One verb each, deterministic, no model calls, CLI and host route share one implementation.',
+  license: 'MIT',
+  compare: `${ORIGIN}/compare/`,
+  generic: KIT,
+  checks: CHECKS.map(check => ({
+    name: check.npm,
+    cli: check.cli,
+    slug: check.slug,
+    noun: check.noun,
+    title: check.title,
+    decides: check.decides,
+    description: check.description,
+    rules: check.rules.map(([rule, meaning]) => ({ rule, meaning })),
+    usage: check.usage,
+    page: `${ORIGIN}/${check.slug}/`,
+    route: `POST /${check.slug}/api`,
+    scope: check.note,
+  })),
+}
+await writeFile(resolve(root, 'site/checks.json'), JSON.stringify(manifest, null, 2) + '\n')
+
 await mkdir(resolve(root, 'site', 'compare'), { recursive: true })
 await writeFile(resolve(root, 'site', 'compare', 'index.html'), compare())
 const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
@@ -120,6 +149,7 @@ const llms = [
   `> Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.`,
   ``,
   `- ${ORIGIN}/compare/: All ${CHECKS.length} checks in one table — which one applies to which file, and how many rules each carries.`,
+  `- ${ORIGIN}/checks.json: The same set as machine-readable JSON — name, cli, noun, decides, rules, usage, page and HTTP route per check.`,
   ...CHECKS.map(check => `- ${ORIGIN}/${check.slug}/: ${check.title} — ${check.description}`),
   ``,
   `- ${REPO}: Public source code, ${CHECKS.length} packages, one implementation per check shared by the CLI and the host route.`,
