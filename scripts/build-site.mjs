@@ -52,10 +52,51 @@ function home() {
 <h1>行业场景交付检查</h1>
 <p>Agent 已经产出结果、行业里的人准备接手的那一刻，这三个检查各自决定一件事：合同是否结构可审、发票算术是否成立、商品导出是否可上架。每个都是单个命令，从文件本身判定。</p>
 <table><tr><th>检查清单</th><th>npm 包</th><th>搜索名词</th><th>它决定什么</th></tr>${rows}</table>
+<p><a href="./compare/">全部 ${CHECKS.length} 个检查一览 →</a>（按文件类型选：合同/发票/纪要/简历/Dockerfile/LICENSE…）</p>
 <h2>定位</h2>
 <p>护城河不在深度——专业产品随时碾压深度。在：离线可跑、出口码接 CI、免费、host 路由与 CLI 调同一函数。定位是「专业人士的前五分钟」，不是「专业人士的替代」。通用的五个检查（哈希/引用/结构/表格/数字）在 <a href="${KIT}">dsh-verify-kit</a>。</p>
 <small><a href="${REPO}">github.com/zjukop3/dsh-vertical-kit</a> · MIT · 18 tests</small>
 <section class="install"><h2>在 DSH 中安装</h2><p>八件作品都在同一个 format 1 索引源里，从 npm registry 解析，装完即用。在「插件」启用「自定义插件索引」，添加 <code>https://zjukop3.github.io/dsh-review-outbox/plugins.json</code>，按名字搜索安装（本仓库三件：agreement-check / invoice-check / listing-check）。</p><p><a href="https://zjukop3.github.io/dsh-review-outbox/">索引源与全部收录说明</a></p></section>
+</main></body></html>`
+}
+
+// The comparison page: at seventeen checks a reader cannot hold the set in
+// their head, and guessing which one applies is how a tool gets ignored. One
+// table, generated from the same CHECKS data the individual pages use, so it
+// cannot drift from them.
+function compare() {
+  const rows = CHECKS.map(check => {
+    const url = `${ORIGIN}/${check.slug}/`
+    const ruleCount = check.rules.length
+    return `<tr><td><a href="${esc(url)}">${esc(check.npm)}</a></td><td>${esc(check.title)}</td><td>${esc(check.noun)}</td><td>${esc(check.decides)}</td><td>${ruleCount}</td></tr>`
+  }).join('')
+  const nav = CHECKS.map(entry => `<a href="../${entry.slug}/">${entry.npm}</a>`).join('')
+  return `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>全部 ${CHECKS.length} 个检查一览 · dsh-vertical-kit</title><meta name="description" content="dsh-vertical-kit 的 ${CHECKS.length} 个交付检查对照表：每个检查判定什么、绑定哪个搜索名词、有多少条规则。用这张表选你要的那一个。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/compare/`)}"><style>${styles}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · ${CHECKS.length} CHECKS</p>
+<h1>全部 ${CHECKS.length} 个检查一览</h1>
+<p>每个检查只做一件事：从一份文件本身判定一组可判定的缺陷，说出第几行、缺什么。它们不调用模型，不联网判定，CLI 与 host 路由调同一函数。用这张表选你要的那一个——选错了通常是名词对不上，而不是功能不够。</p>
+<table><tr><th>包</th><th>检查清单</th><th>搜索名词</th><th>它决定什么</th><th>规则数</th></tr>${rows}</table>
+<h2>怎么选</h2>
+<p>先看你手上是什么文件：</p>
+<ul>
+<li>合同 → agreement-check；发票 → invoice-check；商品导出表 → listing-check</li>
+<li>会议纪要 → meeting-notes-check；简历 → resume-check；周报 → weekly-report-check</li>
+<li>发布说明 → release-notes-check；缺陷报告 → bug-report-check；接口文档 → api-doc-check</li>
+<li>测试报告 → test-report-check；提交信息 → commit-msg-check；PR 描述 → pr-description-check</li>
+<li>Dockerfile → dockerfile-check；.env.example → env-example-check；LICENSE → license-check</li>
+<li>事故复盘 → incident-report-check；运维手册 → ops-runbook-check</li>
+</ul>
+<p>通用缺陷（交付文件的哈希、报告引用、文档结构、Markdown 表格、数字写法）在 <a href="${KIT}">dsh-verify-kit</a>，不在这个对照表里。</p>
+<h2>共同约束</h2>
+<ul>
+<li><strong>一条发现一行。</strong>每条都带行号；没有行号的建议没法动手改。</li>
+<li><strong>只判可判定的。</strong>需要判断力的事不写成规则；需要判断力的事也不能假装判定了。</li>
+<li><strong>warn 与 error 分开。</strong>error 是「这份文件没说清一件事」，warn 是「说了但值得看一眼」，多数 warn 在信息里写明什么情况下可以忽略。</li>
+<li><strong>出口码 0/1/2</strong>：干净、有发现、用法或读文件错误。可直接接 CI。</li>
+</ul>
+<nav class="nav">${nav}</nav>
+<small><a href="${REPO}">github.com/zjukop3/dsh-vertical-kit</a> · 本页由 <code>scripts/build-site.mjs</code> 从 <code>scripts/checks-data.mjs</code> 生成，与各检查页同源</small>
 </main></body></html>`
 }
 
@@ -67,7 +108,9 @@ for (const check of CHECKS) {
   await mkdir(resolve(root, 'site', check.slug), { recursive: true })
   await writeFile(resolve(root, 'site', check.slug, 'index.html'), page(check))
 }
-const urls = [`${ORIGIN}/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
+await mkdir(resolve(root, 'site', 'compare'), { recursive: true })
+await writeFile(resolve(root, 'site', 'compare', 'index.html'), compare())
+const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
 if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)
@@ -76,6 +119,7 @@ const llms = [
   ``,
   `> Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.`,
   ``,
+  `- ${ORIGIN}/compare/: All ${CHECKS.length} checks in one table — which one applies to which file, and how many rules each carries.`,
   ...CHECKS.map(check => `- ${ORIGIN}/${check.slug}/: ${check.title} — ${check.description}`),
   ``,
   `- ${REPO}: Public source code, ${CHECKS.length} packages, one implementation per check shared by the CLI and the host route.`,
