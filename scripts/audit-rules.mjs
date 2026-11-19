@@ -35,10 +35,77 @@ const ADD_CALL = /\badd\(\s*'(?:error|warn)'\s*,\s*'([a-z][a-z0-9-]*)'/g
 const PUSH_CALL = /push\(\s*\{[\s\S]{0,200}?level:\s*'(?:error|warn)'[\s\S]{0,200}?rule:\s*'([a-z][a-z0-9-]*)'/g
 const PUSH_CALL_REVERSED = /push\(\s*\{[\s\S]{0,200}?rule:\s*'([a-z][a-z0-9-]*)'[\s\S]{0,200}?level:\s*'(?:error|warn)'/g
 
+// Lines that start with `//` are dropped before scanning: a commented-out
+// `add('error', 'old-rule', …)` would otherwise be reported as a rule with no
+// test, which is a gap that does not exist. Trailing comments are left alone on
+// purpose — a `//` inside a string (a URL) is indistinguishable from a comment
+// to a scanner this simple, and dropping a live rule is worse than keeping a
+// commented one.
 export function ruleNames(source) {
   const text = String(source)
+    .split('\n')
+    .filter(line => !/^\s*\/\//.test(line))
+    .join('\n')
   const found = [ADD_CALL, PUSH_CALL, PUSH_CALL_REVERSED].flatMap(pattern => [...text.matchAll(pattern)].map(match => match[1]))
   return [...new Set(found)]
+}
+
+// A regex that matches the empty string, used as a guard, makes the rule beyond
+// it dead or always-on. This is not theoretical: `if (!has(X, /(?:^|\n)/))`
+// shipped in expense-claim-check and made its whole period branch unreachable,
+// because `/(?:^|\n)/` matches every string.
+//
+// Only literal, obviously-empty patterns are flagged. Anything subtler is left
+// to the operator — an audit that cries wolf gets turned off.
+// A regex literal in the condition, extracted properly and then tested with the
+// engine itself: does this pattern match the empty string? A text-matching
+// shortcut flagged `/^https?:\/\//` as an empty pattern because it saw `//`
+// inside the escaped slashes, which is exactly the kind of false positive that
+// gets a gate switched off.
+const REGEX_LITERAL = /(?<![\\\w])\/((?:\\.|[^/\\\n])+)\/([dgimsuvy]*)/g
+
+export function emptyMatchingLiterals(condition) {
+  const out = []
+  for (const match of String(condition).matchAll(REGEX_LITERAL)) {
+    const [, body, flags] = match
+    try {
+      const pattern = new RegExp(body, flags.replace(/[gy]/g, ''))
+      if (pattern.test('')) out.push({ literal: match[0], reason: 'matches the empty string' })
+    } catch {
+      // Not a valid pattern in isolation (a division, a fragment) — not our call.
+    }
+  }
+  return out
+}
+
+// The guard a rule sits behind: the nearest `if (` / `else if (` at or above the
+// emission site, within six lines. A heuristic, and labelled as one in the
+// output — it names a suspicion, not a verdict.
+export function guardOf(source, index) {
+  const lines = String(source).slice(0, index).split('\n')
+  for (let back = 1; back <= 6; back += 1) {
+    const line = lines[lines.length - back]
+    if (line === undefined) break
+    const match = /\b(?:if|else if)\s*\((.+)$/.exec(line)
+    if (match) return { line: lines.length - back + 1, condition: match[1].trim() }
+  }
+  return null
+}
+
+export function suspiciousGuards(source) {
+  const text = String(source)
+  const out = []
+  for (const pattern of [ADD_CALL, PUSH_CALL, PUSH_CALL_REVERSED]) {
+    for (const match of text.matchAll(pattern)) {
+      const guard = guardOf(text, match.index)
+      if (!guard) continue
+      const trivial = emptyMatchingLiterals(guard.condition)
+      if (trivial.length > 0) {
+        out.push({ rule: match[1], line: guard.line, condition: guard.condition.slice(0, 80), pattern: trivial[0].literal })
+      }
+    }
+  }
+  return out
 }
 
 // Split a test file into blocks at each top-level `test(` so a rule mentioned in
@@ -79,6 +146,7 @@ export async function auditRules() {
   for (const pkg of packages) {
     const src = await readFile(join(packagesDir, pkg, 'src', 'index.js'), 'utf8')
     const rules = ruleNames(src)
+    const guards = suspiciousGuards(src)
     const testDir = join(packagesDir, pkg, 'test')
     const testFiles = (await readdir(testDir)).filter(name => name.endsWith('.test.js'))
     const blocks = []
@@ -93,12 +161,14 @@ export async function auditRules() {
     const cleanSilentBlock = blocks.some(block => SILENT.test(block) && /warnings?[^;\n]{0,24}?,\s*0\b/.test(block))
     for (const rule of rules) {
       const seen = blocks.map(block => directions(block, rule))
+      const guard = guards.find(entry => entry.rule === rule) ?? null
       rows.push({
         package: pkg,
         rule,
         fires: seen.some(direction => direction.fires),
         silent: seen.some(direction => direction.silent) || cleanBlock,
         silentVia: seen.some(direction => direction.silent) ? 'rule assertion' : cleanBlock ? 'clean-document test' : null,
+        guard,
       })
     }
     if (!cleanBlock) {
@@ -131,11 +201,26 @@ if (process.argv[1] && resolve(fileURLToPath(import.meta.url)) === resolve(proce
   const result = summarise(rows)
   for (const row of rows) {
     const mark = row.fires && row.silent ? 'both' : row.fires ? 'fire-only' : row.silent ? 'silent-only' : 'NEITHER'
+    if (mark === 'both' && !row.guard) continue
     if (mark !== 'both') process.stdout.write(`gap  ${row.package}  ${row.rule}  ${mark}\n`)
+    else process.stdout.write(`suspect  ${row.package}  ${row.rule}\n`)
+    // A rule with no firing test has two possible explanations and the audit
+    // cannot tell them apart: either nobody wrote the test, or the rule cannot
+    // fire at all. Only a person writing that test learns which. Say so rather
+    // than implying the tool has diagnosed anything.
+    if (!row.fires) process.stdout.write(`       └─ either untested or unreachable; writing the firing test is what distinguishes them\n`)
+    if (row.guard) {
+      process.stdout.write(`       └─ SUSPECT GUARD line ${row.guard.line}: \`${row.guard.condition}\` contains ${row.guard.pattern}, which matches the empty string — the rule behind it may never run\n`)
+    }
   }
   process.stdout.write(`\n${result.testedBoth}/${result.rules} rules tested in both directions across ${new Set(rows.map(r => r.package)).size} packages\n`)
+  const suspects = rows.filter(row => row.guard)
+  if (suspects.length > 0) {
+    process.stdout.write(`${suspects.length} rule(s) sit behind a guard that can never be false — reported as suspects, not verdicts\n`)
+  }
   if (result.gaps.length > 0) {
     process.stdout.write(`${result.gaps.length} rule(s) missing a direction — a rule observed only to fire is half a rule\n`)
     process.exit(1)
   }
+  if (suspects.length > 0) process.exit(1)
 }
