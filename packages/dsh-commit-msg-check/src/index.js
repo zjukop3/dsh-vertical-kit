@@ -24,7 +24,12 @@ export const TYPES = ['feat', 'fix', 'docs', 'style', 'refactor', 'perf', 'test'
 
 // `type(scope): subject` or `type: subject`. The colon is required; a bare
 // sentence with no prefix is the most common violation and the cheapest to fix.
-const HEADER = /^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.+)$/
+//
+// The subject is `.*`, not `.+`, on purpose: with `.+` a header of `feat:` fails
+// to parse, so `type` reads as null and the `subject-empty` rule below can never
+// fire. It was dead code until the rules audit looked for a test that makes each
+// rule fire and found none for this one.
+const HEADER = /^(\w+)(?:\(([^)]+)\))?(!)?:\s*(.*)$/
 
 export function parseCommit(text) {
   const lines = String(text).split('\n')

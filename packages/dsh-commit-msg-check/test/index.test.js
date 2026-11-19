@@ -120,3 +120,10 @@ test('every type in the set is accepted', () => {
     assert.ok(!result.findings.some(finding => finding.rule === 'type-missing' || finding.rule === 'type-unknown'), type)
   }
 })
+
+test('a header with a colon and nothing after it is subject-empty', () => {
+  const result = lintCommitMessage('feat(api):\n')
+  const finding = result.findings.find(f => f.rule === 'subject-empty')
+  assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+})

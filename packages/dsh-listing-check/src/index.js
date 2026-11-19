@@ -69,6 +69,17 @@ export function readRows(text) {
   })
 }
 
+// Which column is present, regardless of whether its value is empty. `pick`
+// deliberately skips empty values so a blank price reads as a missing price;
+// that conflates "no SKU column" with "SKU column, empty cell", and the SKU
+// rule wants to tell those apart. `columnName` answers the other question.
+function columnName(row, keys) {
+  for (const key of keys) if (row[key] !== undefined) return key
+  const lower = Object.fromEntries(Object.entries(row).map(([key, value]) => [key.toLowerCase(), value]))
+  for (const key of keys) if (lower[key.toLowerCase()] !== undefined) return Object.keys(row).find(name => name.toLowerCase() === key.toLowerCase())
+  return null
+}
+
 function pick(row, keys) {
   for (const key of keys) {
     if (row[key] !== undefined && row[key] !== '') return String(row[key])
@@ -143,9 +154,9 @@ export function lintListings(text, rules = {}) {
       else if (maxPrice !== undefined && value > maxPrice) add('warn', 'price-high', number, `第 ${number} 行价格 ${value} 超过上限 ${maxPrice}`)
     }
 
-    const sku = pick(row, SKU_KEYS)
-    if (sku === null) add('error', 'sku-missing', number, `第 ${number} 行没有 SKU 列（认得：${SKU_KEYS.join('/')}）`)
-    else if (!String(sku).trim()) add('error', 'sku-empty', number, `第 ${number} 行 SKU 为空`)
+    const skuColumn = columnName(row, SKU_KEYS)
+    if (skuColumn === null) add('error', 'sku-missing', number, `第 ${number} 行没有 SKU 列（认得：${SKU_KEYS.join('/')}）`)
+    else if (!String(row[skuColumn] ?? '').trim()) add('error', 'sku-empty', number, `第 ${number} 行 SKU 为空`)
   })
 
   const seen = new Map()

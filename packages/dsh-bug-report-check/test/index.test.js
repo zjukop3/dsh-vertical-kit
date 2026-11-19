@@ -62,3 +62,13 @@ test('expected without actual is its own error', () => {
   const result = lintBugReport(text)
   assert.ok(result.findings.some(finding => finding.rule === 'actual-missing'))
 })
+
+// expected-missing had only a silent-direction test. A rule that no test makes
+// fire is a rule nobody has seen work.
+test('actual without expected is an error, and named as such', () => {
+  const text = good.replace(/## 预期\n\n[^\n]*\n/, '')
+  const result = lintBugReport(text)
+  const finding = result.findings.find(f => f.rule === 'expected-missing')
+  assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+})

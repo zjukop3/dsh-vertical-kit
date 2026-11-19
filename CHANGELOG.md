@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.0] — 2026-11-19
+
+加了第三道闸（`scripts/audit-rules.mjs`，已接进 `npm run check`），并修掉它在过程中找出的两条死规则。
+
+- **规则双向审计**：每条规则都必须在测试里被观察到两个方向——坏文档让它报，好文档让它闭嘴。只被观察到"会报"的规则是半条规则；四个包正是因为只有这半条而全部误报（见 0.2.0 三条与下文 pr-description）。审计结果 138/138。
+- **dsh-commit-msg-check 0.3.0**：`subject-empty` 之前是死规则——`HEADER` 要求冒号后 `.+`，所以 `feat:` 根本解析不成类型，这条永远不可能触发。改成 `.*` 后 `feat:` 报 `subject-empty`，测试覆盖双向。
+- **dsh-listing-check 0.2.0**：`sku-empty` 同样是死规则——`pick()` 有意跳过空值，于是"有 SKU 列但单元格为空"被当成"没有 SKU 列"报 `sku-missing`。新增 `columnName()` 单独回答"这一列在不在"，空单元格现在报 `sku-empty`。
+
+**升级路径**：两处都是**新增报错**，不是放宽。`feat:` 这类冒号后无主题的提交信息从"只报 type-missing"变成"报 subject-empty"；空 SKU 单元格从 `sku-missing` 变成 `sku-empty`。如果你的 CI 依赖旧规则名做判断，按新名字改。
+
 ## [0.2.0] — 2026-11-19
 
 三个检查升到 0.2.0，起因是拿它们跑自家仓库（102 条提交、23 个 README、3 个 CHANGELOG），三个都暴露了问题——两个在检查本身，一个在文档。

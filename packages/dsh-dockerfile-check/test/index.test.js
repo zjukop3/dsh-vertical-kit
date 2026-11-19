@@ -93,3 +93,10 @@ test('an empty file is one empty error', () => {
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
 })
+
+test('no WORKDIR warns, because relative paths then land in /', () => {
+  const text = good.replace('WORKDIR /app\n', '')
+  const finding = lintDockerfile(text).findings.find(f => f.rule === 'workdir-missing')
+  assert.ok(finding, JSON.stringify(lintDockerfile(text).findings.map(f => f.rule)))
+  assert.equal(finding.level, 'warn')
+})

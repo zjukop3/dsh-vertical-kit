@@ -70,3 +70,19 @@ test('an empty file is one empty error', () => {
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
 })
+
+test('a file with no parsable key is an error', () => {
+  // `no-keys` needs at least one non-comment line that failed to parse: with
+  // nothing at all the `empty` rule takes over. An all-comment file is the
+  // empty case; a file of assignments that never parse is this one.
+  const text = '=no-key-before-equals\n:also-bad=\n'
+  const finding = lintEnvExample(text).findings.find(f => f.rule === 'no-keys')
+  assert.ok(finding, JSON.stringify(lintEnvExample(text).findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+})
+
+test('an all-comment file is the empty case, not no-keys', () => {
+  const result = lintEnvExample('# 只有注释\n# 一条键都没有\n')
+  assert.ok(result.findings.some(f => f.rule === 'empty'))
+  assert.ok(!result.findings.some(f => f.rule === 'no-keys'))
+})

@@ -35,8 +35,16 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 20 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 206 tests, no network
+npm test   # 239 tests, no network
 ```
+
+## 两道闸
+
+`npm run check` 除了检查包元数据，还会跑两道防"半条规则"的闸。
+
+**规则双向审计**（`scripts/audit-rules.mjs`）。每条规则必须在测试里被观察到两个方向：一个坏文档让它报出来，一个好文档让它闭嘴。一个只被观察到会报的规则是半条规则——缺的那半决定了陌生人装完第一天会不会卸掉它。四个包就是因为只有前半条而全部误报：commit-msg 对 83% 的真实历史报错、onboarding 对 20/23 个真实 README 报错、release-notes 对 Keep a Changelog 的标准格式报错、pr-description 对 19/19 个真实已合并 PR 报错。这道闸跑出 138 条规则里的 138 条都有两个方向，并在过程中发现两条**永不触发**的死规则（`subject-empty`、`sku-empty`，已被上游 `.+`/空值跳过逻辑堵死），已改成可达。
+
+**Dogfood 闸**（`test/dogfood.test.js`）。把每个检查指向本项目自己真的在发的文件，要求它什么都不报：23 个 README 过 onboarding-check 零 error 零 warn、3 个 CHANGELOG 过 release-notes-check、20+ 个 LICENSE 过 license-check，以及真实的 120 条提交历史里没有任何一条因为"类型前缀"被 error 挡住（那是团队约定，不是 git 硬要求）。规则一旦开始对本项目自己写的东西报错，这组测试先红。它已经抓到一次：`dsh-review-outbox` 的 README 缺求助路径。
 
 ## 输出示例
 

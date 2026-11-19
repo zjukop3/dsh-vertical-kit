@@ -56,3 +56,35 @@ test('bounds are configurable through rules', () => {
   const result = lintListings(rows, { maxPrice: 500 })
   assert.ok(result.findings.some(finding => finding.rule === 'price-high'))
 })
+
+// Four rules had never been observed firing. They are all reachable from a CSV
+// whose header names the columns; the existing fixtures used the default header,
+// so only the row-level rules that fire everywhere were covered.
+test('a title over the limit is an error, and the limit is configurable', () => {
+  const long = '全自动懒人支架手机桌面通用'.repeat(5)
+  const text = `title,price,sku\n${long},29.9,SKU001\n`
+  const finding = lintListings(text).findings.find(f => f.rule === 'title-long')
+  assert.ok(finding, JSON.stringify(lintListings(text).findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+  assert.equal([...long].length > 60, true, 'the fixture must exceed the 60-char default')
+})
+
+test('a keyword repeated past the limit warns once per token', () => {
+  const text = `title,price,sku\n手机支架手机支架手机支架手机支架通用款,29.9,SKU001\n`
+  const found = lintListings(text).findings.filter(f => f.rule === 'title-stuffing')
+  assert.ok(found.length > 0, JSON.stringify(lintListings(text).findings.map(f => f.rule)))
+  assert.equal(found[0].level, 'warn')
+  assert.equal(found[0].row, 1)
+})
+
+test('a row with no SKU column is an error; an empty SKU is its own error', () => {
+  const noColumn = `title,price\n全自动懒人支架手机桌面通用,29.9\n`
+  const missing = lintListings(noColumn).findings.find(f => f.rule === 'sku-missing')
+  assert.ok(missing, JSON.stringify(lintListings(noColumn).findings.map(f => f.rule)))
+  assert.equal(missing.level, 'error')
+
+  const emptyValue = `title,price,sku\n全自动懒人支架手机桌面通用,29.9,\n`
+  const empty = lintListings(emptyValue).findings.find(f => f.rule === 'sku-empty')
+  assert.ok(empty, JSON.stringify(lintListings(emptyValue).findings.map(f => f.rule)))
+  assert.equal(empty.level, 'error')
+})

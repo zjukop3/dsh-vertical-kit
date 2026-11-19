@@ -69,3 +69,35 @@ test('missing dispute or breach clauses are separate errors', () => {
   assert.deepEqual(rules, ['breach', 'dispute', 'term'])
   assert.equal(result.ok, false)
 })
+
+// The three rules below had only ever been observed staying silent: the package
+// had a clean-document test, and nothing that proved these fire at all. A rule
+// no test ever triggers is a rule nobody knows works.
+test('a contract with no date at all is an error', () => {
+  const text = good.replace('签订日期：2026年11月10日\n', '')
+  const result = lintContract(text)
+  const finding = result.findings.find(f => f.rule === 'date')
+  assert.ok(finding, JSON.stringify(result.findings))
+  assert.equal(finding.level, 'error')
+})
+
+test('a date without 签订/签署 wording warns instead of erroring', () => {
+  const text = good.replace('签订日期：2026年11月10日', '2026年11月10日')
+  const finding = lintContract(text).findings.find(f => f.rule === 'date')
+  assert.ok(finding, 'a bare date should still be reported, as a warning')
+  assert.equal(finding.level, 'warn')
+})
+
+test('digits without an uppercase amount is an error', () => {
+  const text = good.replace('壹万贰仟元整（¥12,000元）', '¥12,000元')
+  const finding = lintContract(text).findings.find(f => f.rule === 'amount-uppercase')
+  assert.ok(finding, JSON.stringify(lintContract(text).findings))
+  assert.equal(finding.level, 'error')
+})
+
+test('two uppercase amounts warn that the comparison was skipped', () => {
+  const text = good.replace('四、合同期限', '另有尾款人民币叁仟元整（¥3,000元）。\n\n四、合同期限')
+  const finding = lintContract(text).findings.find(f => f.rule === 'amount-ambiguous')
+  assert.ok(finding, JSON.stringify(lintContract(text).findings))
+  assert.equal(finding.level, 'warn')
+})

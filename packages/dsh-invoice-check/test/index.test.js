@@ -55,3 +55,17 @@ test('missing buyer or seller blocks are separate errors', () => {
   const rules = result.findings.map(entry => entry.rule).sort()
   assert.deepEqual(rules, ['buyer', 'seller'])
 })
+
+test('one of the three amounts missing warns that the cross-check was partial', () => {
+  const text = good.replace('税额（小写）：¥679.25\n', '')
+  const finding = lintInvoice(text).findings.find(f => f.rule === 'amount-partial')
+  assert.ok(finding, JSON.stringify(lintInvoice(text).findings.map(f => f.rule)))
+  assert.equal(finding.level, 'warn')
+})
+
+test('two uppercase amounts warn that the comparison was skipped', () => {
+  const text = good.replace('价税合计（大写）：壹万贰仟元整', '价税合计（大写）：壹万贰仟元整\n备注（大写）：另付叁仟元整')
+  const finding = lintInvoice(text).findings.find(f => f.rule === 'amount-ambiguous')
+  assert.ok(finding, JSON.stringify(lintInvoice(text).findings.map(f => f.rule)))
+  assert.equal(finding.level, 'warn')
+})

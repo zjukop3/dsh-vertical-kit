@@ -10,8 +10,9 @@
   "scripts": {
     "test": "node --test packages/*/test/*.test.js test/*.test.js",
     "audit:links": "node scripts/audit-site-links.mjs",
-    "check": "npm run audit:links && npm run audit:packages",
-    "audit:packages": "node scripts/audit-packages.mjs"
+    "check": "npm run audit:links && npm run audit:packages && npm run audit:rules",
+    "audit:packages": "node scripts/audit-packages.mjs",
+    "audit:rules": "node scripts/audit-rules.mjs"
   },
   "license": "MIT",
   "author": "zjukop3"
