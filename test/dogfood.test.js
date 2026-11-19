@@ -27,6 +27,8 @@ import { lintAdr } from '../packages/dsh-adr-check/src/index.js'
 import { lintIncidentReport } from '../packages/dsh-incident-report-check/src/index.js'
 import { lintOpsRunbook } from '../packages/dsh-ops-runbook-check/src/index.js'
 import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
+import { lintDockerfile } from '../packages/dsh-dockerfile-check/src/index.js'
+import { lintEnvExample } from '../packages/dsh-env-example-check/src/index.js'
 
 const root = resolve(import.meta.dirname, '..')
 const parent = resolve(root, '..')
@@ -159,6 +161,53 @@ test('the API reference this project ships passes api-doc-check', async () => {
   const result = lintApiDoc(await readFile(path, 'utf8'))
   assert.deepEqual(result.findings, [], JSON.stringify(result.findings))
   assert.ok(result.checked.endpoints >= 12, `expected every route documented, saw ${result.checked.endpoints}`)
+})
+
+// Files this project did not write. The catalog research pulls plugin
+// repositories into dsh-ecosystem-research/sources, and Dockerfiles and
+// .env.example files from there are the only third-party corpus available.
+// Real files from strangers are what the checks are actually for: the first run
+// over them found a root-user Dockerfile and one false positive worth fixing.
+async function thirdParty(patterns) {
+  const base = join(parent, 'dsh-ecosystem-research', 'sources', 'plugins')
+  if (!(await exists(base))) return []
+  const out = []
+  const walk = async dir => {
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === '.git') continue
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) await walk(full)
+      else if (patterns.some(pattern => pattern.test(entry.name))) out.push({ path: full, text: await readFile(full, 'utf8') })
+    }
+  }
+  await walk(base)
+  return out
+}
+
+test('third-party Dockerfiles and env examples are read without crashing the checks', async () => {
+  // Not "must be clean": these are other people's files and a real defect in one
+  // of them is a finding, not a failure. What is asserted is that every file
+  // parses and the rules that do fire name something concrete.
+  const dockerfiles = await thirdParty([/^Dockerfile.*$/])
+  const envExamples = await thirdParty([/^\.env\..*$/, /.*\.env\.example$/])
+  assert.ok(dockerfiles.length + envExamples.length >= 2, `expected third-party corpus, found ${dockerfiles.length} Dockerfiles and ${envExamples.length} env examples`)
+
+  for (const { path, text } of dockerfiles) {
+    const result = lintDockerfile(text)
+    for (const finding of result.findings) {
+      assert.ok(finding.rule && finding.message, `${path}: a finding must name a rule and a message`)
+    }
+  }
+  for (const { path, text } of envExamples) {
+    const result = lintEnvExample(text)
+    for (const finding of result.findings) {
+      assert.ok(finding.rule && finding.message, `${path}: a finding must name a rule and a message`)
+    }
+    // A documentation URL on a reserved example domain must never be reported as
+    // a committed literal — that was a real false positive on this corpus.
+    assert.ok(!result.findings.some(f => f.rule === 'literal-value' && /example\.(?:com|org|net|edu)/.test(f.message)),
+      `${path}: an example domain is a placeholder`)
+  }
 })
 
 test('no real commit in this project is blocked for its type prefix', async () => {

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.9.0] — 2026-11-19
+
+第**十**份语料，也是第一份**第三方**语料：目录调研拉下来的两个 Dockerfile 和一个 .env.example。
+
+- **dsh-env-example-check 0.2.0**：保留示例域名与 loopback 现在算占位符（`example.com/org/net/edu/test`、`*.test`、`*.invalid`、`localhost`、`127.0.0.1`）。触发它的是别人仓库里一个 `.env.example`：唯一的问题是文档里写了 `https://remote.example.edu/...`，被本检查判成"提交了真值"。对正确文档报错的规则，下场是整个文件被从 CI 里删掉，而不是被修好。
+- 第三方 Dockerfile 一净一脏：`ECNU__EduWork` 那份 0 error；`ranxianglei__billion-context` 那份以 root 收尾——**真缺陷，不是误报**。这条写进了语料页，说明检查确实会对陌生人的文件报错。
+- dogfood 闸扩到十条断言，新增「第三方语料能被读且不崩」——不是要求它们干净，而是要求每条 finding 都指名道姓。
+- 站点新增 `/corpus/`：逐条自报哪些检查有真实语料（九条）、哪些只有自造样例（十一条），以及为什么这个区分决定了"装上去第一天会不会误报"。首页加入口。
+- `.github/ISSUE_TEMPLATE/corpus-report.yml`：一条提交脱敏真实文档的通道。十一类没有语料的检查，我一个人补不上——我没有别人的合同、简历、报销单。
+
+**升级路径**：`env-example-check` 只会少报误报，不会对真值放行（`https://relay.mycompany.cn/...`、`sk-live-...` 仍然报 error）。
+
 ## [0.8.0] — 2026-11-19
 
 审计加上「嫌疑守卫」这一类别，并把一个诚实的边界写进输出。

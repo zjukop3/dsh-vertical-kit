@@ -30,6 +30,13 @@ export function parseEnv(text) {
 // A placeholder is a value a reader must replace: empty, angle-bracketed,
 // your-/change-me style, or a `${VAR}` reference. Anything else is a literal
 // that shipped.
+// A value is a placeholder when a reader must replace it. Besides the obvious
+// spellings, this includes the reserved example domains and loopback hosts: a
+// documentation URL pointing at `remote.example.edu` is as much a placeholder as
+// `<your-host>`, and flagging it as a committed literal is a false positive. The
+// case that surfaced this was a real third-party .env.example whose only crime
+// was documenting `https://remote.example.edu/...`.
+const RESERVED_HOST = /(?:^|[/:@])(?:localhost|127\.0\.0\.1|0\.0\.0\.0|(?:[\w-]+\.)*example\.(?:com|org|net|edu|test)|[\w.-]+\.(?:test|invalid|example))(?::\d+)?(?:\/|$)/i
 const PLACEHOLDER = /^(?:|.*<[^>]+>.*|.*\{[^}]+\}.*|your[-_ ].*|change[-_ ]?me.*|xxx+|\*+|todo.*|placeholder.*|example.*|dummy.*|test.*|none|null)$/i
 
 export function lintEnvExample(text, rules = {}) {
@@ -53,7 +60,7 @@ export function lintEnvExample(text, rules = {}) {
       add('warn', 'line-unparsed', entry.line, `第 ${entry.line} 行不是 KEY=value 形式：「${entry.raw.trim().slice(0, 30)}」`)
       continue
     }
-    if (!PLACEHOLDER.test(entry.value)) {
+    if (!PLACEHOLDER.test(entry.value) && !RESERVED_HOST.test(entry.value)) {
       add('error', 'literal-value', entry.line, `第 ${entry.line} 行 ${entry.key} 带了字面值「${entry.value.slice(0, 20)}」——示例文件只放占位符，真值进 .env（不提交）`)
     }
   }

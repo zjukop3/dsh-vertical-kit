@@ -1,0 +1,84 @@
+name: 语料报告 / Corpus report
+description: 某个检查在真实文件上判错了。请附一份脱敏后的原文片段。
+title: "[语料] <检查名> 在真实文件上判错了"
+labels: ["corpus"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        这份表只收一件事：**某个检查在真实文件上给出了错误判定**。
+
+        为什么需要它：这 22 个检查的规则，只有一份或多份真实文档跑过才算验证过。自己造的 fixture 只能证明"我想到的情况它判对了"，证明不了"别人写的东西它不误报"。README、CHANGELOG、提交信息、PR 正文、runbook、ADR、事故复盘这七类我手上真有语料；**合同、发票、商品信息、会议纪要、简历、周报、缺陷报告、测试报告、接口文档、需求文档、Dockerfile、.env 示例、交接单、报销单**这十四类没有——它们的规则目前只在我编的样例上跑过。
+
+        提交前请把真名、公司、金额、地址、身份证号、手机号、邮箱、内网域名替换成占位符。**不要提交任何未脱敏的真实资料。**
+
+  - type: dropdown
+    id: check
+    attributes:
+      label: 哪个检查
+      options:
+        - agreement-check 合同
+        - invoice-check 发票
+        - listing-check 商品信息
+        - meeting-notes-check 会议纪要
+        - resume-check 简历
+        - weekly-report-check 周报
+        - bug-report-check 缺陷报告
+        - test-report-check 测试报告
+        - api-doc-check 接口文档
+        - spec-doc-check 需求文档
+        - dockerfile-check Dockerfile
+        - env-example-check .env 示例
+        - handover-check 交接单
+        - expense-claim-check 报销单
+        - 其他 / 不属于以上任何一项
+    validations:
+      required: true
+
+  - type: textarea
+    id: document
+    attributes:
+      label: 脱敏后的文件内容
+      description: 整份粘进来，或粘出错的那一段（含上下文）。用 ``` 包起来。
+      placeholder: |
+        ```
+        （把真实内容脱敏后粘在这里）
+        ```
+      render: markdown
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: 它说了什么
+      description: 把 CLI 的输出原样粘进来。`npx <检查名> 文件 --json` 会把结构也一起给出来。
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 你认为应该是什么
+      description: 一句话说明为什么这次的判定是错的——多报了一条不该报的，还是漏了一条该报的。
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 检查的版本
+      description: 在输出末尾，或 `package.json` 里。版本不同判定可能不同。
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scrubbed
+    attributes:
+      label: 确认
+      options:
+        - label: 我已经把真名、公司、金额、地址、证件号、联系方式、内网域名替换成占位符
+          required: true
+        - label: 我同意这份脱敏内容被用作该检查的回归测试语料
+          required: true

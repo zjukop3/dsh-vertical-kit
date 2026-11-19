@@ -1,6 +1,6 @@
 {
   "name": "dsh-env-example-check",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Env example hygiene: every key carries a placeholder rather than a real value, no committed credential, no duplicate key, and the file says what each key is for.",
   "type": "module",
   "main": "./src/index.js",

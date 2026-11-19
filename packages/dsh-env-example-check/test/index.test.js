@@ -86,3 +86,28 @@ test('an all-comment file is the empty case, not no-keys', () => {
   assert.ok(result.findings.some(f => f.rule === 'empty'))
   assert.ok(!result.findings.some(f => f.rule === 'no-keys'))
 })
+
+test('a documentation URL on a reserved example domain is a placeholder', () => {
+  // Found in a real third-party .env.example: the only crime was documenting
+  // `https://remote.example.edu/...`, which is a placeholder by RFC 2606 intent.
+  const doc = `# 公共地址，桌面端用同一个
+RELAY_URL=https://remote.example.edu/eduwork-remote/
+# 随机密钥
+RELAY_ACCESS_KEYS=
+`
+  const result = lintEnvExample(doc)
+  assert.deepEqual(result.findings, [])
+})
+
+test('reserved hosts and loopback count, a real host does not', () => {
+  const reserved = ['http://localhost:8080/x', 'https://127.0.0.1/x', 'https://example.com', 'https://api.example.org/v1', 'https://svc.internal.test/']
+  for (const value of reserved) {
+    const result = lintEnvExample(`# 说明\nURL=${value}\n`)
+    assert.ok(!result.findings.some(f => f.rule === 'literal-value'), value)
+  }
+  const real = ['https://relay.mycompany.cn/x', 'https://10.1.2.3/x', 'sk-live-abc123456789']
+  for (const value of real) {
+    const result = lintEnvExample(`# 说明\nURL=${value}\n`)
+    assert.ok(result.findings.some(f => f.rule === 'literal-value'), value)
+  }
+})

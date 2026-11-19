@@ -52,6 +52,7 @@ function home() {
 <h1>行业场景交付检查</h1>
 <p>Agent 已经产出结果、有人准备接手的那一刻，每个检查各自决定一件事：这份文件是否交代了它该交代的东西。${CHECKS.length} 个检查覆盖二十种交付物——合同、发票、商品信息、会议纪要、简历、周报、发布说明、缺陷报告、接口文档、测试报告、提交信息、PR 描述、需求文档、架构决策、Dockerfile、.env 示例、LICENSE、事故复盘、运维手册、上手指南。每个都是单个命令，从文件本身判定，不调用模型。</p>
 <table><tr><th>检查清单</th><th>npm 包</th><th>搜索名词</th><th>它决定什么</th></tr>${rows}</table>
+<p><a href="./corpus/">这 ${CHECKS.length} 个检查的语料状况（哪些真有真实文件跑过）→</a></p>
 <p><a href="./compare/">全部 ${CHECKS.length} 个检查一览 →</a>（按文件类型选：合同/发票/纪要/简历/Dockerfile/LICENSE…）</p>
 <h2>定位</h2>
 <p>护城河不在深度——专业产品随时碾压深度。在：离线可跑、出口码接 CI、免费、host 路由与 CLI 调同一函数。定位是「专业人士的前五分钟」，不是「专业人士的替代」。通用的五个检查（哈希/引用/结构/表格/数字）在 <a href="${KIT}">dsh-verify-kit</a>。</p>
@@ -64,6 +65,34 @@ function home() {
 // their head, and guessing which one applies is how a tool gets ignored. One
 // table, generated from the same CHECKS data the individual pages use, so it
 // cannot drift from them.
+const CORPUS_BODY = `<p>这里的 22 个检查，判定规则是不是「验证过」，取决于它在多少份<strong>真实文档</strong>上跑过。自己造的 fixture 只能证明&quot;我想到的情况它判对了&quot;，证明不了&quot;别人写的东西它不会误报&quot;。</p>
+<p>下面这份表是诚实的自报：哪些检查有真实语料，哪些只有我编的样例。</p>
+<h2>有真实语料的（九条）</h2>
+<table><tr><th>检查</th><th>语料</th><th>份数</th><th>第一次跑出的问题</th></tr><tr><td>onboarding-check</td><td>本项目的 README</td><td>22</td><td>20 个报 <code>success-missing</code>——它们都写了真实输出，只是标题叫「真实输入输出」</td></tr><tr><td>release-notes-check</td><td>三个仓库的 CHANGELOG</td><td>3</td><td>全部报 <code>version-missing</code>——<code>## [1.2.0] - 2026-11-17</code> 是 Keep a Changelog 的官方写法</td></tr><tr><td>license-check</td><td>每个包的 LICENSE</td><td>21</td><td>无</td></tr><tr><td>commit-msg-check</td><td>三个仓库的提交历史</td><td>120</td><td>83% 报 <code>type-missing</code>——那是团队约定不是缺陷；56% 主题超 72 字，那是真问题</td></tr><tr><td>pr-description-check</td><td>已合并的目录 PR 正文</td><td>19</td><td>19/19 报缺 what/why/test，其实三个问题都用散文答了；另有 2 个被误判&quot;声明了破坏性变更&quot;</td></tr><tr><td>adr-check</td><td>本项目的决策记录</td><td>3</td><td><code>consequence</code> 只看项目符号，把写在段落行上的「好处：」「代价：」判成未标注</td></tr><tr><td>incident-report-check</td><td>事故复盘</td><td>1</td><td>无</td></tr><tr><td>ops-runbook-check</td><td>四份 runbook</td><td>4</td><td>两份用 <code>## 3.</code> 编号标题的 runbook 被报&quot;完全没有编号步骤&quot;</td></tr><tr><td>api-doc-check</td><td>本项目 host 路由的接口参考</td><td>1</td><td>文档写对了，但探针发现六处形状写错——那是文档的错，不是检查的错</td></tr><tr><td>dockerfile-check</td><td><strong>第三方</strong> Dockerfile</td><td>2</td><td>其中一个以 root 收尾（真缺陷，不是误报）；另一个干净</td></tr><tr><td>env-example-check</td><td><strong>第三方</strong> .env.example</td><td>1</td><td>把文档里的 <code>https://remote.example.edu/...</code> 判成真值——保留示例域名是占位符，这是误报</td></tr></table>
+<h2>只有自造样例的（十一条）</h2>
+<p>这些检查的每条规则都在测试里被观察到两个方向——坏文档会报、好文档沉默——但那个&quot;好文档&quot;是我写的。<strong>没有陌生人的真实文件跑过它们。</strong></p>
+<ul>
+<li>agreement-check（合同）</li>
+<li>invoice-check（发票）</li>
+<li>listing-check（商品信息）</li>
+<li>meeting-notes-check（会议纪要）</li>
+<li>resume-check（简历）</li>
+<li>weekly-report-check（周报）</li>
+<li>bug-report-check（缺陷报告）</li>
+<li>test-report-check（测试报告）</li>
+<li>spec-doc-check（需求文档）</li>
+<li>handover-check（交接单）</li>
+<li>expense-claim-check（报销单）</li>
+</ul>
+<p>这十一个的共同点：它们的正确样例长什么样，是我按自己的理解定的。真实世界里的合同、简历、周报会长成什么样，比我能想到的更杂。</p>
+<h2>为什么这很重要</h2>
+<p>上面十一条里有九条，是<strong>同一个缺陷</strong>：规则要求某一种写法（类型前缀、某个小标题、方括号版本号、项目符号），而真实文档用的是另一种同样合法的写法，于是对每一份真实文档都报错。</p>
+<p>这个缺陷在自造 fixture 上永远不会暴露——因为我编的 fixture 里，&quot;正确&quot;和&quot;被检查器接受&quot;是同一件事。只有把检查器指向别人的文件，两者才会分开。</p>
+<h2>如果你手上有一份</h2>
+<p>任意一条判断错了——多报了不该报的、或漏了该报的——请开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>，附上<strong>脱敏后</strong>的原文片段和 CLI 的原样输出。</p>
+<p>提交前请把真名、公司、金额、地址、证件号、联系方式、内网域名替换成占位符。这份内容会成为那条规则的回归测试，所以它会进仓库、会公开。</p>
+<p>这十一类里每补上一份真实语料，就意味着少一分&quot;这工具装上去第一天就误报&quot;的风险。这件事我自己做不到——我没有别人的合同、别人的简历、别人的报销单。</p>`
+
 function compare() {
   const rows = CHECKS.map(check => {
     const url = `${ORIGIN}/${check.slug}/`
@@ -139,7 +168,23 @@ await writeFile(resolve(root, 'site/checks.json'), JSON.stringify(manifest, null
 
 await mkdir(resolve(root, 'site', 'compare'), { recursive: true })
 await writeFile(resolve(root, 'site', 'compare', 'index.html'), compare())
-const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
+// The corpus page. Every check in this kit claims its rules were tested; this
+// page says which ones were tested against documents strangers wrote, and which
+// were only tested against fixtures this project made up. Nine of the eleven
+// same-shape defects in this kit's history were found the first time a check met
+// a real document, so the gap is the honest disclosure that matters most.
+function corpusPage() {
+  return `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>每条规则的语料状况 · dsh-vertical-kit</title><meta name="description" content="22 个检查里，九个有真实语料、十一个只有自造样例。这份自报说明每条规则的验证程度，以及为什么这件事决定了工具装上去第一天会不会误报。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/corpus/`)}"><style>${styles}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · CORPUS STATUS</p>
+<h1>每条规则的语料状况</h1>
+${CORPUS_BODY}
+<p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
+</main></body></html>`
+}
+await mkdir(resolve(root, 'site', 'corpus'), { recursive: true })
+await writeFile(resolve(root, 'site', 'corpus', 'index.html'), corpusPage())
+const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, `${ORIGIN}/corpus/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
 if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)

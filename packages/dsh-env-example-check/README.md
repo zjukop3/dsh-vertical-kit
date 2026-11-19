@@ -57,6 +57,12 @@ npx env-example-check .env.example --require-comment
 
 Same function over HTTP: `POST /env-example-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## A documented example URL is a placeholder
+
+Reserved example domains and loopback hosts count as placeholders: `example.com`, `example.org`, `example.edu`, `*.test`, `*.invalid`, `localhost`, `127.0.0.1`. A documentation URL pointing at `https://remote.example.edu/...` is as much a placeholder as `<your-host>`.
+
+Found on a real third-party `.env.example`: its only crime was documenting a URL on a reserved example domain, and this check called it a committed literal. A rule that flags correct documentation is a rule that gets the whole file deleted from CI rather than fixed.
+
 ## Honest scope
 
 This checks the example file's **shape**, not whether the real `.env` leaked: it cannot see your repository history, your CI secrets, or whether the placeholder is filled correctly. Run it in a pre-commit hook and in CI on the example file — it catches the copy-paste that ships a credential, which is the failure it exists for.
