@@ -8,6 +8,7 @@ import { readIndexNowConfig } from './indexnow-config.mjs'
 import { resolve } from 'node:path'
 
 import { CHECKS, ORIGIN, REPO, KIT } from "./checks-data.mjs"
+import { DEFECTS, LEDGER } from "./defects.mjs"
 
 const styles = 'body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}'
 
@@ -52,7 +53,7 @@ function home() {
 <h1>行业场景交付检查</h1>
 <p>Agent 已经产出结果、有人准备接手的那一刻，每个检查各自决定一件事：这份文件是否交代了它该交代的东西。${CHECKS.length} 个检查覆盖二十种交付物——合同、发票、商品信息、会议纪要、简历、周报、发布说明、缺陷报告、接口文档、测试报告、提交信息、PR 描述、需求文档、架构决策、Dockerfile、.env 示例、LICENSE、事故复盘、运维手册、上手指南。每个都是单个命令，从文件本身判定，不调用模型。</p>
 <table><tr><th>检查清单</th><th>npm 包</th><th>搜索名词</th><th>它决定什么</th></tr>${rows}</table>
-<p><a href="./corpus/">这 ${CHECKS.length} 个检查的语料状况（哪些真有真实文件跑过）→</a></p>
+<p><a href="./defects/">${LEDGER.total} 个检测器缺陷（每条带复现输入）→</a></p>\n<p><a href="./corpus/">这 ${CHECKS.length} 个检查的语料状况（哪些真有真实文件跑过）→</a></p>
 <p><a href="./compare/">全部 ${CHECKS.length} 个检查一览 →</a>（按文件类型选：合同/发票/纪要/简历/Dockerfile/LICENSE…）</p>
 <h2>定位</h2>
 <p>护城河不在深度——专业产品随时碾压深度。在：离线可跑、出口码接 CI、免费、host 路由与 CLI 调同一函数。定位是「专业人士的前五分钟」，不是「专业人士的替代」。通用的五个检查（哈希/引用/结构/表格/数字）在 <a href="${KIT}">dsh-verify-kit</a>。</p>
@@ -181,12 +182,52 @@ function corpusPage() {
 <p class="eyebrow">DSH VERTICAL KIT · CORPUS STATUS</p>
 <h1>每条规则的语料状况</h1>
 ${CORPUS_BODY}
-<p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
+<p><a href="../">← 回到 ${CHECKS.length} 个检查一览</a></p>
 </main></body></html>`
 }
 await mkdir(resolve(root, 'site', 'corpus'), { recursive: true })
 await writeFile(resolve(root, 'site', 'corpus', 'index.html'), corpusPage())
-const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, `${ORIGIN}/corpus/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
+// The defect ledger. A project that only lists its features is selling
+// something; this page lists the 17 rules that measured a spelling instead of the
+// property, with the input that exposed each one. test/defects.test.js refuses to
+// let it describe behaviour that stopped being true.
+function defectsPage() {
+  const rows = DEFECTS.map(defect => `<tr>
+<td>${defect.n}</td>
+<td><code>${esc(defect.check)}</code><br><code>${esc(defect.rule)}</code></td>
+<td>${esc(defect.wrong)}</td>
+<td>${esc(defect.right)}</td>
+<td>${esc(defect.lesson)}</td>
+<td><code>${esc(defect.foundBy)}</code><br>${esc(defect.fixedIn)}</td>
+</tr>`).join('\n')
+  const sourceList = Object.entries(LEDGER.bySource).sort((a, b) => b[1] - a[1])
+    .map(([source, count]) => `<li><code>${esc(source)}</code> — ${count}</li>`).join('\n')
+  return `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>17 个检测器缺陷 · dsh-vertical-kit</title><meta name="description" content="这 22 个检查里，有 17 条规则曾经量的是拼写而不是性质。每一条的复现输入、当时的错误判定、现在的判定，以及把它找出来的方法。这些声称由 test/defects.test.js 对着当前代码验证。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/defects/`)}"><style>${styles}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · DEFECT LEDGER</p>
+<h1>17 个检测器缺陷</h1>
+<p>这 22 个检查里，有 <strong>${LEDGER.total}</strong> 条规则曾经量的是<strong>拼写</strong>而不是<strong>性质</strong>：规则要求某一种写法，而真实文档用的是另一种同样合法的写法，于是对每一份真实文档都报错。或者反过来——规则写得永远触发不了，测试却绿着。</p>
+<p>下面每一条都写了：复现输入、当时的判定、现在的判定、以及它是怎么被找出来的。<strong>这些声称不是自述</strong>——<code>test/defects.test.js</code> 会把每条复现输入喂给当前的代码，误报的那条必须不再出现，死规则的那条必须出现，行号必须落在标题上。页面里说的和代码里做的，只能是一件事。</p>
+<h2>按发现方式</h2>
+<ul>
+${sourceList}
+</ul>
+<p>分布值得单独看一眼：<strong>${LEDGER.total - (LEDGER.bySource['rules audit'] ?? 0)} 条靠把检查器指向真实文件发现，${LEDGER.bySource['rules audit'] ?? 0} 条靠规则审计扫出</strong>。两种方法各自找到的那批，另一种都找不到——语料找"对真实文件误报"，审计找"规则本身没被验证过"。</p>
+<h2>全表</h2>
+<table>
+<tr><th>#</th><th>检查 / 规则</th><th>当时的判定</th><th>现在的判定</th><th>为什么</th><th>发现方式 / 修复版本</th></tr>
+${rows}
+</table>
+<h2>最该记的一条</h2>
+<p>第 17 条：<code>order</code> 报的行号系统性偏上一行。判定是对的，指针是错的——用户按报的行号去找，会落在版本标题上方的空行。<strong>这件事写了十七轮都没发现</strong>，因为我写 fixture 时只关心"有没有报"，从不关心"报的行号对不对"。第一个陌生人写的 changelog 第一次就暴露了它。</p>
+<p>还有第 12 条：它是<strong>修第 2 条时引入的</strong>。为了防止文档引用本检查自己的输出，我把所有代码块都遮蔽了——于是作者写在安装块 shell 注释里的成功提示也被遮蔽。一个修复造出下一个缺陷，而两者在同一个下午被同一份语料找出来。</p>
+<p><a href="../corpus/">这些缺陷是靠什么语料找出来的 →</a></p>
+<p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
+</main></body></html>`
+}
+await mkdir(resolve(root, 'site', 'defects'), { recursive: true })
+await writeFile(resolve(root, 'site', 'defects', 'index.html'), defectsPage())
+const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, `${ORIGIN}/corpus/`, `${ORIGIN}/defects/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
 if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)
