@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>交接单检查清单 · dsh-handover-check</title><meta name="description" content="一份交接单就能判定：谁交接、谁接手、什么时候生效、事项列了几条、账号与权限有没有点名、未完成的有没有写、接收人签没签字。最容易漏的是账号那一段——它不会报错，只会留下一组没人管的活凭证。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/handover-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 交接单检查 / 离职交接检查</p>
+<h1>交接单检查清单</h1>
+<p><strong>它决定一件事：</strong>这份交接单能不能让接手人在没有人讲解的情况下接住工作与凭证。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-handover-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>handover-person-missing</code></td><td>没有交接人 → error</td></tr><tr><td><code>receiver-missing</code></td><td>没有接收人 → error</td></tr><tr><td><code>date-missing</code></td><td>没有交接日期 → error</td></tr><tr><td><code>date-unlabelled</code></td><td>有日期但没有「交接日期/生效日期」字样 → warn</td></tr><tr><td><code>items-thin</code></td><td>交接事项少于三条 → error</td></tr><tr><td><code>no-owners</code></td><td>事项里没有一条写了负责/接手人 → warn</td></tr><tr><td><code>access-unlisted</code></td><td>没有账号/权限段 → error（写「无账号需交接」可豁免）</td></tr><tr><td><code>access-empty</code></td><td>有账号段但没点名任何具体账号 → warn</td></tr><tr><td><code>pending-missing</code></td><td>没有未完成/遗留事项段 → warn</td></tr><tr><td><code>signoff-missing</code></td><td>没有接收人签字/确认 → error</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx handover-check handover.md --json</code></pre><pre><code>npx handover-check - &lt; handover.md</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 交接单
+
+交接人：张三
+接收人：李四
+2026-11-19
+
+1. 事项一
+2. 事项二
+3. 事项三
+</code></pre></details>
+<pre><code>$ handover-check handover-sample.md
+error access-unlisted 第0行 没有账号/权限段（认得：## 账号与权限、账号：、Access）——交接单不列账号，等于留下一组没人管的活凭证
+error signoff-missing 第0行 没有接收人签字/确认（认得：## 签字确认、已确认、Sign-off）——没签字就没有人核对过交接是否完整
+warn date-unlabelled 第0行 全文有日期 2026-11-19，但没有「交接日期/生效日期」字样
+warn no-owners 第0行 3 条事项里没有一条写了负责/接手人——接手人只能自己猜从哪开始
+warn pending-missing 第0行 没有未完成/遗留事项段（认得：## 未完成事项、遗留：、Known issues）——只看已完成的部分，接手人会在第二周撞墙
+fail: 3 items, 2 errors, 3 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /handover-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>

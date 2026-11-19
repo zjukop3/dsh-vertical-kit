@@ -576,5 +576,37 @@ export const CHECKS = [
 },
     note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',
   },
+  {
+    slug: 'handover-check',
+    npm: 'dsh-handover-check',
+    cli: 'handover-check',
+    noun: '交接单检查 / 离职交接检查',
+    title: '交接单检查清单',
+    description: '一份交接单就能判定：谁交接、谁接手、什么时候生效、事项列了几条、账号与权限有没有点名、未完成的有没有写、接收人签没签字。最容易漏的是账号那一段——它不会报错，只会留下一组没人管的活凭证。',
+    decides: '这份交接单能不能让接手人在没有人讲解的情况下接住工作与凭证',
+    rules: [
+      ['handover-person-missing', '没有交接人 → error'],
+      ['receiver-missing', '没有接收人 → error'],
+      ['date-missing', '没有交接日期 → error'],
+      ['date-unlabelled', '有日期但没有「交接日期/生效日期」字样 → warn'],
+      ['items-thin', '交接事项少于三条 → error'],
+      ['no-owners', '事项里没有一条写了负责/接手人 → warn'],
+      ['access-unlisted', '没有账号/权限段 → error（写「无账号需交接」可豁免）'],
+      ['access-empty', '有账号段但没点名任何具体账号 → warn'],
+      ['pending-missing', '没有未完成/遗留事项段 → warn'],
+      ['signoff-missing', '没有接收人签字/确认 → error'],
+    ],
+    usage: [
+      'npx handover-check handover.md --json',
+      'npx handover-check - < handover.md',
+    ],
+    example: {
+      command: 'handover-check handover-sample.md',
+      fixture: '# 交接单\n\n交接人：张三\n接收人：李四\n2026-11-19\n\n1. 事项一\n2. 事项二\n3. 事项三\n',
+      output: '$ handover-check handover-sample.md\nerror access-unlisted 第0行 没有账号/权限段（认得：## 账号与权限、账号：、Access）——交接单不列账号，等于留下一组没人管的活凭证\nerror signoff-missing 第0行 没有接收人签字/确认（认得：## 签字确认、已确认、Sign-off）——没签字就没有人核对过交接是否完整\nwarn date-unlabelled 第0行 全文有日期 2026-11-19，但没有「交接日期/生效日期」字样\nwarn no-owners 第0行 3 条事项里没有一条写了负责/接手人——接手人只能自己猜从哪开始\nwarn pending-missing 第0行 没有未完成/遗留事项段（认得：## 未完成事项、遗留：、Known issues）——只看已完成的部分，接手人会在第二周撞墙\nfail: 3 items, 2 errors, 3 warnings',
+      exit: '1',
+    },
+    note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
+  },
 ]
 
