@@ -84,3 +84,118 @@ test('an empty file is one empty error', () => {
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
 })
+
+// The copyright rules were reading the first line that mentions the word, which
+// in Apache-2.0 is the definitions section: `"Licensor" shall mean the copyright
+// owner…`. Four of twenty-one third-party LICENSE files were reported as missing
+// both a year and a holder because of it.
+test('the Apache definitions line is not a copyright notice', () => {
+  const apache = `                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   "Licensor" shall mean the copyright owner or entity authorized by
+   the copyright owner that is granting the License.
+`
+  const result = lintLicense(apache)
+  assert.ok(!result.findings.some(f => f.rule === 'copyright-year-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+  assert.ok(!result.findings.some(f => f.rule === 'copyright-holder-missing'))
+})
+
+test('an unfilled appendix slot warns, it does not error', () => {
+  // Apache-2.0, MPL-2.0 and the GPL family all carry
+  // `Copyright [yyyy] [name of copyright owner]` in their appendix; most correct
+  // projects never fill it. Detected as Apache, so the slot is advice.
+  const withTemplate = `                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
+   Copyright [yyyy] [name of copyright owner]
+`
+  const result = lintLicense(withTemplate)
+  assert.ok(result.findings.every(f => f.level === 'warn'), JSON.stringify(result.findings))
+  assert.ok(result.ok, 'an unfilled appendix slot must not fail the file')
+})
+
+test('a filled notice is judged normally, and a future year is still wrong', () => {
+  const mit = `MIT License
+
+Copyright (c) 2026 Someone
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction.
+`
+  const ok = lintLicense(mit)
+  assert.ok(!ok.findings.some(f => f.rule.startsWith('copyright')), JSON.stringify(ok.findings))
+
+  const future = lintLicense(mit.replace('2026', '2099'))
+  assert.ok(future.findings.some(f => f.rule === 'copyright-year-future'))
+})
+
+test('a self-written body with a placeholder left is still an error', () => {
+  // No recognized license means nobody agreed to the text yet, so a slot left in
+  // it is a defect rather than an appendix convention.
+  const custom = `项目使用许可
+
+Copyright (c) <year> <name of author>
+
+你可以自由使用本项目。
+`
+  const result = lintLicense(custom)
+  const finding = result.findings.find(f => f.rule === 'placeholder-left')
+  assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+})
+
+test('a title that disagrees with the body is still the headline error', () => {
+  // The real case: a third-party LICENSE titled MIT whose body is AGPL-3.0.
+  const mismatched = `MIT License
+
+                    GNU AFFERO GENERAL PUBLIC LICENSE
+                       Version 3, 19 November 2007
+
+   Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
+`
+  assert.ok(lintLicense(mismatched).findings.some(f => f.rule === 'title-body-mismatch'))
+})
+
+test('the appendix template slot is reported once, as a warning', () => {
+  // notice-template-unfilled exists so an unfilled Apache appendix produces one
+  // calm warning instead of two angry errors. The rules audit caught that it had
+  // no firing test.
+  const apache = `Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+   Licensed under the Apache License, Version 2.0 (the "License").
+
+   Copyright [yyyy] [name of copyright owner]
+`
+  const result = lintLicense(apache)
+  const finding = result.findings.find(f => f.rule === 'notice-template-unfilled')
+  assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
+  assert.equal(finding.level, 'warn')
+  assert.equal(result.errors, 0, 'an unfilled appendix must not produce an error')
+  assert.equal(result.findings.filter(f => f.rule === 'notice-template-unfilled').length, 1, 'reported once')
+})
+
+test('a filled notice produces no template warning', () => {
+  const apache = `Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+   Copyright 2026 zjukop3
+`
+  assert.ok(!lintLicense(apache).findings.some(f => f.rule === 'notice-template-unfilled'))
+})

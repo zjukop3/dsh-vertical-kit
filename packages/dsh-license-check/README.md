@@ -64,6 +64,18 @@ npx license-check LICENSE --expected MIT
 
 Same function over HTTP: `POST /license-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## A notice, not the first line that says the word
+
+Four of twenty-one third-party LICENSE files were reported as missing both a year and a holder, because the rule read the first line containing `copyright` — which in Apache-2.0 is the definitions section:
+
+    "Licensor" shall mean the copyright owner or entity authorized by …
+
+A notice has a shape: the word or `©` immediately followed by `(c)`, a four-digit year, or a bracket slot. Prose that mentions a copyright owner is not a notice.
+
+Whether the file needs one depends on the license. MIT, BSD and ISC carry the notice in their canonical text, so an empty notice slot there is an error. Apache-2.0, MPL-2.0 and the GPL family ship their appendix as a template to copy elsewhere and most correct projects leave it as-is, so a slot there is one warning — not two errors. A body that is not a recognized license at all keeps error severity: nobody agreed to that text yet.
+
+Measured on the same corpus: 15 of 21 third-party LICENSE files passed before, 19 after, and the two that still fail are real — one body is not a recognized license, one is titled MIT with AGPL-3.0 text.
+
 ## Honest scope
 
 This checks the file's **shape and identity**, not legal effect: it cannot tell you whether the license fits your business, whether your dependencies are compatible with it, or whether the copyright holder is the right legal entity. It verifies that the file says what it appears to say and that nothing was left as a template. That is the part a machine can be trusted with; the rest is for a lawyer.

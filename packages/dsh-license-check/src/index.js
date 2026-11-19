@@ -99,6 +99,15 @@ export function detectLicense(text) {
   return best ? { spdx: best.signature.spdx, id: best.signature.id, matched: best.hits } : null
 }
 
+// A copyright notice has a shape: the word (or ©), then a year or a bracket
+// placeholder, then a holder. Prose that merely says "copyright owner" is not it.
+// The notice form: the word or © immediately followed by `(c)`, a four-digit
+// year, or a bracket slot. Prose that mentions "the copyright owner" does not
+// qualify — that was the Apache definitions false positive.
+const COPYRIGHT_NOTICE = /(?:copyright\s*(?:\(c\)\s*|©\s*|\d{4}|\[(?:yyyy|year)\]|<(?:year|yyyy)>)|©\s*\d{4}|©\s*[\[<])/i
+// Licenses whose canonical body contains the notice, so an empty slot is a real gap.
+const NOTICE_IN_BODY = new Set(['MIT', 'BSD-2', 'BSD-3', 'ISC', '0BSD'])
+
 export function lintLicense(text, rules = {}) {
   const expected = rules.expected ?? null
   const findings = []
@@ -127,11 +136,31 @@ export function lintLicense(text, rules = {}) {
     add('error', 'declared-mismatch', 0, `声明的是 ${expected}，正文却是 ${detected.spdx}——发布元数据与 LICENSE 不一致`)
   }
 
-  // Copyright line: who holds it and when.
-  const copyright = lines.find(line => /copyright/i.test(line))
+  // Copyright line: who holds it and when. A *notice*, not the first line that
+  // happens to mention the word — Apache-2.0 defines "Licensor" as "the copyright
+  // owner" in its definitions, and using that line reported four otherwise
+  // correct LICENSE files as missing both a year and a holder.
+  const copyright = lines.find(line => COPYRIGHT_NOTICE.test(line))
   if (!copyright) {
-    add('error', 'copyright-missing', 0, '没有 Copyright 行——没有版权人，许可授予的对象就不明确')
+    // Whether a notice belongs in the file depends on the license: MIT, BSD and
+    // ISC carry the notice in their canonical text, while Apache-2.0, MPL-2.0 and
+    // the GPL family do not — their appendix is a template to copy, and plenty of
+    // correct projects ship them without a filled-in line.
+    const requiresNotice = NOTICE_IN_BODY.has(detected?.spdx)
+    add(requiresNotice ? 'error' : 'warn', requiresNotice ? 'copyright-missing' : 'copyright-not-stated', 0,
+      requiresNotice
+        ? '没有 Copyright 声明行——这个许可证的正条文里就带着声明位置，空着等于没署名'
+        : `没有 Copyright 声明行——${detected?.spdx ?? '这个许可证'}的正条文不含声明位置，写在 NOTICE 或源码头里也合规；想让文件自证归属可以补一行`)
   } else {
+    // Judge the notice line itself, not whatever line mentioned the word.
+
+    // An unfilled slot in the license's own appendix (`Copyright [yyyy] [name of
+    // copyright owner]`) is not a defect: Apache-2.0, MPL-2.0 and the GPL family
+    // all carry it, and most correct projects never fill it in. One warning, not
+    // two errors, and only when the line really is a template.
+    if (/\[(?:yyyy|year|name of copyright owner)\]|<(?:year|yyyy|name of author)>/i.test(copyright)) {
+      add('warn', 'notice-template-unfilled', lines.indexOf(copyright) + 1, `第 ${lines.indexOf(copyright) + 1} 行是许可证附录里的声明模板没填：「${copyright.trim().slice(0, 40)}」——填上项目归属会更清楚，不填也合规`)
+    } else {
     const year = copyright.match(/\b(\d{4})\b/)
     if (!year) {
       add('error', 'copyright-year-missing', lines.indexOf(copyright) + 1, `第 ${lines.indexOf(copyright) + 1} 行 Copyright 没有年份：「${copyright.trim().slice(0, 40)}」`)
@@ -150,13 +179,31 @@ export function lintLicense(text, rules = {}) {
     if (holder === '' || /^(?:\(c\)|©|all rights reserved)[\s.,]*$/i.test(holder)) {
       add('error', 'copyright-holder-missing', lines.indexOf(copyright) + 1, `第 ${lines.indexOf(copyright) + 1} 行 Copyright 没有版权人名称`)
     }
+    }
   }
 
-  // Leftover template placeholders.
+  // Leftover template placeholders. Same license-awareness as the notice: the
+  // appendix of a recognized license is a template on purpose, so a slot there is
+  // a warning. In a file whose body is not a recognized license, a leftover slot
+  // is an error — nobody agreed to that text yet.
+  // Three cases, and they are not the same thing:
+  //   no recognized license — nobody agreed to this text, a slot left in it is a
+  //     defect;
+  //   MIT/BSD/ISC — the notice is the one thing the body expects the author to
+  //     fill, so an unfilled slot there is a defect too;
+  //   Apache-2.0, MPL-2.0, the GPL family — the appendix is a template to copy
+  //     elsewhere and most correct projects leave it as-is, so it is advice.
+  const noticeExpected = NOTICE_IN_BODY.has(detected?.spdx)
+  const templateExpected = Boolean(detected) && !noticeExpected
   for (const [index, line] of lines.entries()) {
     for (const pattern of PLACEHOLDERS) {
       if (pattern.test(line)) {
-        add('error', 'placeholder-left', index + 1, `第 ${index + 1} 行模板占位符没填：「${line.trim().slice(0, 40)}」`)
+        // Severity follows the license, not the shape of the line: MIT/BSD/ISC
+        // expect the notice filled in, Apache/MPL/GPL ship the appendix as a
+        // template on purpose, and an unrecognized body is nobody's agreement.
+        const level = templateExpected ? 'warn' : 'error'
+        const rule = level === 'warn' ? 'placeholder-in-appendix' : 'placeholder-left'
+        add(level, rule, index + 1, `第 ${index + 1} 行模板占位符没填：「${line.trim().slice(0, 40)}」${templateExpected ? '——这是许可证附录自带的槽位，填上更清楚，不填也合规' : '——这份许可证要求把声明填上，占位符留着等于没署名'}`)
         break
       }
     }

@@ -255,6 +255,51 @@ test('third-party READMEs are read, and the two false positives stay fixed', asy
   }
 })
 
+test('third-party LICENSE files are read, and the copyright rules stay precise', async () => {
+  // 21 LICENSE files from other plugin repositories. Not "must pass": two of them
+  // are genuinely broken (one body is not a recognised license, one is titled MIT
+  // with AGPL-3.0 text) and that is a finding, not a failure. What is asserted is
+  // that the false positives found on this corpus do not come back.
+  const base = join(parent, 'dsh-ecosystem-research', 'sources', 'plugins')
+  const paths = []
+  if (await exists(base)) {
+    for (const repo of await readdir(base, { withFileTypes: true })) {
+      if (!repo.isDirectory()) continue
+      for (const name of await readdir(join(base, repo.name))) {
+        if (/^LICEN[CS]E/i.test(name)) paths.push(join(base, repo.name, name))
+      }
+    }
+  }
+  assert.ok(paths.length >= 15, `expected the third-party LICENSE corpus, found ${paths.length}`)
+
+  const results = []
+  for (const path of paths) results.push({ path, text: await readFile(path, 'utf8'), result: lintLicense(await readFile(path, 'utf8')) })
+
+  // 1. Apache-2.0 defines "Licensor" as "the copyright owner" — that line is not
+  //    a notice, and using it reported four correct files as missing both a year
+  //    and a holder.
+  for (const entry of results.filter(e => /Apache License/.test(e.text))) {
+    assert.ok(!entry.result.findings.some(f => f.rule === 'copyright-year-missing'),
+      `${entry.path}: the definitions line is not a copyright notice`)
+  }
+
+  // 2. An unfilled appendix slot in a license that ships one is advice, not an error.
+  for (const entry of results) {
+    if (!/Apache License/.test(entry.text)) continue
+    for (const finding of entry.result.findings) {
+      assert.notEqual(finding.rule, 'placeholder-left',
+        `${entry.path}: an Apache appendix slot must be a warning, not an error`)
+    }
+  }
+
+  // 3. A real defect is still reported: title says one thing, body says another.
+  const mismatched = results.find(entry => entry.path.includes('dsh-guizang-design'))
+  if (mismatched) {
+    assert.ok(mismatched.result.findings.some(f => f.rule === 'title-body-mismatch'),
+      'a LICENSE titled MIT with AGPL-3.0 text must still be reported')
+  }
+})
+
 test('no real commit in this project is blocked for its type prefix', async () => {
   // The history is written in `Verb noun` style plus Chinese, not Conventional
   // Commits. That is a house style, so it must never be an error here: the
