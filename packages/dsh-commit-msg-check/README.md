@@ -2,6 +2,12 @@
 
 Commit-message hygiene from a single message. A commit is decidable: it has a **type prefix** from a known set, a **subject that fits a git log line**, a **blank line before the body**, and **breaking changes announced in a trailer** rather than buried in the subject. This verifies exactly those — one file, no git history needed.
 
+## 前置要求
+
+Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
+
+跑通大概 2 分钟。卡住了在仓库开 issue，别自己啃。
+
 <!-- example:start -->
 ## 真实输入输出
 

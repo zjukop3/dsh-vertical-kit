@@ -8,7 +8,7 @@ export const inject = ['webServer']
 
 const PREREQ_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:前置|准备|依赖|要求|prerequisit|requirement|before you start|what you need)/i
 const PREREQ_LINE = /^[^\n]*(?:需要先|先安装|前置条件[：:，\s]|要求[：:，\s]|prerequisites?[：:\s])/i
-const SUCCESS_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:成功|预期|完成后|验证|you should see|expected|success|verify)/i
+const SUCCESS_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:成功|预期|完成后|验证|输出|示例|输出示例|you should see|expected|success|verify|output|example|demo|what you get)/i
 const SUCCESS_LINE = /^[^\n]*(?:应该看到|你会看到|成功后|完成后|you should see|expected output)/i
 const HELP_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:求助|帮助|联系|遇到问题|getting help|troubleshoot|support)/i
 const HELP_LINE = /(?:提 issue|开 issue|联系我们|加群|在 \S* 提问|ask (?:in|on)|open an issue|file an issue)/i
@@ -17,6 +17,19 @@ const TIME_ESTIMATE = /\d+\s*(?:分钟|分|小时|minutes?|mins?|hours?|hrs?)|\b
 // A pasteable command: a fenced block containing an install-ish command.
 const FENCE = /```[\s\S]*?```/g
 const COMMAND_HINT = /\b(?:npm|pnpm|yarn|npx|pip|pipx|uv|brew|apt|apt-get|dnf|cargo|go install|git clone|curl|docker run|make)\b/
+
+// Prose only: fenced blocks and table rows are not the document speaking.
+// Without this, a README passes `prereq-missing` because its own example output
+// quotes the sentence "认得：## 前置条件、需要先…" — the check reads a rule's
+// message as if it were the reader's prerequisites. Same for the rules table:
+// "no 前置条件 section" is one space away from being a prerequisites line.
+export function proseOnly(text) {
+  const withoutFences = String(text).replace(FENCE, blank => blank.replace(/[^\n]/g, ' '))
+  return withoutFences
+    .split('\n')
+    .map(line => (/^\s*\|/.test(line) ? '' : line))
+    .join('\n')
+}
 
 export function codeBlocks(text) {
   return [...String(text).matchAll(FENCE)].map(match => {
@@ -31,13 +44,16 @@ export function lintOnboarding(text, rules = {}) {
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = String(text).split('\n')
+  // Everything structural is judged on prose; the command check below still
+  // reads the real text, because that is the one rule about code.
+  const prose = proseOnly(text).split('\n')
 
   if (String(text).trim() === '') {
     return { ok: false, checked: { blocks: 0 }, errors: 1, warnings: 0, findings: [{ level: 'error', rule: 'empty', line: 0, message: '文档是空的' }] }
   }
 
   // Prerequisites: what must already be installed.
-  const hasPrereq = lines.some(line => PREREQ_HEADING.test(`\n${line}`)) || lines.some(line => PREREQ_LINE.test(line))
+  const hasPrereq = prose.some(line => PREREQ_HEADING.test(`\n${line}`)) || prose.some(line => PREREQ_LINE.test(line))
   if (!hasPrereq) add('error', 'prereq-missing', 0, '没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对')
 
   // A pasteable command: the thing onboarding is actually for.
@@ -48,11 +64,11 @@ export function lintOnboarding(text, rules = {}) {
   }
 
   // Success: what the reader should see when it worked.
-  const hasSuccess = lines.some(line => SUCCESS_HEADING.test(`\n${line}`)) || lines.some(line => SUCCESS_LINE.test(line))
-  if (!hasSuccess) add('error', 'success-missing', 0, '没有「成功长什么样」段（认得：## 你应该看到、成功后…、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了')
+  const hasSuccess = prose.some(line => SUCCESS_HEADING.test(`\n${line}`)) || prose.some(line => SUCCESS_LINE.test(line))
+  if (!hasSuccess) add('error', 'success-missing', 0, '没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了')
 
   // Help: where to go when it fails.
-  if (!lines.some(line => HELP_HEADING.test(`\n${line}`)) && !HELP_LINE.test(text)) {
+  if (!prose.some(line => HELP_HEADING.test(`\n${line}`)) && !HELP_LINE.test(proseOnly(text))) {
     add('warn', 'help-missing', 0, '没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项')
   }
 

@@ -83,3 +83,46 @@ test('a version heading is not required to carry the date; either counts', () =>
   assert.ok(!result.findings.some(finding => finding.rule === 'version-missing'))
   assert.ok(!result.findings.some(finding => finding.rule === 'date-missing'))
 })
+
+test('the Keep a Changelog bracketed heading is a version heading', () => {
+  // `## [1.2.0] - 2026-11-17` is what Keep a Changelog prescribes. Rejecting it
+  // was the check measuring its own preferred spelling: all three of this
+  // project's own changelogs used it and all three were reported version-missing.
+  for (const heading of ['## 1.2.0', '## v1.2.0', '## [1.2.0]', '## [1.2.0] - 2026-11-17', '### [v1.2.0] - 2026-11-17']) {
+    const doc = `${heading}\n\n- nothing broke\n`
+    const result = lintReleaseNotes(doc, { requireUpgrade: false })
+    assert.ok(!result.findings.some(f => f.rule === 'version-missing'), heading)
+  }
+})
+
+test('ordering still reads bracketed headings, newest first', () => {
+  const doc = `# Changelog
+
+## [1.2.0] - 2026-11-17
+
+- new
+
+## [1.1.0] - 2026-10-01
+
+- old
+`
+  const rows = versionHeadings(doc)
+  assert.deepEqual(rows.map(r => `${r.major}.${r.minor}`), ['1.2', '1.1'])
+  const result = lintReleaseNotes(doc, { requireUpgrade: false })
+  assert.ok(!result.findings.some(f => f.rule === 'order'), JSON.stringify(result.findings))
+})
+
+test('a bracketed changelog that runs oldest-first is still wrong', () => {
+  const doc = `# Changelog
+
+## [1.1.0] - 2026-10-01
+
+- old
+
+## [1.2.0] - 2026-11-17
+
+- new
+`
+  const result = lintReleaseNotes(doc, { requireUpgrade: false })
+  assert.ok(result.findings.some(f => f.rule === 'order'), JSON.stringify(result.findings))
+})

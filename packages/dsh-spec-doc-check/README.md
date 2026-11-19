@@ -2,6 +2,12 @@
 
 Spec-doc hygiene from markdown. A spec is decidable: it names the **problem**, states **acceptance criteria** a reader could actually check, and says what is **deliberately out of scope** — plus the rule that earns this package: a criterion written as a wish (`体验良好`, `速度合理`) can be neither accepted nor rejected.
 
+## 前置要求
+
+Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
+
+跑通大概 2 分钟。卡住了在仓库开 issue，别自己啃。
+
 <!-- example:start -->
 ## 真实输入输出
 

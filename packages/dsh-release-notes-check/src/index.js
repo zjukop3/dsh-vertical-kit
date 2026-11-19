@@ -5,7 +5,10 @@
 export const name = 'release-notes-check'
 export const inject = ['webServer']
 
-const VERSION_HEADING = /(?:^|\n)#{1,3}\s*v?\d+\.\d+/
+// `## 1.2.0`, `## v1.2.0`, and `## [1.2.0] - 2026-11-15`. The bracketed form is
+// what Keep a Changelog prescribes and what most changelogs actually use; a
+// check that rejects the standard format is measuring its own opinion.
+const VERSION_HEADING = /(?:^|\n)#{1,3}\s*\[?\s*v?\d+\.\d+/
 const VERSION_LINE = /(?:版本|version)\s*[：:]\s*v?\d+\.\d+/i
 const VERSION_TOKEN = /\bv?\d+\.\d+(\.\d+)?\b/
 const DATE_HEADING = /(?:^|\n)#{1,3}[^\n]*\d{4}[-/.]\d{1,2}/
@@ -14,7 +17,7 @@ const BREAKING_HEADING = /(?:^|\n)#{1,4}[^\n]*(?:breaking|破坏|不兼容|重�
 const BREAKING_LINE = /^[^\n]*(?:breaking|破坏性|不兼容|重大变更)/im
 const UPGRADE_HEADING = /(?:^|\n)#{1,4}[^\n]*(?:升级|迁移|upgrade|migration|更新指南)/i
 const UPGRADE_LINE = /^[^\n]*(?:升级|迁移|upgrade|migration)/im
-const ORDER_HEADING = /(?:^|\n)#{1,3}\s*v?(\d+)\.(\d+)(?:\.(\d+))?/g
+const ORDER_HEADING = /(?:^|\n)#{1,3}\s*\[?\s*v?(\d+)\.(\d+)(?:\.(\d+))?\]?/g
 
 // Version headings in document order — used to check reverse-chronological
 // ordering, the one convention every changelog reader relies on.
@@ -35,7 +38,7 @@ export function lintReleaseNotes(text, rules = {}) {
 
   // Version: a heading like `## 1.2.0` or a 版本： line.
   const hasVersion = lines.some(line => VERSION_HEADING.test(`\n${line}`)) || lines.some(line => VERSION_LINE.test(line))
-  if (!hasVersion) add('error', 'version-missing', 0, '没有版本号标题（认得：## 1.2.0、## v1.2.0、版本：1.2.0）')
+  if (!hasVersion) add('error', 'version-missing', 0, '没有版本号标题（认得：## 1.2.0、## v1.2.0、## [1.2.0] - 2026-11-17、版本：1.2.0）')
 
   // Date: a heading or line carrying a full date.
   const hasDate = lines.some(line => DATE_HEADING.test(`\n${line}`)) || lines.some(line => DATE_LINE.test(line))

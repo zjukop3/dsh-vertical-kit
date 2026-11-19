@@ -571,7 +571,7 @@ export const CHECKS = [
     example: {
       "command": "onboarding-check onb-sample.md",
       "fixture": "# 上手\n\n这个项目挺好用的，大家可以看看。",
-      "output": "$ onboarding-check onb-sample.md\nerror prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对\nerror command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做\nerror success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、成功后…、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了\nwarn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项\nwarn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做\nfail: 0/0 blocks runnable, 3 errors, 2 warnings",
+      "output": "$ onboarding-check onb-sample.md\nerror prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对\nerror command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做\nerror success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了\nwarn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项\nwarn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做\nfail: 0/0 blocks runnable, 3 errors, 2 warnings",
       "exit": "1"
 },
     note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',

@@ -2,6 +2,12 @@
 
 Release-note hygiene from markdown. A changelog is decidable in its **bookkeeping**: it must say **which version**, **when**, pair every **breaking change** with an **upgrade path**, and list versions **newest first** — the one convention every changelog reader relies on. This verifies exactly those.
 
+## 前置要求
+
+Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
+
+跑通大概 2 分钟。卡住了在仓库开 issue，别自己啃。
+
 <!-- example:start -->
 ## 真实输入输出
 
@@ -39,7 +45,7 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 
 | rule | level | meaning |
 | --- | --- | --- |
-| `version-missing` | error | no version heading (## 1.2.0 / ## v1.2.0) or 版本： line |
+| `version-missing` | error | no version heading (`## 1.2.0`, `## v1.2.0`, `## [1.2.0] - 2026-11-17`) or 版本： line |
 | `date-missing` | error | no full date anywhere (2026-11-17) |
 | `order` | error | a newer version heading appears after an older one |
 | `breaking-without-upgrade` | error | a breaking change claimed with no upgrade/migration section — the reader is stranded |
@@ -53,6 +59,12 @@ npx release-notes-check notes.md --no-require-upgrade
 ```
 
 Same function over HTTP: `POST /release-notes-check/api` with `{"text": "…"}` or `{"path": "…"}`, optional `{"rules": {"requireUpgrade": false}}` — the CLI and the host route share one implementation, so they cannot disagree.
+
+## The bracketed heading
+
+`## [1.2.0] - 2026-11-17` is the heading Keep a Changelog prescribes, and it is what most changelogs actually use. Until 0.2.0 this check only accepted `## 1.2.0` and `## v1.2.0`, so it reported `version-missing` on every bracketed changelog it was pointed at — including all three of this project's own, which is how the bug was found. A format check that rejects the standard format is measuring its own spelling, not the document's.
+
+Both forms are accepted now, and the ordering rule reads them the same way: a changelog that runs oldest-first is still reported, bracketed or not.
 
 ## Honest scope
 

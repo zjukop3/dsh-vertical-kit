@@ -16,7 +16,7 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | [dsh-bug-report-check](packages/dsh-bug-report-check) | engineering | title, environment, numbered repro steps, expected vs actual |
 | [dsh-api-doc-check](packages/dsh-api-doc-check) | engineering | method+path endpoints, examples, auth model, error shape |
 | [dsh-test-report-check](packages/dsh-test-report-check) | engineering | counts that reconcile, environment, failure detail for every failure |
-| [dsh-commit-msg-check](packages/dsh-commit-msg-check) | engineering | type prefix, subject length, no trailing period, blank line, breaking trailer |
+| [dsh-commit-msg-check](packages/dsh-commit-msg-check) | engineering | subject length, no trailing period, blank line, breaking trailer (type prefix warns; `--require-type` makes it an error) |
 | [dsh-dockerfile-check](packages/dsh-dockerfile-check) | engineering / ops | pinned base, non-root USER, no secrets in layers, COPY over ADD, package cleanup |
 | [dsh-env-example-check](packages/dsh-env-example-check) | engineering / ops | placeholders only, no committed credential, no duplicate key, purpose comments |
 | [dsh-license-check](packages/dsh-license-check) | legal / open source | recognized body, title matches body, copyright holder and year, no leftover template |
@@ -35,11 +35,31 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 20 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 159 tests, no network
+npm test   # 206 tests, no network
 ```
+
+## 输出示例
+
+真有失败时，报告里带着包名、规则名和行号，直接指到那一行：
+
+```text
+$ npm run check
+ok   dsh-adr-check@0.1.0
+ok   dsh-agreement-check@0.1.3
+...
+20 packages, 20 clean, 0 with gaps
+```
+
+每个包的 README 顶部还有一段「真实输入输出」：一份真的输入文件、它逐字跑出来的输出、以及出口码。那段例子由 `scripts/sync-readme-examples.mjs` 从 `scripts/checks-data.mjs` 注入，`npm test` 里有一条用例会重跑每个 CLI 并逐字比对，所以例子不会漂。
 
 MIT.
 
+
+## 前置要求
+
+Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
+
+跑通大概 2 分钟。卡住了在仓库开 issue，别自己啃。
 
 ## 在 DSH 中安装（索引源）
 

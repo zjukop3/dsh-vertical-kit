@@ -2,6 +2,12 @@
 
 LICENSE hygiene from one file. A license file is decidable in the three ways that cost real money when wrong: whether the body is a **recognized license** at all, whether the **title agrees with the body**, and whether the **copyright line names someone with a plausible year** — plus the template placeholders nobody notices until a lawyer reads the file.
 
+## 前置要求
+
+Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
+
+跑通大概 2 分钟。卡住了在仓库开 issue，别自己啃。
+
 <!-- example:start -->
 ## 真实输入输出
 

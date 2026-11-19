@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintOnboarding, codeBlocks } from '../src/index.js'
+import { lintOnboarding, codeBlocks, proseOnly } from '../src/index.js'
 
 const good = `# 上手（约 10 分钟）
 
@@ -87,4 +87,95 @@ test('an empty document is one empty error', () => {
   const result = lintOnboarding('  \n')
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
+})
+
+test('a doc that quotes the rule text in a fence does not thereby have prerequisites', () => {
+  // The real case: a README showing what this check prints. The example output
+  // contains the sentence 「认得：## 前置条件、需要先…」, which the prereq line
+  // regex happily matched. The document was passing its own check by quoting
+  // the check. Fenced blocks are not the document speaking.
+  const doc = `# 某检查
+
+## 用法
+
+\`\`\`bash
+npm test
+\`\`\`
+
+\`\`\`text
+error prereq-missing 第0行 没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）
+\`\`\`
+
+## 输出示例
+
+\`\`\`text
+ok: 0 errors
+\`\`\`
+
+跑通约 2 分钟。卡住在仓库开 issue。
+`
+  const result = lintOnboarding(doc)
+  assert.ok(result.findings.some(f => f.rule === 'prereq-missing' && f.level === 'error'), 'the fence must not satisfy it')
+})
+
+test('a rules table row mentioning the rule name is not a prerequisites line', () => {
+  const doc = `# 某检查
+
+## 用法
+
+\`\`\`bash
+npm test
+\`\`\`
+
+| rule | level | meaning |
+| --- | --- | --- |
+| \`prereq-missing\` | error | no 前置条件 section — the reader discovers a missing permission |
+
+## 输出示例
+
+\`\`\`text
+ok
+\`\`\`
+
+跑通约 2 分钟。卡住在仓库开 issue。
+`
+  const result = lintOnboarding(doc)
+  assert.ok(result.findings.some(f => f.rule === 'prereq-missing'), 'a table cell is not a section')
+})
+
+test('proseOnly keeps line numbers so findings still point at the right row', () => {
+  const text = 'a\n\n```\nfront\n```\n## 前置要求\n'
+  const masked = proseOnly(text).split('\n')
+  assert.equal(masked.length, text.split('\n').length)
+  assert.equal(masked[5], '## 前置要求')
+  assert.ok(!masked[3].includes('front'))
+})
+
+test('a real-output section counts as what success looks like', () => {
+  // 「## 真实输入输出」 with the verbatim CLI output is a stronger answer to
+  // "what should I see" than a heading that says 你应该看到. Recognise it.
+  for (const heading of ['## 输出示例', '## 示例输出', '## Output', '## Example output', '## Demo', '## 真实输入输出']) {
+    const doc = `# 上手
+
+## 前置要求
+
+Node.js >= 22.19。
+
+## 用法
+
+\`\`\`bash
+npx thing ./
+\`\`\`
+
+${heading}
+
+\`\`\`text
+ok: 0 errors
+\`\`\`
+
+跑通约 2 分钟。出问题在仓库开 issue，ask in the tracker.
+`
+    const result = lintOnboarding(doc)
+    assert.ok(!result.findings.some(f => f.rule === 'success-missing'), heading)
+  }
 })
