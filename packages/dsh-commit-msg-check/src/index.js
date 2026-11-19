@@ -1,7 +1,21 @@
-// A commit message is decidable from its text: a type prefix from a known set,
-// a subject that fits in a git log line, no trailing period, a blank line
-// before the body, and breaking changes announced in the body rather than
-// buried in the subject. This verifies exactly those.
+// A commit message is decidable from its text: a subject that fits in a git log
+// line, no trailing period, a blank line before the body, breaking changes
+// announced in the body rather than buried in the subject, and — optionally —
+// a type prefix from a known set. This verifies exactly those.
+//
+// Two kinds of rule live here, and they are not the same kind of thing:
+//
+//   convention-neutral — the subject wraps in git log, the period reads as a
+//   truncated sentence, a missing blank line folds the body into the subject,
+//   a `!` alone loses the trailer downstream tools parse. Every repo, in every
+//   language, is wrong in the same way.
+//
+//   convention-carrying — `feat:`/`fix:` is the Conventional Commits spec.
+//   Plenty of good repos use `Verb noun`, and a Chinese subject has no English
+//   type word to offer. Erroring on those is not catching a mistake; it is
+//   imposing a house style on a stranger, and the check gets uninstalled on
+//   the first commit. So this one warns by default and errors only when the
+//   repo asks for it via `requireType: 'error'`.
 
 export const name = 'commit-msg-check'
 export const inject = ['webServer']
@@ -28,9 +42,19 @@ export function parseCommit(text) {
   }
 }
 
+// `requireType` is 'warn' (default), 'error', or 'off'. Booleans from 0.1.0
+// still work: true meant error, false meant off. Anything unrecognised falls
+// back to the default rather than silently disabling a check.
+export function typePolicy(rules = {}) {
+  const requested = rules.requireType ?? 'warn'
+  if (requested === true) return 'error'
+  if (requested === false) return 'off'
+  return ['warn', 'error', 'off'].includes(requested) ? requested : 'warn'
+}
+
 export function lintCommitMessage(text, rules = {}) {
   const maxSubject = rules.maxSubject ?? 72
-  const requireType = rules.requireType ?? true
+  const policy = typePolicy(rules)
   const types = rules.types ?? TYPES
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
@@ -41,9 +65,14 @@ export function lintCommitMessage(text, rules = {}) {
     return { ok: false, checked: { lines: lines.length }, errors: 1, warnings: 0, findings: [{ level: 'error', rule: 'empty', line: 0, message: '提交信息为空' }] }
   }
 
-  // Type prefix.
+  // Type prefix. A warning by default, on purpose — see the note at the top.
   if (commit.type === null) {
-    if (requireType) add('error', 'type-missing', 1, `第 1 行没有类型前缀（认得：${types.join('/')}）——「${commit.header.slice(0, 30)}」看不出这次改动的性质`)
+    if (policy !== 'off') {
+      const why = policy === 'error'
+        ? '看不出这次改动的性质'
+        : '这条是团队约定，不是 git log 的硬要求——想强制就传 rules.requireType: "error"'
+      add(policy, 'type-missing', 1, `第 1 行没有类型前缀（认得：${types.join('/')}）——「${commit.header.slice(0, 30)}」${why}`)
+    }
   } else if (!types.includes(commit.type)) {
     add('warn', 'type-unknown', 1, `第 1 行类型「${commit.type}」不在已知集合（${types.join('/')}）——自定义类型可以，但要确认是有意的`)
   }
@@ -74,7 +103,7 @@ export function lintCommitMessage(text, rules = {}) {
   const order = { error: 0, warn: 1 }
   findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
   const errors = findings.filter(finding => finding.level === 'error').length
-  return { ok: errors === 0, checked: { type: commit.type, scope: commit.scope, subject: length, lines: lines.length }, errors, warnings: findings.length - errors, findings }
+  return { ok: errors === 0, checked: { type: commit.type, scope: commit.scope, subject: length, lines: lines.length, typePolicy: policy }, errors, warnings: findings.length - errors, findings }
 }
 
 export function apply(ctx, config = {}) {

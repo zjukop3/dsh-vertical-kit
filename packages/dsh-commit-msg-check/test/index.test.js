@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintCommitMessage, parseCommit, TYPES } from '../src/index.js'
+import { lintCommitMessage, parseCommit, typePolicy, TYPES } from '../src/index.js'
 
 const good = `feat(api): add pagination to the items endpoint
 
@@ -30,10 +30,55 @@ test('parseCommit reads the bang', () => {
   assert.equal(parsed.type, 'feat')
 })
 
-test('a bare sentence is type-missing', () => {
+test('a bare sentence is type-missing, and that is a warning by default', () => {
+  // The type prefix is Conventional Commits, a house style. Erroring on it by
+  // default would block every commit of a repo that never adopted it, which is
+  // how a check gets uninstalled on day one. The four shape rules below stay
+  // errors because they are wrong in every repo, in every language.
   const result = lintCommitMessage('修了几个 bug\n')
-  assert.ok(result.findings.some(finding => finding.rule === 'type-missing'))
+  const finding = result.findings.find(f => f.rule === 'type-missing')
+  assert.equal(finding.level, 'warn')
+  assert.equal(result.ok, true)
+  assert.equal(result.errors, 0)
+})
+
+test('requireType: "error" makes the type prefix blocking', () => {
+  const result = lintCommitMessage('修了几个 bug\n', { requireType: 'error' })
+  const finding = result.findings.find(f => f.rule === 'type-missing')
+  assert.equal(finding.level, 'error')
   assert.equal(result.ok, false)
+})
+
+test('the 0.1.0 booleans still mean what they meant', () => {
+  assert.equal(typePolicy({ requireType: true }), 'error')
+  assert.equal(typePolicy({ requireType: false }), 'off')
+  assert.equal(lintCommitMessage('修了几个 bug\n', { requireType: true }).ok, false)
+  assert.ok(!lintCommitMessage('修了几个 bug\n', { requireType: false }).findings.some(f => f.rule === 'type-missing'))
+})
+
+test('requireType: "off" drops the finding entirely', () => {
+  const result = lintCommitMessage('修了几个 bug\n', { requireType: 'off' })
+  assert.ok(!result.findings.some(f => f.rule === 'type-missing'))
+  assert.equal(result.ok, true)
+})
+
+test('an unrecognised requireType falls back to warn rather than off', () => {
+  // Silently disabling a check because someone typo'd the option is the one
+  // failure mode worth avoiding: "wran" must not mean "no type check".
+  assert.equal(typePolicy({ requireType: 'wran' }), 'warn')
+  assert.equal(typePolicy({}), 'warn')
+  assert.equal(lintCommitMessage('修了几个 bug\n', { requireType: 'wran' }).warnings, 1)
+})
+
+test('a repo that never adopted Conventional Commits is not error-blocked', () => {
+  // This is the dogfood result: 102 real commits from three repos written in
+  // `Verb noun` style and Chinese, 61 of them with no type prefix. Under a
+  // default error that repo cannot commit at all. The layer that stays is the
+  // one that is actually wrong: 58 subjects over 72 characters.
+  const header = 'Record: 这条提交信息根本没超过七十二个字符所以只该报警告，别把风格当错误'
+  const flat = lintCommitMessage(`${header}\n`)
+  assert.equal(flat.errors, 0, 'a convention miss must not block the commit')
+  assert.equal(flat.ok, true)
 })
 
 test('an unknown type is a warn, not an error', () => {

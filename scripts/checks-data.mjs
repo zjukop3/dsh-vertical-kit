@@ -290,10 +290,10 @@ export const CHECKS = [
     cli: 'commit-msg-check',
     noun: '提交信息检查 / commit message 检查',
     title: '提交信息检查清单',
-    description: '一条提交信息就能判定：类型前缀、主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里。可以直接挂 commit-msg 钩子。',
+    description: '一条提交信息就能判定：主题长度（git log 折行处）、标题不写句号、正文前必须有空行、破坏性变更用 trailer 而不是埋主题里、以及可选的类型前缀。可以直接挂 commit-msg 钩子。',
     decides: '这条提交信息是否可被工具解析、在 log 里可读',
     rules: [
-      ['type-missing', '没有 type(scope): subject 前缀 → error'],
+      ['type-missing', '没有 type(scope): subject 前缀 → warn（团队约定；--require-type 才升为 error）'],
       ['type-unknown', '类型不在已知集合（feat/fix/docs/…）→ warn'],
       ['subject-long', '主题超过上限（默认 72）→ error'],
       ['subject-empty', '冒号后没有主题 → error'],
@@ -304,14 +304,15 @@ export const CHECKS = [
     usage: [
       'npx commit-msg-check .git/COMMIT_EDITMSG --json',
       'npx commit-msg-check msg.txt --max-subject 50',
+      'npx commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀',
     ],
     example: {
       "command": "commit-msg-check commit-sample.txt",
-      "fixture": "修了几个 bug",
-      "output": "$ commit-msg-check commit-sample.txt\nerror type-missing 第1行 第 1 行没有类型前缀（认得：feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert）——「修了几个 bug」看不出这次改动的性质\nfail: type=- subject=8ch, 1 errors, 0 warnings",
+      "fixture": "修复登录页在弱网环境下偶发超时却没有任何反馈的问题，补上错误文案、重试按钮与失败提示，并新增三条回归测试，覆盖该路径、重试次数上限以及超时之后的状态回收逻辑",
+      "output": "$ commit-msg-check commit-sample.txt\nerror subject-long 第1行 第 1 行主题 78 字，超过 72——git log 会折行，细节放正文\nwarn type-missing 第1行 第 1 行没有类型前缀（认得：feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert）——「修复登录页在弱网环境下偶发超时却没有任何反馈的问题，补上错误」这条是团队约定，不是 git log 的硬要求——想强制就传 rules.requireType: \"error\"\nfail: type=- subject=78ch, 1 errors, 1 warnings (type policy: warn)",
       "exit": "1"
 },
-    note: '只验信息形状，不验提交内容：它验证信息能被工具解析、在 log 里可读；diff 是否做了主题说的事，靠评审。信息全过规则但描述错了改动，这个工具无话可说，也不假装有。',
+    note: '两类规则不是一回事。「与流派无关」的四条——主题超长、句尾句号、正文前缺空行、! 没有配 trailer——任何仓库、任何语言都是同样地错，所以是 error。「带流派」的一条——类型前缀是 Conventional Commits 的约定，用 `Verb 名词` 写的仓库和中文提交信息没有英文类型词可用，对它们报错不是在挑错，是把自己的规矩套在别人头上；这类默认 warn，要强制传 --require-type。只验信息形状，不验提交内容：diff 是否做了主题说的事，靠评审。',
   },
   {
     slug: 'dockerfile-check',

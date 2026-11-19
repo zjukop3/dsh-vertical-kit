@@ -6,7 +6,7 @@ import { lintCommitMessage } from '../src/index.js'
 const args = process.argv.slice(2)
 const target = args.find(argument => !argument.startsWith('--'))
 if (!target) {
-  process.stderr.write('usage: commit-msg-check <COMMIT_EDITMSG|msg.txt> [--json] [--max-subject 72] [--warnings-fail]\n')
+  process.stderr.write('usage: commit-msg-check <COMMIT_EDITMSG|msg.txt> [--json] [--max-subject 72] [--require-type] [--no-require-type]\n')
   process.exit(2)
 }
 const option = name => {
@@ -16,13 +16,17 @@ const option = name => {
 const rules = {}
 const maxSubject = option('--max-subject')
 if (maxSubject !== undefined) rules.maxSubject = maxSubject
+// Type prefix is a team convention, not a git requirement: warn by default.
+// --require-type makes it an error; --no-require-type drops the finding.
+if (args.includes('--require-type')) rules.requireType = 'error'
+if (args.includes('--no-require-type')) rules.requireType = 'off'
 try {
   const result = await lintCommitMessage(await readFile(target, 'utf8'), rules)
   if (args.includes('--json')) {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
   } else {
     for (const finding of result.findings) process.stdout.write(`${finding.level} ${finding.rule} 第${finding.line}行 ${finding.message}\n`)
-    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: type=${result.checked.type ?? '-'} subject=${result.checked.subject ?? '-'}ch, ${result.errors} errors, ${result.warnings} warnings\n`)
+    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: type=${result.checked.type ?? '-'} subject=${result.checked.subject ?? '-'}ch, ${result.errors} errors, ${result.warnings} warnings (type policy: ${result.checked.typePolicy})\n`)
   }
   process.exit(result.ok ? 0 : 1)
 } catch (error) {
