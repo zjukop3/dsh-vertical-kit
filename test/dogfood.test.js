@@ -25,6 +25,7 @@ import { lintLicense } from '../packages/dsh-license-check/src/index.js'
 import { lintCommitMessage } from '../packages/dsh-commit-msg-check/src/index.js'
 import { lintAdr } from '../packages/dsh-adr-check/src/index.js'
 import { lintIncidentReport } from '../packages/dsh-incident-report-check/src/index.js'
+import { lintOpsRunbook } from '../packages/dsh-ops-runbook-check/src/index.js'
 
 const root = resolve(import.meta.dirname, '..')
 const parent = resolve(root, '..')
@@ -121,6 +122,27 @@ test('every incident postmortem this project wrote passes incident-report-check'
   const failures = []
   for (const { path, text } of docs) {
     const result = lintIncidentReport(text)
+    if (result.findings.length > 0) failures.push(`${path.split('/').pop()}: ${result.findings.map(f => `${f.level} ${f.rule}`).join(', ')}`)
+  }
+  assert.deepEqual(failures, [])
+})
+
+test('every runbook this project ships passes ops-runbook-check', async () => {
+  // The four documents a person follows under pressure. Prerequisites, numbered
+  // steps, rollback and verification were missing from all four until this test
+  // existed; two of them order their steps as `## 3. …` headings, which the
+  // check did not recognise as steps at all.
+  const names = ['OPERATIONS.md', 'INSTALL-RECOVERY.md', 'MONTHLY-RUNBOOK.md', 'RELEASE-RUNBOOK.md']
+  const dir = join(parent, 'dsh-review-outbox', 'docs')
+  const docs = []
+  for (const name of names) {
+    const path = join(dir, name)
+    if (await exists(path)) docs.push({ path, text: await readFile(path, 'utf8') })
+  }
+  assert.equal(docs.length, names.length, `expected ${names.length} runbooks, found ${docs.length}`)
+  const failures = []
+  for (const { path, text } of docs) {
+    const result = lintOpsRunbook(text)
     if (result.findings.length > 0) failures.push(`${path.split('/').pop()}: ${result.findings.map(f => `${f.level} ${f.rule}`).join(', ')}`)
   }
   assert.deepEqual(failures, [])

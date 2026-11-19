@@ -29,17 +29,34 @@ const DESTRUCTIVE = [
 ]
 const WARNING_NEARBY = /(?:注意|警告|危险|不可逆|谨慎|确认|备份|warning|caution|danger|destructive|irreversible|back up|make sure)/i
 
-// Numbered steps in the whole document: a runbook is executed, not read.
+// `## 3. 构建月报页` is a numbered step. It was not, until this check ran over
+// this project's own two runbooks: both order their steps as numbered headings,
+// which is every bit as followable as a numbered list, and both were reported as
+// having no steps at all. A runbook is executed, not read — whichever shape the
+// numbering takes.
+const NUMBERED_HEADING = /^#{1,6}\s+\d+\s*[.、)）]\s*\S/
+
+// Numbered steps in the whole document, as list items or as numbered headings.
+// A numbered heading carries its section body, because the command that step
+// performs lives under the heading, not in it.
 export function numberedSteps(text) {
+  const lines = String(text).split('\n')
   const out = []
   let inSteps = false
-  text.split('\n').forEach((line, index) => {
+  lines.forEach((line, index) => {
     if (/^#{1,6}\s/.test(line)) {
       inSteps = STEP_HEADING.test(`\n${line}`)
+      if (NUMBERED_HEADING.test(line)) {
+        let end = lines.length
+        for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+          if (/^#{1,6}\s/.test(lines[cursor])) { end = cursor; break }
+        }
+        out.push({ line: index + 1, text: line.trim(), body: lines.slice(index + 1, end).join('\n'), inSteps: true })
+      }
       return
     }
     if (/^\s*\d+\s*[.、)）]\s*\S/.test(line)) {
-      out.push({ line: index + 1, text: line.trim(), inSteps })
+      out.push({ line: index + 1, text: line.trim(), body: '', inSteps })
     }
   })
   return out
@@ -59,7 +76,7 @@ export function lintOpsRunbook(text, rules = {}) {
   // Steps: numbered, because a runbook is followed one line at a time.
   const steps = numberedSteps(text)
   if (steps.length === 0) {
-    add('error', 'steps-missing', 0, '没有编号步骤（认得：1. …、2. …）——散文式手册在压力下无法照着做')
+    add('error', 'steps-missing', 0, '没有编号步骤（认得：1. …、2. …，或 ## 1. … 这样的编号标题）——散文式手册在压力下无法照着做')
   } else if (steps.length < minSteps) {
     add('warn', 'steps-thin', steps[0].line, `编号步骤只有 ${steps.length} 条（下限 ${minSteps}）——步骤越少，读者越要自己补判断`)
   }
@@ -67,9 +84,12 @@ export function lintOpsRunbook(text, rules = {}) {
   // Destructive commands need a warning in the same line. This is the rule
   // that earns the package: an unnoticed rm -rf in step 4 is the incident.
   for (const step of steps) {
+    // The command and its warning are looked for in the step as a whole: a
+    // numbered heading's command sits in the body under it.
+    const stepBody = `${step.text}\n${step.body ?? ''}`
     for (const { pattern, what } of DESTRUCTIVE) {
-      if (pattern.test(step.text) && !WARNING_NEARBY.test(step.text)) {
-        add('error', 'destructive-unwarned', step.line, `第 ${step.line} 行含 ${what} 但没有在同一行写明注意/备份/不可逆——这条命令在压力下会被照抄`)
+      if (pattern.test(stepBody) && !WARNING_NEARBY.test(stepBody)) {
+        add('error', 'destructive-unwarned', step.line, `第 ${step.line} 行起的步骤含 ${what} 但没有写明注意/备份/不可逆——这条命令在压力下会被照抄`)
       }
     }
   }

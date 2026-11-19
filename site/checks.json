@@ -684,7 +684,7 @@
         },
         {
           "rule": "steps-missing",
-          "meaning": "没有编号步骤 → error"
+          "meaning": "没有编号步骤（1. … 或 ## 1. … 编号标题）→ error"
         },
         {
           "rule": "destructive-unwarned",

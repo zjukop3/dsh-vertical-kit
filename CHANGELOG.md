@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.0] — 2026-11-19
+
+第五份语料进了 dogfood 闸：四份 runbook。修了第六个同族缺陷。
+
+- **dsh-ops-runbook-check 0.2.0**：`## 3. 构建月报页` 这样的编号标题现在算步骤。旧版只认 `1. …` 列表项，于是本项目自己的两份 runbook（步骤就是按编号标题组织的）被报"完全没有编号步骤"——和另外四个包犯的是同一个错：要的是拼写不是性质。编号标题会带上它的段内正文，因为命令在标题下面，所以 `destructive-unwarned` 改看整步（标题+正文），报错位置指到步骤而不是命令行。
+- 四份 runbook（OPERATIONS、INSTALL-RECOVERY、MONTHLY-RUNBOOK、RELEASE-RUNBOOK）补齐前置条件；MONTHLY-RUNBOOK 还补了「验证」（三件按顺序确认的事，含 Pages 部署等待与 sitemap 收录）和「回滚」（`git revert` 而不是就地改一版覆盖，历史期次按日期命名不覆盖）。
+- dogfood 闸扩到八条断言：README、CHANGELOG、LICENSE、ADR、事故复盘、runbook、真实提交历史、语料规模自检。
+
+**升级路径**：`steps-missing` 只会少报错，不会新报；`destructive-unwarned` 的报错位置从命令行改到步骤起始行，如果 CI 里按行号断言过，需要跟着改。
+
 ## [0.5.0] — 2026-11-19
 
 用真文档喂检查器：写了三条决策记录（ADR）和一份事故复盘，全部由对应检查校验通过，并接进 dogfood 闸。

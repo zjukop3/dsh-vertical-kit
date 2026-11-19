@@ -28,7 +28,7 @@ $ ops-runbook-check runbook-sample.md
 error prereq-missing 第0行 没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限
 error rollback-missing 第0行 没有回滚段（认得：## 回滚、回滚：…、Rollback）——出问题时读者没有退路
 error verify-missing 第0行 没有验证段（认得：## 验证、确认：…、Verify）——没写怎么确认，读者不知道做完了没有
-error destructive-unwarned 第4行 第 4 行含 rm -rf 但没有在同一行写明注意/备份/不可逆——这条命令在压力下会被照抄
+error destructive-unwarned 第4行 第 4 行起的步骤含 rm -rf 但没有写明注意/备份/不可逆——这条命令在压力下会被照抄
 warn shell-unspecified 第0行 没有说明用什么 shell（认得：bash、zsh、PowerShell）——同一条命令在不同 shell 里行为不同
 fail: 3 steps, 4 errors, 1 warnings
 ```
@@ -43,8 +43,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | rule | level | meaning |
 | --- | --- | --- |
 | `prereq-missing` | error | no 前置条件 section — the reader discovers a missing permission halfway through |
-| `steps-missing` | error | no numbered steps — prose cannot be followed under stress |
-| `destructive-unwarned` | error | a destructive command in a numbered step with no 注意/备份/不可逆 on that line |
+| `steps-missing` | error | no numbered steps — `1. …` list items or `## 3. …` numbered headings both count; prose cannot be followed under stress |
+| `destructive-unwarned` | error | a destructive command inside a numbered step with no 注意/备份/不可逆 anywhere in that step |
 | `rollback-missing` | error | no 回滚 section — no way back when it goes wrong |
 | `verify-missing` | error | no 验证 section — the reader cannot tell whether they finished |
 | `steps-thin` | warn | fewer steps than the floor (default 3) |
@@ -62,6 +62,12 @@ npx ops-runbook-check runbook.md --min-steps 5
 ```
 
 Same function over HTTP: `POST /ops-runbook-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
+
+## What counts as a step
+
+A numbered list item (`1. …`) and a numbered heading (`## 3. 构建月报页`) are both steps. Until 0.2.0 only the list item counted, so this project's own two runbooks — which order their steps as headings — were reported as having no steps at all. That is the same mistake that cost four other checks in this kit a release: requiring a spelling rather than the property.
+
+A numbered heading brings its section body with it, because the command a step performs lives under the heading. `destructive-unwarned` therefore reads the whole step, heading plus body, and points the finding at the step rather than at the command line.
 
 ## Honest scope
 

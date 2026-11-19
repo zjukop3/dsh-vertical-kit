@@ -86,3 +86,70 @@ test('no numbered steps at all is an error naming the prose problem', () => {
   assert.ok(missing)
   assert.match(missing.message, /压力下/)
 })
+
+test('numbered headings are steps, and their body carries the command', () => {
+  // This project's own two runbooks order their steps as `## 3. …` headings.
+  // Both were reported as having no steps at all, which is the same
+  // spelling-versus-property mistake that cost four other checks a release.
+  const doc = `# 发布手册
+
+## 前置条件
+
+Node 22 与 npm，已登录 registry。
+
+## 1. 改版本号
+
+编辑 package.json。
+
+## 2. 清理构建产物
+
+\`\`\`bash
+rm -rf site
+\`\`\`
+
+## 3. 推送
+
+\`\`\`bash
+git push
+\`\`\`
+
+## 回滚
+
+git revert。
+
+## 验证
+
+curl 返回 200。
+`
+  const steps = numberedSteps(doc)
+  assert.equal(steps.length, 3, JSON.stringify(steps.map(s => s.text)))
+  assert.ok(!lintOpsRunbook(doc).findings.some(f => f.rule === 'steps-missing' || f.rule === 'steps-thin'))
+
+  // The rm -rf lives in step 2's body, so the warning rule must read the body.
+  const finding = lintOpsRunbook(doc).findings.find(f => f.rule === 'destructive-unwarned')
+  assert.ok(finding, 'a destructive command in a numbered heading step is still a destructive command')
+  assert.equal(finding.line, 11, 'the finding points at the step, not at the command line')
+
+  const warned = doc.replace('rm -rf site', 'rm -rf site   # 注意：先备份 site/')
+  assert.ok(!lintOpsRunbook(warned).findings.some(f => f.rule === 'destructive-unwarned'))
+})
+
+test('a runbook of prose still has no steps', () => {
+  const prose = `# 手册
+
+## 前置条件
+
+Node 22。
+
+先把版本号改掉，然后清理产物，最后推送。
+
+## 回滚
+
+git revert。
+
+## 验证
+
+curl 返回 200。
+`
+  assert.ok(lintOpsRunbook(prose).findings.some(f => f.rule === 'steps-missing'))
+})
