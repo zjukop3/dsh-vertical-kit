@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintReleaseNotes, versionHeadings } from '../src/index.js'
+import { lintReleaseNotes, maskCollapsedHistory, versionHeadings } from '../src/index.js'
 
 const good = `# Changelog
 
@@ -48,7 +48,11 @@ test('every defect class is reported', () => {
   const rules = result.findings.map(finding => `${finding.rule}:${finding.line}`)
   assert.ok(rules.includes('date-missing:0'))
   assert.ok(rules.includes('upgrade-missing:0'))
-  assert.ok(rules.includes('order:8'))
+  // 9, not 8: ORDER_HEADING begins at the newline before the heading, and the old
+  // line calculation counted up to that newline — reporting the blank line above
+  // every version heading. Found on a third-party changelog where the finding
+  // pointed at an empty line.
+  assert.ok(rules.includes('order:9'), JSON.stringify(rules))
   assert.ok(rules.includes('breaking-without-upgrade:0'))
 })
 
@@ -125,4 +129,51 @@ test('a bracketed changelog that runs oldest-first is still wrong', () => {
 `
   const result = lintReleaseNotes(doc, { requireUpgrade: false })
   assert.ok(result.findings.some(f => f.rule === 'order'), JSON.stringify(result.findings))
+})
+
+test('a collapsed history appendix is not part of the sequence', () => {
+  // A real third-party changelog keeps `<details>历史版本</details>` at the end and
+  // re-lists an unreleased alpha there. That block is an appendix, not a claim
+  // about order.
+  const doc = `# Changelog
+
+## [0.18.0] - 2026-11-01
+
+- stable
+
+<details>
+<summary>历史版本</summary>
+
+### v0.19.0-alpha.0（未发布，内容并入 v0.18.0）
+
+- note
+
+</details>
+`
+  const result = lintReleaseNotes(doc, { requireUpgrade: false })
+  assert.ok(!result.findings.some(f => f.rule === 'order'), JSON.stringify(result.findings))
+})
+
+test('ordering outside the appendix is still enforced', () => {
+  // The same repo's English changelog puts the alpha entry outside any <details>,
+  // and that is a genuine ordering break, not a false positive.
+  const doc = `# Changelog
+
+## [0.18.0] - 2026-11-01
+
+- stable
+
+### v0.19.0-alpha.0（未发布）
+
+- note
+`
+  assert.ok(lintReleaseNotes(doc, { requireUpgrade: false }).findings.some(f => f.rule === 'order'))
+})
+
+test('masking keeps line numbers exact', () => {
+  const text = 'a\n<details>\nx\n</details>\nb\n'
+  const masked = maskCollapsedHistory(text).split('\n')
+  assert.equal(masked.length, text.split('\n').length)
+  assert.equal(masked[1].trim(), '')
+  assert.equal(masked[4], 'b')
 })

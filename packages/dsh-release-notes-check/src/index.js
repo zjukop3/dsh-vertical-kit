@@ -21,10 +21,21 @@ const ORDER_HEADING = /(?:^|\n)#{1,3}\s*\[?\s*v?(\d+)\.(\d+)(?:\.(\d+))?\]?/g
 
 // Version headings in document order — used to check reverse-chronological
 // ordering, the one convention every changelog reader relies on.
+// `<details>…</details>` is a collapsed appendix, not a sequence. Masked to
+// spaces so line numbers stay exact for every finding that follows.
+export function maskCollapsedHistory(text) {
+  return String(text).replace(/<details>[\s\S]*?<\/details>/gi, block => block.replace(/[^\n]/g, ' '))
+}
+
 export function versionHeadings(text) {
   const out = []
   for (const match of text.matchAll(ORDER_HEADING)) {
-    const line = text.slice(0, match.index).split('\n').length
+    // ORDER_HEADING starts with `(?:^|\n)`, so match.index points at the newline
+    // BEFORE the heading. Counting up to it reports the line above the heading —
+    // off by one, which is a blank line in most changelogs. Skip past the newline
+    // when there is one.
+    const start = match[0].startsWith('\n') ? match.index + 1 : match.index
+    const line = text.slice(0, start).split('\n').length
     out.push({ line, major: Number(match[1]), minor: Number(match[2]), text: match[0].trim().replace(/^#+\s*/, '') })
   }
   return out
@@ -50,7 +61,12 @@ export function lintReleaseNotes(text, rules = {}) {
   }
 
   // Ordering: later headings must not be older versions.
-  const headings = versionHeadings(text)
+  // Ordering is judged on the main timeline only. A changelog may keep a
+  // collapsed `<details>历史版本</details>` appendix, and entries re-listed there
+  // are not claiming to be in sequence — one real third-party changelog puts
+  // `v0.19.0-alpha.0` inside such a block after `v0.18.0`, with a note saying the
+  // alpha was never released and merged into 0.18.0. Flagging that is noise.
+  const headings = versionHeadings(maskCollapsedHistory(text))
   for (let index = 1; index < headings.length; index += 1) {
     const previous = headings[index - 1]
     const current = headings[index]

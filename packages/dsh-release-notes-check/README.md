@@ -66,6 +66,14 @@ Same function over HTTP: `POST /release-notes-check/api` with `{"text": "…"}` 
 
 Both forms are accepted now, and the ordering rule reads them the same way: a changelog that runs oldest-first is still reported, bracketed or not.
 
+## A collapsed appendix is not a sequence, and the line is the heading
+
+Two things learned from eleven third-party changelogs.
+
+`<details>…</details>` is an appendix. One real changelog keeps its history collapsed at the end and re-lists an unreleased alpha there with a note that it was folded into the previous release; ordering is judged on the main timeline only, so that appendix is masked. The same repository's English translation puts the same entry **outside** any `<details>` — and that one is a genuine ordering break, reported.
+
+The line number was off by one. The heading pattern starts at the newline *before* a heading, and the line was counted up to that newline — so every ordering finding pointed at the blank line above the version heading it was complaining about. Fixed; a finding now lands on the heading.
+
 ## Honest scope
 
 This checks the changelog's **bookkeeping**, not the software's quality: it verifies the note says which version, when, what breaks, and how to migrate. Whether the release is good is what the software is for. The ordering rule reads heading order, so a changelog that lists versions out of order on purpose (e.g. a "highlights first" page) is out of this rule's domain.

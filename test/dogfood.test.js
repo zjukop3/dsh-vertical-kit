@@ -20,12 +20,12 @@ import { join, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 
 import { lintOnboarding } from '../packages/dsh-onboarding-check/src/index.js'
-import { lintReleaseNotes } from '../packages/dsh-release-notes-check/src/index.js'
 import { lintLicense } from '../packages/dsh-license-check/src/index.js'
 import { lintCommitMessage } from '../packages/dsh-commit-msg-check/src/index.js'
 import { lintAdr } from '../packages/dsh-adr-check/src/index.js'
 import { lintIncidentReport } from '../packages/dsh-incident-report-check/src/index.js'
 import { lintOpsRunbook } from '../packages/dsh-ops-runbook-check/src/index.js'
+import { lintReleaseNotes, maskCollapsedHistory } from '../packages/dsh-release-notes-check/src/index.js'
 import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 import { lintDockerfile } from '../packages/dsh-dockerfile-check/src/index.js'
 import { lintEnvExample } from '../packages/dsh-env-example-check/src/index.js'
@@ -297,6 +297,43 @@ test('third-party LICENSE files are read, and the copyright rules stay precise',
   if (mismatched) {
     assert.ok(mismatched.result.findings.some(f => f.rule === 'title-body-mismatch'),
       'a LICENSE titled MIT with AGPL-3.0 text must still be reported')
+  }
+})
+
+test('third-party CHANGELOGs are read, and a collapsed appendix is not a sequence', async () => {
+  // 11 Markdown changelogs from other plugin repositories. Not "must pass": one
+  // of them really does list an unreleased alpha after a newer stable release,
+  // outside the <details> block its own Chinese translation wraps it in. That is
+  // a finding about their file, not a defect here.
+  const base = join(parent, 'dsh-ecosystem-research', 'sources', 'plugins')
+  const paths = []
+  if (await exists(base)) {
+    for (const repo of await readdir(base, { withFileTypes: true })) {
+      if (!repo.isDirectory()) continue
+      for (const name of await readdir(join(base, repo.name))) {
+        if (/^CHANGELOG.*\.md$/i.test(name)) paths.push(join(base, repo.name, name))
+      }
+    }
+  }
+  assert.ok(paths.length >= 8, `expected the third-party CHANGELOG corpus, found ${paths.length}`)
+
+  const results = []
+  for (const path of paths) {
+    const text = await readFile(path, 'utf8')
+    results.push({ path, text, result: lintReleaseNotes(text) })
+  }
+  for (const { path, result } of results) {
+    for (const finding of result.findings) assert.ok(finding.rule && finding.message, path)
+  }
+
+  // A collapsed history appendix must not produce an ordering finding: entries
+  // re-listed there are not claiming to be in sequence.
+  for (const entry of results.filter(e => /<details>[\s\S]*?<\/details>/i.test(e.text))) {
+    const outside = maskCollapsedHistory(entry.text)
+    for (const finding of entry.result.findings.filter(f => f.rule === 'order')) {
+      const line = outside.split('\n')[finding.line - 1] ?? ''
+      assert.ok(line.trim() !== '', `${entry.path}:${finding.line}: an order finding landed inside a collapsed appendix`)
+    }
   }
 })
 
