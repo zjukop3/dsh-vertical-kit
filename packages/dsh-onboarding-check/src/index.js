@@ -9,22 +9,35 @@ export const inject = ['webServer']
 const PREREQ_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:前置|准备|依赖|要求|prerequisit|requirement|before you start|what you need)/i
 const PREREQ_LINE = /^[^\n]*(?:需要先|先安装|前置条件[：:，\s]|要求[：:，\s]|prerequisites?[：:\s])/i
 const SUCCESS_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:成功|预期|完成后|验证|输出|示例|输出示例|you should see|expected|success|verify|output|example|demo|what you get)/i
-const SUCCESS_LINE = /^[^\n]*(?:应该看到|你会看到|成功后|完成后|you should see|expected output)/i
+const SUCCESS_LINE = /^[^\n]*(?:应该看到|你会看到|成功后|完成后|即成功|表示成功|说明成功|便成功|you should see|expected output)/i
 const HELP_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:求助|帮助|联系|遇到问题|getting help|troubleshoot|support)/i
 const HELP_LINE = /(?:提 issue|开 issue|联系我们|加群|在 \S* 提问|ask (?:in|on)|open an issue|file an issue)/i
 // A time estimate: 5 分钟、约 15 分钟、under 10 minutes、1 小时.
 const TIME_ESTIMATE = /\d+\s*(?:分钟|分|小时|minutes?|mins?|hours?|hrs?)|\bhalf an hour\b|半小时/i
 // A pasteable command: a fenced block containing an install-ish command.
 const FENCE = /```[\s\S]*?```/g
-const COMMAND_HINT = /\b(?:npm|pnpm|yarn|npx|pip|pipx|uv|brew|apt|apt-get|dnf|cargo|go install|git clone|curl|docker run|make)\b/
+// `dsh` belongs at the front of this list: it is the primary way a plugin is
+// installed in the ecosystem this tool exists for. It was missing, so a README
+// whose one pasteable line was `dsh plugin add dsh-bot` was reported as having
+// no command at all — 216 files in the ecosystem use that form. A tool for DSH
+// that does not recognise `dsh` is measuring its own vocabulary.
+const COMMAND_HINT = /\b(?:dsh|npm|pnpm|yarn|npx|pip|pipx|uv|brew|apt|apt-get|dnf|cargo|go install|git clone|curl|docker run|make)\b/
 
 // Prose only: fenced blocks and table rows are not the document speaking.
 // Without this, a README passes `prereq-missing` because its own example output
 // quotes the sentence "认得：## 前置条件、需要先…" — the check reads a rule's
 // message as if it were the reader's prerequisites. Same for the rules table:
 // "no 前置条件 section" is one space away from being a prerequisites line.
+// Our own output has a recognisable shape: a level, a rule name, and `第N行`.
+// Only blocks that look like that are masked. The earlier version masked every
+// fence, which threw away what real READMEs actually say inside install blocks —
+// one third-party README puts its success cue in a shell comment:
+// `# 重启 dsh web，侧边栏底部出现"待办"区块即成功`. That is the author speaking,
+// not the document quoting this check.
+const OWN_OUTPUT = /(?:error|warn)\s+[a-z][a-z0-9-]+\s+第\d+行|认得：##/
+
 export function proseOnly(text) {
-  const withoutFences = String(text).replace(FENCE, blank => blank.replace(/[^\n]/g, ' '))
+  const withoutFences = String(text).replace(FENCE, block => (OWN_OUTPUT.test(block) ? block.replace(/[^\n]/g, ' ') : block))
   return withoutFences
     .split('\n')
     .map(line => (/^\s*\|/.test(line) ? '' : line))

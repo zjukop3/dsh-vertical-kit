@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.10.0] — 2026-11-19
+
+第十二、第十三个同族缺陷，都来自同一份语料：39 份**别人写的** README（其他插件仓库）。修前 5 份全过，修后 6 份。
+
+- **dsh-onboarding-check 0.3.0（第十二个缺陷）**：`dsh plugin add <spec>` 不在命令白名单里——而这是本生态装插件的标准命令，生态里 216 个文件用它。`dsh-bot` 的 README 明明有一条能粘贴的 `dsh plugin add dsh-bot`，被报"没有可粘贴的命令"。为 DSH 做的工具不认识 `dsh`，量的是自己的词汇。`command-missing` 从 11 份降到 4 份。
+- **dsh-onboarding-check 0.3.0（第十三个缺陷）**：`dsh-todo-inbox` 的成功提示写在安装块的 shell 注释里——`# 重启 dsh web，侧边栏底部出现"待办"区块即成功`。我为了防自我引用把**所有**代码块都遮蔽了，于是作者说的话被当成不存在。遮蔽收窄成只遮蔽"本检查自己的输出"（层级 + 规则名 + `第N行`），自我引用防护仍在：重复本检查报错文本的 README 依然不能靠它通过。
+- 这两条是同一个下午、同一份语料找出来的，而**第二条是修第一条之前某个缺陷时引入的**。
+- dogfood 闸扩到十一条断言，新增第三方 README 语料，并锁死这两处：`dsh plugin …` 在代码块里就不许报 `command-missing`；`dsh-todo-inbox` 不许报 `success-missing`。
+
+**升级路径**：两处都只减少误报。`prereq-missing`（25/39）与 `success-missing`（24/39）仍然对真实 README 报出，那是真缺口，不是误报。
+
 ## [0.9.0] — 2026-11-19
 
 第**十**份语料，也是第一份**第三方**语料：目录调研拉下来的两个 Dockerfile 和一个 .env.example。

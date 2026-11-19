@@ -60,6 +60,23 @@ npx onboarding-check - < ONBOARDING.md
 
 Same function over HTTP: `POST /onboarding-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## The platform's own install command
+
+`dsh plugin add <spec>` is how a plugin is installed here, and it was not in the command list — so a README whose one pasteable line was `dsh plugin add dsh-bot` was reported as having no command. 216 files across the ecosystem use that form. A tool for DSH that does not recognise `dsh` is measuring its own vocabulary.
+
+Found by running this check over 39 READMEs from other plugin repositories, which is the only third-party corpus available here.
+
+## A shell comment counts as the author speaking
+
+The structural rules read prose, and fenced blocks are masked — but masking every fence threw away what real READMEs actually say. One third-party README states its success cue inside the install block:
+
+    dsh plugin add dsh-todo-inbox
+    # 重启 dsh web，侧边栏底部出现"待办"区块即成功
+
+That comment is the author telling the reader what success looks like, and it was invisible. Masking is now narrow: only a block that quotes **this check's own output** (a level, a rule name, and `第N行`) is hidden. That keeps the self-reference guard — a README repeating this check's error text still cannot satisfy the rule — while letting the author speak inside their own code blocks.
+
+Both defects came from the same corpus in one sitting, and the second was caused by the fix for an earlier one.
+
 ## What counts as prose
 
 The structural rules — prerequisites, expected output, help path — are judged on the document's **prose only**. Fenced code blocks and table rows are masked out first.

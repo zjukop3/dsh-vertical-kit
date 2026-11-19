@@ -145,10 +145,20 @@ ok
 
 test('proseOnly keeps line numbers so findings still point at the right row', () => {
   const text = 'a\n\n```\nfront\n```\n## 前置要求\n'
-  const masked = proseOnly(text).split('\n')
-  assert.equal(masked.length, text.split('\n').length)
-  assert.equal(masked[5], '## 前置要求')
-  assert.ok(!masked[3].includes('front'))
+  const lines = proseOnly(text).split('\n')
+  assert.equal(lines.length, text.split('\n').length)
+  assert.equal(lines[5], '## 前置要求')
+})
+
+test('only this check own output is masked, not every fence', () => {
+  // Masking every fence threw away what real READMEs say inside install blocks:
+  // one puts its success cue in a shell comment. Only blocks that quote this
+  // check's output are hidden.
+  const ownOutput = '```text\nerror prereq-missing 第0行 没有前置要求段（认得：## 前置要求）\n```'
+  assert.ok(!proseOnly(ownOutput).includes('prereq-missing'), 'our own output is masked')
+
+  const authorSpeaking = '```bash\ndsh plugin add x  # 侧边栏出现「待办」即成功\n```'
+  assert.ok(proseOnly(authorSpeaking).includes('即成功'), 'a shell comment is the author speaking')
 })
 
 test('a real-output section counts as what success looks like', () => {
@@ -178,4 +188,57 @@ ok: 0 errors
     const result = lintOnboarding(doc)
     assert.ok(!result.findings.some(f => f.rule === 'success-missing'), heading)
   }
+})
+
+test('the platform install command counts as a command', () => {
+  // `dsh plugin add <spec>` is how a plugin is installed in this ecosystem, and
+  // the command list did not include it. 216 files across the ecosystem use it;
+  // a README whose only pasteable line was `dsh plugin add dsh-bot` was reported
+  // as having no command.
+  for (const command of ['dsh plugin add dsh-bot', 'dsh plugin --profile web add dsh-pet', 'dsh web', 'dsh plugin list']) {
+    const doc = `# 插件
+
+## 前置要求
+
+Node.js >= 22.19。
+
+## 安装
+
+\`\`\`bash
+${command}
+\`\`\`
+
+## 输出示例
+
+\`\`\`text
+ok
+\`\`\`
+
+约 2 分钟。出问题在仓库开 issue。
+`
+    const result = lintOnboarding(doc)
+    assert.ok(!result.findings.some(f => f.rule === 'command-missing'), command)
+  }
+})
+
+test('prose that merely mentions dsh is not a command block', () => {
+  // The hint only counts inside a fenced block, so a sentence about dsh does not
+  // satisfy the rule.
+  const doc = `# 插件
+
+## 前置要求
+
+Node.js >= 22.19。
+
+这个插件用于 dsh 的成果审阅。
+
+## 输出示例
+
+\`\`\`text
+ok
+\`\`\`
+
+约 2 分钟。出问题在仓库开 issue。
+`
+  assert.ok(lintOnboarding(doc).findings.some(f => f.rule === 'command-missing'))
 })

@@ -210,6 +210,51 @@ test('third-party Dockerfiles and env examples are read without crashing the che
   }
 })
 
+test('third-party READMEs are read, and the two false positives stay fixed', async () => {
+  // Not "must pass": these are other people's READMEs written for their own
+  // purpose, and a gap in one is an observation about the ecosystem, not a
+  // failure. Two things are asserted — that the checker survives them, and that
+  // the specific false positives found on this corpus do not come back.
+  const readmePaths = []
+  const base = join(parent, 'dsh-ecosystem-research', 'sources', 'plugins')
+  if (await exists(base)) {
+    for (const repo of await readdir(base, { withFileTypes: true })) {
+      if (!repo.isDirectory()) continue
+      for (const name of await readdir(join(base, repo.name))) {
+        if (/^readme.*\.md$/i.test(name)) readmePaths.push(join(base, repo.name, name))
+      }
+    }
+  }
+  assert.ok(readmePaths.length >= 20, `expected the third-party README corpus, found ${readmePaths.length}`)
+
+  const results = []
+  for (const path of readmePaths) {
+    const text = await readFile(path, 'utf8')
+    results.push({ path, text, result: lintOnboarding(text) })
+  }
+  for (const { path, result } of results) {
+    assert.equal(typeof result.errors, 'number', path)
+    for (const finding of result.findings) assert.ok(finding.rule && finding.message, path)
+  }
+
+  // 1. `dsh plugin add …` is a command. Every README that shows it inside a
+  //    fence must not be told it has no command — the check did not know the
+  //    platform's own install command, which 216 files in this ecosystem use.
+  const withPlatformInstall = results.filter(entry => /```[\s\S]*?dsh plugin[\s\S]*?```/.test(entry.text))
+  assert.ok(withPlatformInstall.length > 0, 'the corpus must contain the platform install command')
+  for (const entry of withPlatformInstall) {
+    assert.ok(!entry.result.findings.some(f => f.rule === 'command-missing'),
+      `${entry.path}: dsh plugin … is a command`)
+  }
+
+  // 2. A success cue written as a shell comment inside an install block counts.
+  const todo = results.find(entry => entry.path.includes('dsh-todo-inbox'))
+  if (todo) {
+    assert.ok(!todo.result.findings.some(f => f.rule === 'success-missing'),
+      'dsh-todo-inbox states its success cue in a shell comment and must not be told it is missing')
+  }
+})
+
 test('no real commit in this project is blocked for its type prefix', async () => {
   // The history is written in `Verb noun` style plus Chinese, not Conventional
   // Commits. That is a house style, so it must never be an error here: the
