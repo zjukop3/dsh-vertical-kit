@@ -29,6 +29,7 @@ import { lintReleaseNotes, maskCollapsedHistory } from '../packages/dsh-release-
 import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 import { lintDockerfile } from '../packages/dsh-dockerfile-check/src/index.js'
 import { lintEnvExample } from '../packages/dsh-env-example-check/src/index.js'
+import { lintHandover } from '../packages/dsh-handover-check/src/index.js'
 
 const root = resolve(import.meta.dirname, '..')
 const parent = resolve(root, '..')
@@ -335,6 +336,19 @@ test('third-party CHANGELOGs are read, and a collapsed appendix is not a sequenc
       assert.ok(line.trim() !== '', `${entry.path}:${finding.line}: an order finding landed inside a collapsed appendix`)
     }
   }
+})
+
+test('this project own handover states its one honest gap and nothing else', async () => {
+  // docs/HANDOVER.md is written for the moment its author is gone. It is allowed
+  // exactly one error: nobody has taken over. Any second error is a defect in the
+  // document or in the check.
+  const path = join(parent, 'dsh-review-outbox', 'docs', 'HANDOVER.md')
+  assert.ok(await exists(path), 'the project ships a handover document')
+  const result = lintHandover(await readFile(path, 'utf8'))
+  const errors = result.findings.filter(f => f.level === 'error')
+  assert.deepEqual(errors.map(f => f.rule), ['receiver-unassigned'],
+    `the only acceptable error is an unassigned receiver, got ${JSON.stringify(errors.map(f => f.rule))}`)
+  assert.ok(result.checked.items >= 5, 'the handover lists its work items')
 })
 
 test('no real commit in this project is blocked for its type prefix', async () => {

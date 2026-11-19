@@ -917,6 +917,10 @@
           "meaning": "没有接收人 → error"
         },
         {
+          "rule": "receiver-unassigned",
+          "meaning": "接收人写成「尚未指定/待定/TBD」等非人名 → error"
+        },
+        {
           "rule": "date-missing",
           "meaning": "没有交接日期 → error"
         },

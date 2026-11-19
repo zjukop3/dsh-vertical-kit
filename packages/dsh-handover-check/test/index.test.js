@@ -130,3 +130,20 @@ test('listItems counts numbered and bulleted lines only', () => {
   assert.equal(listItems('1. a\n- b\n* c\n文字\n').length, 3)
   assert.equal(listItems('没有列表').length, 0)
 })
+test('a receiver slot filled with a non-answer is still a gap', () => {
+  // Found by writing this project's own handover: it says `接收人：尚未指定`, and
+  // the rule accepted it because it looked for the label and never for a name.
+  for (const value of ['尚未指定', '待定', 'TBD', '无', '—']) {
+    const result = lintHandover(good.replace('接收人：李四（平台组）', `接收人：${value}`))
+    const finding = result.findings.find(f => f.rule === 'receiver-unassigned')
+    assert.ok(finding, `${value}: ${JSON.stringify(result.findings.map(f => f.rule))}`)
+    assert.equal(finding.level, 'error')
+  }
+})
+
+test('a real name, a parenthesised team, or a trailing note still pass', () => {
+  for (const value of ['李四', '李四（平台组）', 'Li Si', '李四 / 交接后由王五代管']) {
+    const result = lintHandover(good.replace('接收人：李四（平台组）', `接收人：${value}`))
+    assert.ok(!result.findings.some(f => f.rule === 'receiver-unassigned'), `${value}: ${JSON.stringify(result.findings.map(f => f.rule))}`)
+  }
+})

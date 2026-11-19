@@ -31,6 +31,13 @@ const OWNER = /(?:负责人|接手|owner|负责|@[\w-]+)/i
 const SIGN_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:签字|确认|签署|sign-?off|acknowledg|approved)/i
 const SIGN_LINE = /(?:签字|签署|确认[：:]|已确认|sign-?off|acknowledged|approved by)/i
 
+// A name slot filled with a non-answer. The check exists for silent gaps; a
+// written-down non-answer is still a gap, just a more honest one.
+// Prefix, not whole-string: 「尚未指定」 is 尚未 + 指定, and an anchored
+// alternation of 尚未 alone never matched it. The rule's own test caught this —
+// which is the point of writing the firing test before believing the rule.
+const UNASSIGNED = /^(?:尚未|未指定|待定|待指派|暂无|没有|无$|to be determined|tbd|todo|n\/a|none|[-—–]+$)/i
+
 // Prose only: a fenced example, or this check's own output pasted into the doc,
 // must not satisfy a structural rule. Three of the checks in this kit shipped
 // without that distinction and reported valid documents as broken.
@@ -78,6 +85,15 @@ export function lintHandover(text, rules = {}) {
   }
   if (!has(RECEIVER_HEADING, RECEIVER_LINE)) {
     add('error', 'receiver-missing', 0, '没有写明接收人（认得：接收人：、接手人：、Receiver）——没人接手，交接就没发生')
+  } else {
+    // A label is not a person. `接收人：尚未指定` used to pass, because the rule
+    // looked for the label and never for a name — found by writing this project's
+    // own handover honestly, which says exactly that.
+    const line = prose.split('\n').find(row => RECEIVER_LINE.test(row)) ?? ''
+    const value = line.replace(/^[^:：]*[:：]/, '').replace(/[（(].*$/, '').trim()
+    if (value === '' || UNASSIGNED.test(value)) {
+      add('error', 'receiver-unassigned', 0, `接收人写的是「${value || '空'}」——那不是一个人。交接单只有在有人接下之后才成立`)
+    }
   }
 
   const date = prose.match(DATE)

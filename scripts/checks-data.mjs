@@ -587,6 +587,7 @@ export const CHECKS = [
     rules: [
       ['handover-person-missing', '没有交接人 → error'],
       ['receiver-missing', '没有接收人 → error'],
+      ['receiver-unassigned', '接收人写成「尚未指定/待定/TBD」等非人名 → error'],
       ['date-missing', '没有交接日期 → error'],
       ['date-unlabelled', '有日期但没有「交接日期/生效日期」字样 → warn'],
       ['items-thin', '交接事项少于三条 → error'],

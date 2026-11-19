@@ -67,6 +67,14 @@ npx handover-check - < handover.md
 
 Same function over HTTP: `POST /handover-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## A label is not a person
+
+`接收人：尚未指定` used to pass. The rule looked for the label and never for a name, so a handover that writes down "nobody has taken this over yet" was treated as having a receiver.
+
+Found by writing this project's own handover honestly — it says exactly that, and the check said everything was fine.
+
+The receiver slot now rejects non-answers: 尚未…, 未指定, 待定, 待指派, 暂无, 没有, 无, TBD, N/A, none, or a bare dash. A real name passes, with or without a team in parentheses, with or without a trailing note.
+
 ## Why the accounts rule is the point
 
 Signature and date are the parts a reviewer notices without help. The accounts section is the part nobody notices: a handover that forgets one read-only console login does not fail today, it fails at the next audit — by which time the person who knew about it has left.
