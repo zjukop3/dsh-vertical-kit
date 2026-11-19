@@ -88,3 +88,19 @@ test('a row with no SKU column is an error; an empty SKU is its own error', () =
   assert.ok(empty, JSON.stringify(lintListings(emptyValue).findings.map(f => f.rule)))
   assert.equal(empty.level, 'error')
 })
+
+test('unreadable JSON is a single parse error, and other rows are not invented', () => {
+  // `parse` only fires when readRows throws. A JSON payload that starts with a
+  // bracket goes through JSON.parse, so broken JSON is the reachable case.
+  const result = lintListings('{ "items": [ ')
+  const finding = result.findings.find(f => f.rule === 'parse')
+  assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
+  assert.equal(finding.level, 'error')
+  assert.equal(result.checked, 0)
+  assert.match(finding.message, /cannot read rows/)
+})
+
+test('a well-formed JSON listing stays clean', () => {
+  const result = lintListings('{"items":[{"title":"全自动懒人支架手机桌面通用","price":"29.9","sku":"SKU001"}]}')
+  assert.deepEqual(result.findings, [])
+})

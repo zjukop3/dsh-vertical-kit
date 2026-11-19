@@ -18,14 +18,27 @@ import { readFile, readdir } from 'node:fs/promises'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const root = resolve(import.meta.dirname, '..')
+// Default target is this kit; a path argument points it at another kit, which is
+// how dsh-verify-kit got audited with the same gate.
+const root = process.argv[2] ? resolve(process.argv[2]) : resolve(import.meta.dirname, '..')
 const packagesDir = join(root, 'packages')
 
-// `add('error', 'rule-name', line, message)` — the only way a package reports.
-const ADD_CALL = /add\(\s*'(?:error|warn)'\s*,\s*'([a-z][a-z0-9-]*)'/g
+// Two emission styles, both legitimate:
+//   add('error', 'rule-name', line, message)          — vertical-kit
+//   findings.push({ level: 'error', rule: 'x', ... }) — verify-kit
+// Matching only the first reported zero rules for four of verify-kit's five
+// packages, which would have looked like a clean audit of an empty list.
+const ADD_CALL = /\badd\(\s*'(?:error|warn)'\s*,\s*'([a-z][a-z0-9-]*)'/g
+// [\s\S] not [^{}]: a finding object can span lines, and `message` may carry a
+// template with braces. Matching only single-line objects produced a rule named
+// `undefined` for citelint.
+const PUSH_CALL = /push\(\s*\{[\s\S]{0,200}?level:\s*'(?:error|warn)'[\s\S]{0,200}?rule:\s*'([a-z][a-z0-9-]*)'/g
+const PUSH_CALL_REVERSED = /push\(\s*\{[\s\S]{0,200}?rule:\s*'([a-z][a-z0-9-]*)'[\s\S]{0,200}?level:\s*'(?:error|warn)'/g
 
 export function ruleNames(source) {
-  return [...new Set([...String(source).matchAll(ADD_CALL)].map(match => match[1]))]
+  const text = String(source)
+  const found = [ADD_CALL, PUSH_CALL, PUSH_CALL_REVERSED].flatMap(pattern => [...text.matchAll(pattern)].map(match => match[1]))
+  return [...new Set(found)]
 }
 
 // Split a test file into blocks at each top-level `test(` so a rule mentioned in

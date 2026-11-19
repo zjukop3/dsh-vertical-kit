@@ -26,6 +26,7 @@ import { lintCommitMessage } from '../packages/dsh-commit-msg-check/src/index.js
 import { lintAdr } from '../packages/dsh-adr-check/src/index.js'
 import { lintIncidentReport } from '../packages/dsh-incident-report-check/src/index.js'
 import { lintOpsRunbook } from '../packages/dsh-ops-runbook-check/src/index.js'
+import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 
 const root = resolve(import.meta.dirname, '..')
 const parent = resolve(root, '..')
@@ -146,6 +147,18 @@ test('every runbook this project ships passes ops-runbook-check', async () => {
     if (result.findings.length > 0) failures.push(`${path.split('/').pop()}: ${result.findings.map(f => `${f.level} ${f.rule}`).join(', ')}`)
   }
   assert.deepEqual(failures, [])
+})
+
+test('the API reference this project ships passes api-doc-check', async () => {
+  // Until this document existed, api-doc-check had nothing of ours to run on:
+  // the plugin exposes twelve host routes and documented none of them as an
+  // interface. Writing it found six errors in the draft, four of them shapes a
+  // front-end would read first.
+  const path = join(parent, 'dsh-review-outbox', 'docs', 'API.md')
+  assert.ok(await exists(path), 'the API reference is part of the corpus')
+  const result = lintApiDoc(await readFile(path, 'utf8'))
+  assert.deepEqual(result.findings, [], JSON.stringify(result.findings))
+  assert.ok(result.checked.endpoints >= 12, `expected every route documented, saw ${result.checked.endpoints}`)
 })
 
 test('no real commit in this project is blocked for its type prefix', async () => {
