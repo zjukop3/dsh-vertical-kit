@@ -608,5 +608,41 @@ export const CHECKS = [
     },
     note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
   },
+  {
+    slug: 'expense-claim-check',
+    npm: 'dsh-expense-claim-check',
+    cli: 'expense-claim-check',
+    noun: '报销单检查 / 费用报销检查',
+    title: '报销单检查清单',
+    description: '一份报销单就能判定：谁报销、哪个期间、明细行是否加得出合计、发票号有没有重复、每笔事由与类别、有没有人批。最容易漏的是合计那行——它不会报错，只会让多出来的钱安静地过去。',
+    decides: '这张报销单能不能在不手工加总的情况下被核对与付款',
+    rules: [
+      ['claimant-missing', '没有报销人 → error'],
+      ['date-missing', '没有日期也没有期间 → error'],
+      ['period-unlabelled', '只有一个日期且没写「报销期间」 → warn'],
+      ['items-missing', '没有带金额的明细行 → error'],
+      ['total-missing', '没有合计行 → error'],
+      ['total-mismatch', '明细相加与合计不符 → error'],
+      ['invoice-duplicate', '同一发票号出现两次 → error'],
+      ['invoice-missing', '明细里没有任何发票号 → warn'],
+      ['purpose-missing', '没有事由说明 → warn'],
+      ['category-missing', '没有费用类别 → warn'],
+      ['approver-missing', '没有审批人 → error'],
+      ['currency-mixed', '多币种且没有汇率说明 → warn'],
+    ],
+    usage: [
+      'npx expense-claim-check claim.md --json',
+      'npx expense-claim-check claim.md --tolerance 0.02',
+      'npx expense-claim-check - < claim.md',
+    ],
+    example: {
+      command: 'expense-claim-check claim-sample.md',
+      fixture: '报销人：张三\n报销期间：2026-11-01 至 2026-11-15\n\n- 高铁票 553.50 元\n- 住宿 960.00 元\n\n合计：1600.00 元\n',
+      output: '$ expense-claim-check claim-sample.md\nerror total-mismatch 第0行 明细相加是 1513.5，合计行写的是 1600，差 86.5（容差 0.01）——要么抄错，要么有一行没列出来\nerror approver-missing 第0行 没有审批人（认得：审批人：、批准人：、Approved by）——没有人批过的报销单不该进入付款\nwarn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销\nwarn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批\nfail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings\n',
+      exit: '1',
+    },
+    note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
+  },
+
 ]
 
