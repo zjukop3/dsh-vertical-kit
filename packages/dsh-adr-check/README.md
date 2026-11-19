@@ -75,6 +75,10 @@ npx adr-check - < adr.md
 
 Same function over HTTP: `POST /adr-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## Where the balance rule looks
+
+The cost/benefit judgement reads the **whole 后果 section**, not just its bullets. An ADR that writes `好处：` on its own line and then lists the benefits has labelled the trade, and earlier versions of this check called that unlabelled because the label sat outside the list — the same "measured the spelling, not the property" mistake that cost four other checks in this kit a release. Labels on their own line count now.
+
 ## Honest scope
 
 This checks the record's **shape**, not whether the decision was right: it cannot tell that the context omits a constraint everyone knew, that the alternatives were strawmen, or that the cost was understated to get the decision approved. It verifies the record states a status, a context, a decision, consequences that name a cost, and the alternatives — the five things a future reader needs to disagree with it. Whether the decision was good shows up in the consequences, later.

@@ -23,6 +23,8 @@ import { lintOnboarding } from '../packages/dsh-onboarding-check/src/index.js'
 import { lintReleaseNotes } from '../packages/dsh-release-notes-check/src/index.js'
 import { lintLicense } from '../packages/dsh-license-check/src/index.js'
 import { lintCommitMessage } from '../packages/dsh-commit-msg-check/src/index.js'
+import { lintAdr } from '../packages/dsh-adr-check/src/index.js'
+import { lintIncidentReport } from '../packages/dsh-incident-report-check/src/index.js'
 
 const root = resolve(import.meta.dirname, '..')
 const parent = resolve(root, '..')
@@ -40,6 +42,15 @@ async function readmes() {
 async function changelogs() {
   const candidates = [join(root, 'CHANGELOG.md'), join(parent, 'dsh-verify-kit', 'CHANGELOG.md'), join(parent, 'dsh-review-outbox', 'CHANGELOG.md')]
   return (await Promise.all(candidates.map(async path => ((await exists(path)) ? { path, text: await readFile(path, 'utf8') } : null)))).filter(Boolean)
+}
+
+// The decision log and the incident log: documents this project writes for
+// itself, and the corpus that keeps adr-check and incident-report-check honest.
+async function docsIn(subdir, extension = '.md') {
+  const dir = join(parent, 'dsh-review-outbox', 'docs', subdir)
+  if (!(await exists(dir))) return []
+  const names = (await readdir(dir)).filter(name => name.endsWith(extension)).sort()
+  return Promise.all(names.map(async name => ({ path: join(dir, name), text: await readFile(join(dir, name), 'utf8') })))
 }
 
 async function licenses() {
@@ -89,6 +100,28 @@ test('every LICENSE this project ships passes license-check', async () => {
     const result = lintLicense(text)
     const errors = result.findings.filter(finding => finding.level === 'error')
     if (errors.length > 0) failures.push(`${path.replace(root, '.')}: ${errors.map(f => f.message).join(' | ')}`)
+  }
+  assert.deepEqual(failures, [])
+})
+
+test('every ADR this project wrote passes adr-check', async () => {
+  const docs = await docsIn('adr')
+  assert.ok(docs.length >= 3, `expected the decision log, found ${docs.length} file(s)`)
+  const failures = []
+  for (const { path, text } of docs) {
+    const result = lintAdr(text)
+    if (result.findings.length > 0) failures.push(`${path.split('/').pop()}: ${result.findings.map(f => `${f.level} ${f.rule}`).join(', ')}`)
+  }
+  assert.deepEqual(failures, [])
+})
+
+test('every incident postmortem this project wrote passes incident-report-check', async () => {
+  const docs = await docsIn('incidents')
+  assert.ok(docs.length >= 1, `expected the incident log, found ${docs.length} file(s)`)
+  const failures = []
+  for (const { path, text } of docs) {
+    const result = lintIncidentReport(text)
+    if (result.findings.length > 0) failures.push(`${path.split('/').pop()}: ${result.findings.map(f => `${f.level} ${f.rule}`).join(', ')}`)
   }
   assert.deepEqual(failures, [])
 })

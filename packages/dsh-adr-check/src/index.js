@@ -19,6 +19,24 @@ const DATE = /\b(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\b/
 const COST = /代价|缺点|劣势|风险|成本|不利|trade[- ]?off|downside|drawback|risk|cost|negative|缺点/i
 const BENEFIT = /好处|优点|优势|收益|benefit|advantage|upside|positive|收益/i
 
+// The section's prose, not only its bullets. An ADR that writes
+// `好处：` on its own line and then lists the benefits has labelled the trade;
+// judging only the bullet text reported it as unlabelled, which is the same
+// "measured the spelling, not the property" failure the rest of this kit had.
+function sectionText(text, headingPattern) {
+  const lines = String(text).split('\n')
+  let inside = false
+  const out = []
+  for (const line of lines) {
+    if (/^#{1,6}\s/.test(line)) {
+      inside = headingPattern.test(`\n${line}`)
+      continue
+    }
+    if (inside) out.push(line)
+  }
+  return out.join('\n')
+}
+
 function sectionItems(text, headingPattern) {
   const lines = text.split('\n')
   let inside = false
@@ -64,7 +82,7 @@ export function lintAdr(text, rules = {}) {
   if (!hasConsequenceHeading && consequences.length === 0) {
     add('error', 'consequences-missing', 0, '没有后果段（认得：## 后果、## Consequences）——决策的代价是后来人最需要读的一段')
   } else {
-    const consequenceText = consequences.map(item => item.text).join('\n')
+    const consequenceText = hasConsequenceHeading ? sectionText(text, CONSEQUENCE_HEADING) : consequences.map(item => item.text).join('\n')
     const hasCost = COST.test(consequenceText)
     const hasBenefit = BENEFIT.test(consequenceText)
     if (hasBenefit && !hasCost) {

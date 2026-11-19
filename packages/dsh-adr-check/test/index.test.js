@@ -89,3 +89,56 @@ test('an empty document is one empty error', () => {
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
 })
+
+test('a label on its own line still labels the trade', () => {
+  // 好处：/代价： written as paragraph lines above the bullets is how a real ADR
+  // reads. Judging only the bullet text reported the trade as unlabelled.
+  const labelled = `# ADR-0003 选 A
+
+状态：已接受
+日期：2026-11-19
+
+## 背景
+
+有两条路。
+
+## 决定
+
+选 A。
+
+## 后果
+
+好处：
+
+- 快
+
+代价：
+
+- 以后要还
+`
+  const result = lintAdr(labelled)
+  assert.ok(!result.findings.some(f => f.rule === 'consequences-unlabelled' || f.rule === 'consequences-one-sided'), JSON.stringify(result.findings))
+
+  const benefitsOnly = `# ADR-0003 选 A
+
+状态：已接受
+日期：2026-11-19
+
+## 背景
+
+有两条路。
+
+## 决定
+
+选 A。
+
+## 后果
+
+好处：
+
+- 快
+- 省事
+`
+  const oneSided = lintAdr(benefitsOnly)
+  assert.ok(oneSided.findings.some(f => f.rule === 'consequences-one-sided'), 'listing only benefits is still one-sided')
+})

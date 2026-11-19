@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.5.0] — 2026-11-19
+
+用真文档喂检查器：写了三条决策记录（ADR）和一份事故复盘，全部由对应检查校验通过，并接进 dogfood 闸。
+
+- **dsh-adr-check 0.2.0**：`consequences-one-sided` 与 `consequences-unlabelled` 改读**整个后果段**，不只看项目符号。把「好处：」写在段落行、好处列在下面，是真实 ADR 最常见的写法；旧版只看列表文本，于是把已标注的权衡判成未标注。这与本 kit 另外四个包犯的是同一个错——量的是拼写不是性质。
+- 新增 `docs/adr/ADR-0001`（规则必须双向测试）、`ADR-0002`（下载量只读成底噪带）、`ADR-0003`（pending 队列不批量处置）与 `docs/incidents/2026-11-17-shapes-sample-contaminated.md`，站点新增 `/decisions/` 页。
+- dogfood 闸扩到七条断言：README、CHANGELOG、LICENSE、ADR、事故复盘、真实提交历史，以及语料规模自检。
+
+**升级路径**：`adr-check` 只会少报误警，不会新报错。已接受旧版报错的 ADR 重跑一次即可看到差异。
+
 ## [0.4.0] — 2026-11-19
 
 第二十一个包上线：`dsh-handover-check`（交接单检查）。
