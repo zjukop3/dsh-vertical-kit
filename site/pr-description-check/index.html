@@ -11,11 +11,11 @@
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>修了点东西</code></pre></details>
 <pre><code>$ pr-description-check pr-sample.md
-error what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…）——reviewer 只能从 diff 反推意图
-error why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、因为…）——diff 说明改了什么，改不了改的理由
-error test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested）——没有验证说明的 PR 让 reviewer 替你验证
+error what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…、或一条列出改动的列表）——reviewer 只能从 diff 反推意图
+error test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested、测试数/audit/CI 结果）——没有验证说明的 PR 让 reviewer 替你验证
+warn why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、the reason is、动机是）——这条靠判断不靠关键词，想让它在 CI 里阻断就传 rules.requireWhy: &quot;error&quot;
 warn issue-unlinked 第0行 没有关联 issue（认得：Fixes #12、#56）——小改动可以没有，但追溯性会差一些
-fail: 0 checkboxes, 3 errors, 1 warnings</code></pre>
+fail: 0 checkboxes, 2 errors, 2 warnings</code></pre>
 <p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /pr-description-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>

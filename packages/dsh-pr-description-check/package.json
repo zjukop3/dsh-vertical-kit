@@ -1,6 +1,6 @@
 {
   "name": "dsh-pr-description-check",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pull-request description hygiene: what changed, why, how it was verified, the issue it closes, any breaking change paired with a migration note, and no all-unchecked checklist.",
   "type": "module",
   "main": "./src/index.js",

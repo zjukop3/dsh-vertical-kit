@@ -7,7 +7,20 @@ export const name = 'pr-description-check'
 export const inject = ['webServer']
 
 const WHAT_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:概述|变更|这个 pr 做什么|做了什么|what|summary|changes)/i
-const WHAT_LINE = /^[^\n]*(?:这个 pr|此 pr|本次(?:变更|改动)|变更说明[：:，\s]|概述[：:，\s])/i
+// Evidence of substance, not of a heading. A description that lists its
+// changes in bullets says what it did; one that explains "so the reader can…"
+// says why; one that names tests, an audit or a CI result says how it knows.
+// Requiring the headings instead reported all nineteen of this project's own
+// merged PRs as missing all three — they answer every question in prose.
+const WHAT_EVIDENCE = /^\s*(?:[-*+]\s+\S|\d+\.\s+\S)/m
+// Narrow on purpose. A bare `because` fires on "because `#` is a non-word
+// character" — an explanation inside a body that never states a motivation, which
+// is exactly what happened on one of this project's own PRs. Only phrases that
+// are unambiguously about motive count.
+const WHY_EVIDENCE = /\b(?:the reason (?:is|this)|which is why|this is why|so that|motivations?)\b|动机是|之所以|目的是|为的是/i
+const TEST_EVIDENCE = /\b(?:tests?|tested|testing|audit|verified|verify|green|coverage|regression)\b|测试|验证|自测|跑过|回归/i
+const FENCE = /```[\s\S]*?```/g
+const WHAT_LINE = /^[^\n]*(?:这个 pr|此 pr|本次(?:变更|改动)|变更说明[：:，\s]|概述[：:，\s]|this pr\b|this change\b)/i
 const WHY_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:为什么|动机|背景|why|motivation|background|context)/i
 const WHY_LINE = /^[^\n]*(?:为什么[：:，\s]|动机[：:，\s]|背景[：:，\s]|因为|原因[：:，\s])/i
 const TEST_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:测试|验证|how (?:was this )?tested|testing|verification)/i
@@ -16,10 +29,20 @@ const TEST_LINE = /^[^\n]*(?:测试(?:方式|步骤)?[：:，\s]|验证(?:方式
 // No leading \b on the bare `#\d+` alternative: `#` is a non-word character, so
 // " #101" has no word boundary in front of it and `\b#` never matches.
 const ISSUE_REF = /(?:\b(?:fix(?:es|ed)?|close[sd]?|resolve[sd]?|refs?|see)\s*:?\s*#\d+)|(?:#\d+\b)|(?:https?:\/\/\S+\/(?:issues|pull)\/\d+)/i
-const BREAKING = /\bbreaking(?:[ _-]?change)?\b|破坏性|不兼容/i
+// A declaration, not a mention. Describing a tool that *detects* breaking
+// changes ("breaking changes announced in a BREAKING CHANGE: trailer") is not
+// declaring one — that false positive landed on two of this project's own
+// merged PRs, both of which were describing a checker.
+const BREAKING = /^\s*(?:#{1,6}\s*)?(?:⚠️\s*)?(?:BREAKING[ _-]?CHANGE\b|breaking(?:[ _-]?change)?[：:]|破坏性(?:变更)?[：:]|不兼容(?:变更)?[：:])/im
 const MIGRATION = /(?:迁移|升级说明|migration|upgrade (?:guide|note)|how to migrate)/i
 
 // Checklist boxes: `- [ ]` unchecked, `- [x]` checked.
+// Fenced blocks are masked before evidence is read: a PR that pastes a stack
+// trace, or quotes this check's own output, must not thereby satisfy it.
+export function proseOnly(text) {
+  return String(text).replace(FENCE, blank => blank.replace(/[^\n]/g, ' '))
+}
+
 export function checkboxes(text) {
   const out = []
   String(text).split('\n').forEach((line, index) => {
@@ -29,8 +52,18 @@ export function checkboxes(text) {
   return out
 }
 
+// 'warn' (default), 'error', or 'off'. Whether a description states a *reason*
+// is not decidable from its keywords — motivation and exposition use the same
+// words. So it warns, and a repo that wants it blocking asks for it.
+export function whyPolicy(rules = {}) {
+  const requested = rules.requireWhy ?? 'warn'
+  if (requested === true) return 'error'
+  if (requested === false) return 'off'
+  return ['warn', 'error', 'off'].includes(requested) ? requested : 'warn'
+}
+
 export function lintPrDescription(text, rules = {}) {
-  const requireWhy = rules.requireWhy ?? true
+  const requireWhy = whyPolicy(rules)
   const requireIssue = rules.requireIssue ?? false
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
@@ -40,17 +73,24 @@ export function lintPrDescription(text, rules = {}) {
     return { ok: false, checked: { lines: 0 }, errors: 1, warnings: 0, findings: [{ level: 'error', rule: 'empty', line: 0, message: 'PR 描述是空的——reviewer 只能从 diff 猜意图' }] }
   }
 
-  // What changed: the one thing a reviewer reads first.
-  const hasWhat = lines.some(line => WHAT_HEADING.test(`\n${line}`)) || lines.some(line => WHAT_LINE.test(line))
-  if (!hasWhat) add('error', 'what-missing', 0, '没有「做了什么」段（认得：## 概述、## 变更、这个 PR…）——reviewer 只能从 diff 反推意图')
+  const prose = proseOnly(text)
+  const proseLines = prose.split('\n')
+
+  // What changed: the one thing a reviewer reads first. A bullet list counts:
+  // listing the changes is the answer, labelled or not.
+  const hasWhat = proseLines.some(line => WHAT_HEADING.test(`\n${line}`)) || proseLines.some(line => WHAT_LINE.test(line)) || WHAT_EVIDENCE.test(prose)
+  if (!hasWhat) add('error', 'what-missing', 0, '没有「做了什么」段（认得：## 概述、## 变更、这个 PR…、或一条列出改动的列表）——reviewer 只能从 diff 反推意图')
 
   // Why: the context a diff cannot carry.
-  const hasWhy = lines.some(line => WHY_HEADING.test(`\n${line}`)) || lines.some(line => WHY_LINE.test(line))
-  if (requireWhy && !hasWhy) add('error', 'why-missing', 0, '没有「为什么」段（认得：## 背景、## 动机、因为…）——diff 说明改了什么，改不了改的理由')
+  const hasWhy = proseLines.some(line => WHY_HEADING.test(`\n${line}`)) || proseLines.some(line => WHY_LINE.test(line)) || WHY_EVIDENCE.test(prose)
+  if (requireWhy !== 'off' && !hasWhy) {
+    const why = requireWhy === 'error' ? 'diff 说明改了什么，改不了改的理由' : '这条靠判断不靠关键词，想让它在 CI 里阻断就传 rules.requireWhy: "error"'
+    add(requireWhy, 'why-missing', 0, `没有「为什么」段（认得：## 背景、## 动机、the reason is、动机是）——${why}`)
+  }
 
   // How it was verified: the rule that catches "works on my machine".
-  const hasTest = lines.some(line => TEST_HEADING.test(`\n${line}`)) || lines.some(line => TEST_LINE.test(line))
-  if (!hasTest) add('error', 'test-missing', 0, '没有测试/验证说明（认得：## 测试、验证：…、How tested）——没有验证说明的 PR 让 reviewer 替你验证')
+  const hasTest = proseLines.some(line => TEST_HEADING.test(`\n${line}`)) || proseLines.some(line => TEST_LINE.test(line)) || TEST_EVIDENCE.test(prose)
+  if (!hasTest) add('error', 'test-missing', 0, '没有测试/验证说明（认得：## 测试、验证：…、How tested、测试数/audit/CI 结果）——没有验证说明的 PR 让 reviewer 替你验证')
 
   // Issue link: traceability. A warn by default — small fixes legitimately
   // arrive without one.
@@ -61,7 +101,7 @@ export function lintPrDescription(text, rules = {}) {
   }
 
   // Breaking change stated, and paired with a migration note.
-  if (BREAKING.test(text) && !MIGRATION.test(text)) {
+  if (BREAKING.test(prose) && !MIGRATION.test(prose)) {
     add('error', 'breaking-without-migration', 0, '提到了破坏性变更但没有迁移/升级说明——下游读者被留在原地')
   }
 

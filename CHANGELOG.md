@@ -9,7 +9,9 @@
 - **dsh-release-notes-check 0.2.0**：认 `## [1.2.0] - 2026-11-17`。这是 Keep a Changelog 规定的写法，也是绝大多数 changelog 的实际写法，之前只认 `## 1.2.0` 和 `## v1.2.0`，于是对本项目自己的三个 CHANGELOG 全报 `version-missing`。排序规则一并读方括号形式。
 - 二十个 README 补上了前置要求段（Node ≥ 22.19、DSH 范围），`package.json` 的 `engines` 早就写了，README 一直没说。
 
-**升级路径**：唯一的行为变更是 `type-missing` 不再阻断提交。想让类型前缀继续阻断的团队，钩子里加 `--require-type`；不想看这条的加 `--no-require-type`。另两个包是检测面变宽，只会少报错，不会新报错。
+- **dsh-pr-description-check 0.2.0**：`what`/`test` 认内容证据（改动列表、测试数/audit/CI 结果），不再只认小标题；`why` 从 error 降为 warn——动机判不了，`because` 在解释代码时比在讲理由时更常见，本项目自己的一个 PR 就是靠「because `#` is a non-word character」蒙过 `why-missing` 的。`BREAKING` 改成只认行首声明，正文里描述"某检查会抓破坏性变更"不再被当成自己声明了破坏性变更（本项目两个 PR 中招）。19 个已合并 PR 从 19/19 报错降到 1/19，剩下那个是真没写验证。
+
+**升级路径**：行为变更有两处。`type-missing` 不再阻断提交，`why-missing` 同样不再阻断。想让它们继续阻断的团队，钩子里加 `--require-type` / `--require-why`；不想看这两条的加 `--no-require-type` / `--no-require-why`。另两个包是检测面变宽，只会少报错，不会新报错。想让类型前缀继续阻断的团队，钩子里加 `--require-type`；不想看这条的加 `--no-require-type`。另两个包是检测面变宽，只会少报错，不会新报错。
 
 ## [0.1.2/0.1.3] - 2026-11-15
 

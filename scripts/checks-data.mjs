@@ -483,7 +483,7 @@ export const CHECKS = [
     example: {
       "command": "pr-description-check pr-sample.md",
       "fixture": "修了点东西",
-      "output": "$ pr-description-check pr-sample.md\nerror what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…）——reviewer 只能从 diff 反推意图\nerror why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、因为…）——diff 说明改了什么，改不了改的理由\nerror test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested）——没有验证说明的 PR 让 reviewer 替你验证\nwarn issue-unlinked 第0行 没有关联 issue（认得：Fixes #12、#56）——小改动可以没有，但追溯性会差一些\nfail: 0 checkboxes, 3 errors, 1 warnings",
+      "output": "$ pr-description-check pr-sample.md\nerror what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…、或一条列出改动的列表）——reviewer 只能从 diff 反推意图\nerror test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested、测试数/audit/CI 结果）——没有验证说明的 PR 让 reviewer 替你验证\nwarn why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、the reason is、动机是）——这条靠判断不靠关键词，想让它在 CI 里阻断就传 rules.requireWhy: \"error\"\nwarn issue-unlinked 第0行 没有关联 issue（认得：Fixes #12、#56）——小改动可以没有，但追溯性会差一些\nfail: 0 checkboxes, 2 errors, 2 warnings",
       "exit": "1"
 },
     note: '只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。',
