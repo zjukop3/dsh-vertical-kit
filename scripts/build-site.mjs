@@ -182,6 +182,8 @@ function corpusPage() {
 <p class="eyebrow">DSH VERTICAL KIT · CORPUS STATUS</p>
 <h1>每条规则的语料状况</h1>
 ${CORPUS_BODY}
+<h2>另外两处</h2>
+<p>这套材料不是只有本 kit。同一个作者另两个仓库各有一份：<a href="https://zjukop3.github.io/dsh-verify-kit/corpus/">五个通用检查跑过什么</a>（里面记着第 18 个缺陷——<code>tablelint</code> 对故意无表头的表格误报，就是拿第三方 README 试出来的）；以及 <a href="https://zjukop3.github.io/dsh-review-outbox/handover/">项目交接单</a>（唯一维护者写给"如果明天他不在"，接收人一栏至今是「尚未指定」）。</p>
 <p><a href="../">← 回到 ${CHECKS.length} 个检查一览</a></p>
 </main></body></html>`
 }
@@ -222,6 +224,7 @@ ${rows}
 <p>第 17 条：<code>order</code> 报的行号系统性偏上一行。判定是对的，指针是错的——用户按报的行号去找，会落在版本标题上方的空行。<strong>这件事写了十七轮都没发现</strong>，因为我写 fixture 时只关心"有没有报"，从不关心"报的行号对不对"。第一个陌生人写的 changelog 第一次就暴露了它。</p>
 <p>还有第 12 条：它是<strong>修第 2 条时引入的</strong>。为了防止文档引用本检查自己的输出，我把所有代码块都遮蔽了——于是作者写在安装块 shell 注释里的成功提示也被遮蔽。一个修复造出下一个缺陷，而两者在同一个下午被同一份语料找出来。</p>
 <p><a href="../corpus/">这些缺陷是靠什么语料找出来的 →</a></p>
+<p>第 18 条（<code>tablelint</code> 的无表头表格误报）属于另一个仓库，记在 <a href="https://zjukop3.github.io/dsh-verify-kit/corpus/">dsh-verify-kit 的语料页</a>；第 19 条是写 <a href="https://zjukop3.github.io/dsh-review-outbox/handover/">这个项目自己的交接单</a>时发现的。</p>
 <p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
 </main></body></html>`
 }
