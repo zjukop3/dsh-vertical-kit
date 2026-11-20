@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintAdr } from '../src/index.js'
+import { lintAdr, statusOf } from '../src/index.js'
 
 const good = `# ADR-0007 用 Postgres 存会话
 
@@ -41,7 +41,8 @@ test('missing status, context and decision are each reported', () => {
   assert.ok(rules.includes('context-missing'))
   assert.ok(rules.includes('decision-missing'))
   assert.ok(rules.includes('consequences-missing'))
-  assert.ok(rules.includes('alternatives-missing'))
+  // alternatives 现在默认不查（Nygard 模板没有这一节，真实 ADR 5/5 都没有）。
+  assert.ok(!rules.includes('alternatives-missing'), rules.join(','))
 })
 
 test('consequences with only benefits is a warn about not weighing the trade', () => {
@@ -71,10 +72,10 @@ test('an accepted English status passes', () => {
   assert.ok(!lintAdr(text).findings.some(finding => finding.rule === 'status-missing' || finding.rule === 'status-unknown'))
 })
 
-test('the alternatives requirement is configurable away', () => {
+test('the alternatives requirement is off by default and can be turned on', () => {
   const text = good.replace(/## 备选\n\n[\s\S]*$/, '')
-  assert.ok(lintAdr(text).findings.some(finding => finding.rule === 'alternatives-missing'))
-  assert.ok(!lintAdr(text, { requireAlternatives: false }).findings.some(finding => finding.rule === 'alternatives-missing'))
+  assert.ok(!lintAdr(text).findings.some(finding => finding.rule === 'alternatives-missing'), '默认不该报')
+  assert.ok(lintAdr(text, { requireAlternatives: true }).findings.some(finding => finding.rule === 'alternatives-missing'), '打开应报')
 })
 
 test('a missing date warns but does not fail', () => {
@@ -141,4 +142,51 @@ test('a label on its own line still labels the trade', () => {
 `
   const oneSided = lintAdr(benefitsOnly)
   assert.ok(oneSided.findings.some(f => f.rule === 'consequences-one-sided'), 'listing only benefits is still one-sided')
+})
+
+// 真实语料（npryce/adr-tools 的 5 份 ADR）：状态是「## Status」这一节下面的一行。
+// 只认行内 `Status: x` 会让 5/5 全部判成没有状态——2026-11-20 实测。
+const nygard = `# 1. Record architecture decisions
+
+Date: 2016-02-12
+
+## Status
+
+Accepted
+
+## Context
+
+We need to record the architectural decisions made on this project.
+
+## Decision
+
+We will use Architecture Decision Records.
+
+## Consequences
+
+Decisions are recorded as they are made.
+`
+
+test('statusOf 认「## Status」下面一行，也认行内写法', () => {
+  assert.equal(statusOf(nygard), 'Accepted')
+  assert.equal(statusOf('状态：已接受\n\n## 背景\n'), '已接受')
+  assert.equal(statusOf('# x\n\n## 背景\n\n没有状态。\n'), null)
+})
+
+test('Nygard 模板的真实 ADR 不再被判成没有状态', () => {
+  const result = lintAdr(nygard)
+  assert.ok(!result.findings.some(f => f.rule === 'status-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('状态取值不认识时仍然 warn', () => {
+  const result = lintAdr(nygard.replace('Accepted', 'Probably fine'))
+  assert.ok(result.findings.some(f => f.rule === 'status-unknown'))
+})
+
+// Nygard 原始模板没有备选方案节：5/5 真实 ADR 都没有，默认报等于噪音。
+test('alternatives 默认不查，--require-alternatives 才查', () => {
+  const off = lintAdr(nygard)
+  const on = lintAdr(nygard, { requireAlternatives: true })
+  assert.ok(!off.findings.some(f => f.rule === 'alternatives-missing'), '默认不该报')
+  assert.ok(on.findings.some(f => f.rule === 'alternatives-missing'), '开关打开应报')
 })

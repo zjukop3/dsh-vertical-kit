@@ -34,11 +34,10 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 
 ```text
 $ adr-check adr-sample.md
-error status-missing 第0行 没有状态行（认得：状态：已接受、Status: accepted）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…
-warn alternatives-missing 第0行 没有备选方案段（认得：## 备选、## Alternatives）——只写选中方案，读者无法知道当时有没有别的路
+error status-missing 第0行 没有状态（认得：状态：已接受、Status: accepted，或「## Status」下面一行）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…
 warn date-missing 第0行 没有日期（认得：2026-11-18）——决策的时间点决定了它的上下文
 warn consequences-one-sided 第13行 后果段只有好处没有代价（缺：代价/缺点/风险/trade-off）——只写收益的 ADR 通常没真正权衡过
-fail: 2 consequences, 1 errors, 3 warnings
+fail: 2 consequences, 1 errors, 2 warnings
 ```
 
 出口码：1。
@@ -51,13 +50,13 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | rule | level | meaning |
 | --- | --- | --- |
 | `empty` | error | the record has no content |
-| `status-missing` | error | no 状态/Status line — an ADR that does not say whether it took effect is a proposal wearing a record's clothes |
+| `status-missing` | error | no status — either a 状态/Status line or the line under a `## Status` heading (the Nygard template) |
 | `context-missing` | error | no 背景/Context section — without the constraints, nobody can re-evaluate the decision later |
 | `decision-missing` | error | no 决定/Decision section |
 | `consequences-missing` | error | no 后果/Consequences section |
 | `consequences-one-sided` | warn | consequences list benefits with no cost — the trade was not weighed |
 | `consequences-unlabelled` | warn | consequences label neither benefit nor cost, so the reader cannot tell which is which |
-| `alternatives-missing` | warn | no 备选/Alternatives section — only the winning option, so no record that there was a choice |
+| `alternatives-missing` | warn, **off by default** (`--require-alternatives`) | no 备选/Alternatives section — only the winning option, so no record that there was a choice |
 | `status-unknown` | warn | a status outside the common set |
 | `date-missing` | warn | no date — when it was decided is part of its context |
 
@@ -78,6 +77,8 @@ Same function over HTTP: `POST /adr-check/api` with `{"text": "…"}` — the CL
 ## Where the balance rule looks
 
 The cost/benefit judgement reads the **whole 后果 section**, not just its bullets. An ADR that writes `好处：` on its own line and then lists the benefits has labelled the trade, and earlier versions of this check called that unlabelled because the label sat outside the list — the same "measured the spelling, not the property" mistake that cost four other checks in this kit a release. Labels on their own line count now.
+
+Measured against five real ADRs from `npryce/adr-tools`: 4 pass with no findings; the fifth warns `consequences-unlabelled` because its consequences are unlabelled prose. Before that measurement, all five failed with `status-missing` — the rule only knew `Status: accepted` on one line, not the `## Status` section that the Nygard template (and every one of those five) uses.
 
 ## Honest scope
 

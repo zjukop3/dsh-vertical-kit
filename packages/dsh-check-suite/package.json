@@ -37,7 +37,7 @@
     "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
   },
   "dependencies": {
-    "dsh-adr-check": "^0.2.1",
+    "dsh-adr-check": "^0.2.2",
     "dsh-agreement-check": "^0.1.4",
     "dsh-api-doc-check": "^0.1.1",
     "dsh-bug-report-check": "^0.1.1",

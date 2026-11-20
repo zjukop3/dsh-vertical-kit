@@ -1,6 +1,6 @@
 {
   "name": "dsh-adr-check",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Architecture decision record hygiene: a status, the context that forced a choice, the decision itself, consequences that include the cost, and the alternatives that lost.",
   "type": "module",
   "main": "./src/index.js",

@@ -527,13 +527,13 @@ export const CHECKS = [
     decides: '这份决策记录是否让后来人能重新评估它',
     rules: [
       ['empty', '记录为空 → error'],
-      ['status-missing', '没有状态行（状态：已接受 / Status: accepted）→ error'],
+      ['status-missing', '没有状态（状态：已接受 / Status: accepted，或「## Status」下面一行）→ error'],
       ['context-missing', '没有背景段 → error（没有约束，后人无法重新评估）'],
       ['decision-missing', '没有决定段 → error'],
       ['consequences-missing', '没有后果段 → error'],
       ['consequences-one-sided', '后果只有好处没有代价 → warn'],
       ['consequences-unlabelled', '后果不分好坏 → warn（读者分不清哪条是要接受的成本）'],
-      ['alternatives-missing', '没有备选方案段 → warn（只写赢的那个）'],
+      ['alternatives-missing', '没有备选方案段 → warn，默认不查（--require-alternatives 打开）'],
       ['status-unknown / date-missing', '状态不在常见取值 / 没有日期 → warn'],
     ],
     usage: [
@@ -543,7 +543,7 @@ export const CHECKS = [
     example: {
       "command": "adr-check adr-sample.md",
       "fixture": "# ADR-0007 用 Postgres 存会话\n\n## 背景\n\n会话要跨实例共享。\n\n## 决定\n\n会话写入 Postgres。\n\n## 后果\n\n- 好处：多副本共享，重启不丢会话\n- 好处：不再需要粘性会话",
-      "output": "$ adr-check adr-sample.md\nerror status-missing 第0行 没有状态行（认得：状态：已接受、Status: accepted）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…\nwarn alternatives-missing 第0行 没有备选方案段（认得：## 备选、## Alternatives）——只写选中方案，读者无法知道当时有没有别的路\nwarn date-missing 第0行 没有日期（认得：2026-11-18）——决策的时间点决定了它的上下文\nwarn consequences-one-sided 第13行 后果段只有好处没有代价（缺：代价/缺点/风险/trade-off）——只写收益的 ADR 通常没真正权衡过\nfail: 2 consequences, 1 errors, 3 warnings",
+      "output": "$ adr-check adr-sample.md\nerror status-missing 第0行 没有状态（认得：状态：已接受、Status: accepted，或「## Status」下面一行）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…\nwarn date-missing 第0行 没有日期（认得：2026-11-18）——决策的时间点决定了它的上下文\nwarn consequences-one-sided 第13行 后果段只有好处没有代价（缺：代价/缺点/风险/trade-off）——只写收益的 ADR 通常没真正权衡过\nfail: 2 consequences, 1 errors, 2 warnings",
       "exit": "1"
 },
     note: '状态取值：proposed/accepted/rejected/deprecated/superseded（含中文同级词）。代价词：代价/缺点/劣势/风险/成本/trade-off/downside；好处词：好处/优点/优势/收益/benefit/upside。只验记录形状，不验决策对不对：背景是否漏了大家都知道的约束、备选是不是稻草人、代价是否被压低——这些只有后果本身会在后来揭晓。',

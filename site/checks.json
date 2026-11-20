@@ -818,7 +818,7 @@
         },
         {
           "rule": "status-missing",
-          "meaning": "没有状态行（状态：已接受 / Status: accepted）→ error"
+          "meaning": "没有状态（状态：已接受 / Status: accepted，或「## Status」下面一行）→ error"
         },
         {
           "rule": "context-missing",
@@ -842,7 +842,7 @@
         },
         {
           "rule": "alternatives-missing",
-          "meaning": "没有备选方案段 → warn（只写赢的那个）"
+          "meaning": "没有备选方案段 → warn，默认不查（--require-alternatives 打开）"
         },
         {
           "rule": "status-unknown / date-missing",

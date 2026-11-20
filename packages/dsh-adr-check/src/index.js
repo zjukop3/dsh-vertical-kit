@@ -8,6 +8,24 @@ export const name = 'adr-check'
 export const inject = ['webServer']
 
 const STATUS = /^\s*(?:[-*+]\s*)?(?:状态|status)\s*[：:]\s*(\S+)/im
+
+// 状态也可能是「## Status」这一节下面的一行。这是 Nygard 模板的标准写法——也就是
+// 这门实践本来的模板——而 2026-11-20 实测 5 份真实 ADR 全是这个形状。只认行内
+// `Status: x` 会把它们全部判成「没有状态」。
+export function statusOf(text) {
+  const inline = String(text).match(STATUS)
+  if (inline) return inline[1]
+  const lines = String(text).split('\n')
+  const at = lines.findIndex(line => /^#{1,6}\s*(?:状态|status)\s*$/i.test(line.trim()))
+  if (at === -1) return null
+  for (let i = at + 1; i < lines.length && i <= at + 6; i += 1) {
+    const value = lines[i].trim()
+    if (!value) continue
+    if (/^#{1,6}\s/.test(value)) return null
+    return value.split(/\s+/)[0]
+  }
+  return null
+}
 const STATUS_VALUES = ['proposed', 'accepted', 'rejected', 'deprecated', 'superseded', '提议', '已接受', '已采纳', '已拒绝', '已废弃', '已取代', '草案', 'draft']
 const CONTEXT_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:背景|上下文|context)/i
 const DECISION_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:决定|决策|decision)/i
@@ -52,7 +70,9 @@ function sectionItems(text, headingPattern) {
 }
 
 export function lintAdr(text, rules = {}) {
-  const requireAlternatives = rules.requireAlternatives ?? true
+  // 默认不查：Nygard 的原始模板没有「备选方案」这一节，5 份真实 ADR 里 5 份都没有。
+  // 一条在经典写法上 100% 开火的 warn 是噪音；在意权衡过程时用 --require-alternatives。
+  const requireAlternatives = rules.requireAlternatives ?? false
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = String(text).split('\n')
@@ -63,9 +83,10 @@ export function lintAdr(text, rules = {}) {
 
   // Status: an ADR that does not say whether it is accepted is a proposal
   // pretending to be a record.
-  const statusMatch = String(text).match(STATUS)
+  const status = statusOf(text)
+  const statusMatch = status ? [null, status] : null
   if (!statusMatch) {
-    add('error', 'status-missing', 0, `没有状态行（认得：状态：已接受、Status: accepted）——不知道这条决策是否已生效。可取值：${STATUS_VALUES.slice(0, 5).join('/')}…`)
+    add('error', 'status-missing', 0, `没有状态（认得：状态：已接受、Status: accepted，或「## Status」下面一行）——不知道这条决策是否已生效。可取值：${STATUS_VALUES.slice(0, 5).join('/')}…`)
   } else if (!STATUS_VALUES.some(value => statusMatch[1].toLowerCase().includes(value))) {
     add('warn', 'status-unknown', lines.findIndex(line => STATUS.test(line)) + 1, `状态「${statusMatch[1]}」不在常见取值里——自定义可以，但要确认是有意的`)
   }

@@ -6,10 +6,11 @@ import { lintAdr } from '../src/index.js'
 const args = process.argv.slice(2)
 const target = args.find(argument => !argument.startsWith('--'))
 if (!target) {
-  process.stderr.write('usage: adr-check <adr.md|-> [--json] [--no-require-alternatives] [--warnings-fail]\n')
+  process.stderr.write('usage: adr-check <adr.md|-> [--json] [--require-alternatives] [--no-require-alternatives] [--warnings-fail]\n')
   process.exit(2)
 }
 const rules = {}
+if (args.includes('--require-alternatives')) rules.requireAlternatives = true
 if (args.includes('--no-require-alternatives')) rules.requireAlternatives = false
 try {
   const text = target === '-' ? await new Promise(resolve => { let data = ''; process.stdin.on('data', chunk => { data += chunk }); process.stdin.on('end', () => resolve(data)) }) : await readFile(target, 'utf8')
