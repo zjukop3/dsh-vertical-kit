@@ -1039,7 +1039,7 @@
       "rules": [
         {
           "rule": "title-missing",
-          "meaning": "第一行没有 `# 标题` → error"
+          "meaning": "没有 `# 标题`，也没有 frontmatter 的 title: → error"
         },
         {
           "rule": "id-missing",
@@ -1089,19 +1089,19 @@
       "rules": [
         {
           "rule": "title-missing",
-          "meaning": "第一行没有 `# 标题` → error"
+          "meaning": "没有 `# 标题`，也没有 frontmatter 的 title: → error"
         },
         {
           "rule": "from-to-missing",
-          "meaning": "没有版本跨度（从 0.1.0 到 0.2.0、0.1.7 → 0.2.0）→ error；单个版本不算"
+          "meaning": "既没有版本跨度（从 0.1.0 到 0.2.0），标题里也没有迁移目标（Migrating to v5）→ error；只有版本号不算"
         },
         {
           "rule": "breaking-missing",
-          "meaning": "没有破坏性变更段或带标签的清单 → error"
+          "meaning": "没有破坏性变更段、也没有至少三节讲变更的小节 → error"
         },
         {
           "rule": "steps-missing",
-          "meaning": "没有编号步骤 → error；散文与项目符号都不算"
+          "meaning": "没有编号步骤 → warn（--require-steps 时 error）；散文与项目符号都不算"
         },
         {
           "rule": "steps-thin",
@@ -1109,24 +1109,25 @@
         },
         {
           "rule": "verify-missing",
-          "meaning": "没有验证方式 → warn"
+          "meaning": "没有验证方式 → warn，仅流程型指南（有编号步骤）"
         },
         {
           "rule": "rollback-missing",
-          "meaning": "没有回滚方案 → warn（--require-rollback 时 error）"
+          "meaning": "没有回滚方案 → warn，仅流程型指南（--require-rollback 时 error）"
         },
         {
           "rule": "backup-missing",
-          "meaning": "没有备份提示 → warn"
+          "meaning": "没有备份提示 → warn，仅流程型指南"
         }
       ],
       "usage": [
         "npx migration-guide-check guide.md --json",
-        "npx migration-guide-check guide.md --min-steps 5 --require-rollback"
+        "npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback",
+        "npx migration-guide-check guide.md --check-recovery"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/migration-guide-check/",
       "route": "POST /migration-guide-check/api",
-      "scope": "只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。"
+      "scope": "实测两份真实指南（Vite docs/guide/migration.md 与 TanStack Query 的 Migrating to v5）：0 error、1 warn（steps-missing）。恢复类三问（验证/回滚/备份）只对流程型指南（有编号步骤）查——不加这个条件，三条在 100% 的真实指南上都会开火。只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。"
     },
     {
       "name": "dsh-privacy-notice-check",
@@ -1139,11 +1140,11 @@
       "rules": [
         {
           "rule": "title-missing",
-          "meaning": "第一行没有 `# 标题` → error"
+          "meaning": "没有 `# 标题`，也没有 frontmatter 的 title: → error"
         },
         {
           "rule": "data-missing",
-          "meaning": "没有说明收集什么 → error；「不收集任何数据」也是答案"
+          "meaning": "没有说明收集什么 → error；认得 information we collect、personal data that we process；「不收集任何数据」也是答案"
         },
         {
           "rule": "purpose-missing",
@@ -1155,7 +1156,7 @@
         },
         {
           "rule": "sharing-missing",
-          "meaning": "没有共享/第三方段 → error；散文里提到「第三方」不算声明"
+          "meaning": "没有共享段 → error；认得 共享、第三方、disclose、subprocessor；散文里提到「第三方」不算声明"
         },
         {
           "rule": "contact-missing",
@@ -1176,7 +1177,7 @@
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/",
       "route": "POST /privacy-notice-check/api",
-      "scope": "只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。"
+      "scope": "实测 GitHub 自己的两份政策（General Privacy Statement、Candidate Privacy Notice）零发现；cookies 政策报 5 条，那是正确的——它不是隐私声明。frontmatter 的 title: 也算标题。只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。"
     }
   ]
 }

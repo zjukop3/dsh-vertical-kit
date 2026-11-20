@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintPrivacyNotice } from '../src/index.js'
+import { lintPrivacyNotice, titleOf } from '../src/index.js'
 
 const good = `# 隐私声明
 
@@ -106,4 +106,37 @@ test('没有一级标题时 title-missing 报错，且指在第一行', () => {
   assert.ok(finding, JSON.stringify(result.findings.map(f => f.rule)))
   assert.equal(finding.level, 'error')
   assert.equal(finding.line, 1)
+})
+
+// 真实语料：GitHub site-policy 的三份声明里两份用 frontmatter 给标题、用
+// "Personal Data that We Process" 与 "How and Why We Disclose Personal Data" 分节。
+// 只认 `# 标题` 与「收集/共享」会让它们全部误判——2026-11-20 实测。
+test('titleOf：frontmatter、一级标题、都没有', () => {
+  assert.equal(titleOf('---\ntitle: 隐私声明\n---\n\n正文\n'), 'frontmatter')
+  assert.equal(titleOf('# 隐私声明\n\n正文\n'), 'heading')
+  assert.equal(titleOf('隐私声明\n\n正文\n'), null)
+})
+
+test('frontmatter 标题算有标题，不必再写一级标题', () => {
+  const text = good.replace('# 隐私声明\n', '---\ntitle: 隐私声明\n---\n').replace('生效日期：2026-11-01\n', '\n生效日期：2026-11-01\n')
+  const result = lintPrivacyNotice(text)
+  assert.ok(!result.findings.some(f => f.rule === 'title-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('「Personal Data that We Process」就是一节说明收集什么', () => {
+  const text = good.replace('## 我们收集的信息', '## Personal Data that We Process')
+  const result = lintPrivacyNotice(text)
+  assert.ok(!result.findings.some(f => f.rule === 'data-missing'))
+})
+
+test('「How and Why We Disclose Personal Data」就是一节共享说明', () => {
+  const text = good.replace('## 共享', '## How and Why We Disclose Personal Data')
+  const result = lintPrivacyNotice(text)
+  assert.ok(!result.findings.some(f => f.rule === 'sharing-missing'))
+})
+
+test('散文里说「我们会披露信息」不算共享声明：仍然要一节或带标签的一行', () => {
+  const text = good.replace('## 共享\n\n不向第三方共享，除非依法律要求。\n', '在必要时我们会披露相关信息。\n')
+  const result = lintPrivacyNotice(text)
+  assert.ok(result.findings.some(f => f.rule === 'sharing-missing'), JSON.stringify(result.findings.map(f => f.rule)))
 })

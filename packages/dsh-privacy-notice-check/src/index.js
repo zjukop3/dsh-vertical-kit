@@ -15,14 +15,23 @@
 export const name = 'privacy-notice-check'
 export const inject = ['webServer']
 
-const TITLE = /^#\s+\S/
+// 真实文档大量用 YAML frontmatter 给标题（GitHub 的 site-policy、Docusaurus、Jekyll
+// 都是这个形状）。只认 `# ` 会把三份真实隐私声明全部判成「没有标题」。
+// 拆成函数而不是一条正则：一条正则同时表达「有 frontmatter 标题」和「有一级标题」
+// 会把两种情况一起写错（第一版就写错了，`\A` 在 JS 里根本不是锚点）。
+export function titleOf(text) {
+  const source = String(text).replace(/^\uFEFF/, '')
+  const front = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  if (front && /^title:\s*\S+/m.test(front[1])) return 'frontmatter'
+  if (/^#\s+\S/.test(source)) return 'heading'
+  return null
+}
 
-// A heading or a labelled line. A prose mention of the word 第三方 is not a
-// sharing section: the reader cannot point at it, and neither can an auditor.
 const heading = words => new RegExp(`(?:^|\\n)#{1,6}[^\\n]*(?:${words})`, 'i')
 const label = words => new RegExp(`^[^\\n]*(?:${words})\\s*[：:]`, 'i')
 
-const DATA_HEADING = heading('收集|信息收集|数据类别|information we collect|data we collect')
+// 真实写法的三种：information we collect、personal data that we process、data we collect。
+const DATA_HEADING = heading('收集|信息收集|数据类别|information (?:that )?we collect|data (?:that )?we (?:collect|process)|personal data[^\n]{0,24}(?:collect|process|hold)')
 const DATA_LABEL = label('我们收集|收集的信息|收集的数据')
 const DATA_NONE = /(?:不收集|不会收集|不采集|we do not collect|we don't collect)/i
 
@@ -33,8 +42,9 @@ const RETENTION_HEADING = heading('保留|保存期|留存|retention')
 const RETENTION_LABEL = label('保留期限|保存期限|保留时间|retention')
 const RETENTION_NONE = /(?:不保留|不留存|不保存|不会保留|we do not (?:retain|keep))/i
 
-const SHARING_HEADING = heading('共享|第三方|对外提供|委托处理|sharing|third part')
-const SHARING_LABEL = label('共享|第三方|sharing')
+// GitHub 的写法是 How and Why We Disclose Personal Data——disclose 就是共享。
+const SHARING_HEADING = heading('共享|第三方|对外提供|委托处理|sharing|third part|disclos|subprocessor')
+const SHARING_LABEL = label('共享|第三方|sharing|disclos')
 
 const CONTACT_HEADING = heading('联系|如何联系我们|contact')
 const CONTACT_LABEL = label('联系|邮箱|contact')
@@ -55,7 +65,7 @@ export function lintPrivacyNotice(text, rules = {}) {
   const lines = text.split('\n')
   const any = (...patterns) => lines.some(line => patterns.some(pattern => pattern.test(`\n${line}`) || pattern.test(line)))
 
-  if (!TITLE.test(text)) add('error', 'title-missing', 1, '第一行没有 `# 标题`——声明要有个能认出来的名字')
+  if (!titleOf(text)) add('error', 'title-missing', 1, '没有标题（认得：`# 标题`，或 frontmatter 里的 `title:`）——声明要有个能认出来的名字')
 
   if (!any(DATA_HEADING, DATA_LABEL, DATA_NONE)) {
     add('error', 'data-missing', 0, '没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的')

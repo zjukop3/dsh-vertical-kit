@@ -87,3 +87,15 @@ test('ruleNames 不把注释里的调用算成规则', () => {
   assert.ok(names.includes('real-rule'))
   assert.ok(!names.includes('commented-out'))
 })
+
+// 三元级别的调用也要被数进去：`add(requireSteps ? 'error' : 'warn', 'steps-missing', …)`
+// 既不匹配字面量模式也不匹配标识符模式，曾经让这条规则从 194 条里消失。
+test('ruleNames 认得级别来自三元表达式的调用', () => {
+  const src = `
+    add(flag ? 'error' : 'warn', 'ternary-level', 0, 'message')
+    add('warn', 'literal-level', 0, 'message')
+  `
+  const names = ruleNames(src)
+  assert.ok(names.includes('ternary-level'), names.join(','))
+  assert.ok(names.includes('literal-level'), names.join(','))
+})

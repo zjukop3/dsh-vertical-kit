@@ -45,11 +45,11 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 
 | rule | level | meaning |
 | --- | --- | --- |
-| `title-missing` | error | no `# title` on the first line |
-| `data-missing` | error | no statement of what is collected；「不收集任何数据」也是答案 |
+| `title-missing` | error | no `# title` and no frontmatter `title:` |
+| `data-missing` | error | no statement of what is collected；「不收集任何数据」也是答案；认得 information we collect / personal data that we process |
 | `purpose-missing` | error | no stated purpose section or labelled line |
 | `retention-missing` | error | no retention period；「不保留」也是答案 |
-| `sharing-missing` | error | no sharing / third-party section；散文里提到「第三方」不算声明 |
+| `sharing-missing` | error | no sharing section；认得 共享 / third party / disclose / subprocessor；散文里提到「第三方」不算声明 |
 | `contact-missing` | error | no contact section, labelled line, or email address |
 | `effective-date-missing` | warn | no effective or last-updated date |
 | `rights-missing` | warn (error with `--require-rights`) | no rights statement (## 你的权利、你有权访问/删除…) |
@@ -66,6 +66,8 @@ Same function over HTTP: `POST /privacy-notice-check/api` with `{"text": "…"}`
 ## Honest scope
 
 This checks that the notice **answers the questions**, not that the answers are lawful in any particular jurisdiction. It does not know GDPR from PIPL, does not check whether the stated retention matches what the code actually does, and cannot tell whether a "we do not share" claim is true. A notice collects nothing and says so passes the data and retention rules by design: a negative claim is content, and demanding a section on top of it would teach authors to write filler.
+
+Measured against GitHub's own published policies: the General Privacy Statement and the Candidate Privacy Notice both pass with no findings; the cookies policy fails five rules, which is correct — it is a cookies notice, not a privacy notice.
 
 Part of [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit): industry-scenario checks, each one verb, each runnable without DSH.
 

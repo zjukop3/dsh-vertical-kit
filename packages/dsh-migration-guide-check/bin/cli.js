@@ -6,7 +6,7 @@ import { lintMigrationGuide } from '../src/index.js'
 const args = process.argv.slice(2)
 const target = args.find(argument => !argument.startsWith('--'))
 if (!target) {
-  process.stderr.write('usage: migration-guide-check guide.md [--json] [--min-steps 3] [--warnings-fail] [--require-rollback]\n')
+  process.stderr.write('usage: migration-guide-check guide.md [--json] [--min-steps 3] [--warnings-fail] [--require-steps] [--require-rollback] [--check-recovery]\n')
   process.exit(2)
 }
 const option = name => {
@@ -17,6 +17,8 @@ const rules = {}
 const minSteps = option('--min-steps')
 if (minSteps !== undefined) rules.minSteps = minSteps
 if (args.includes('--require-rollback')) rules.requireRollback = true
+if (args.includes('--require-steps')) rules.requireSteps = true
+if (args.includes('--check-recovery')) rules.checkRecovery = true
 try {
   const result = await lintMigrationGuide(await readFile(target, 'utf8'), rules)
   if (args.includes('--json')) {

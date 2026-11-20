@@ -5,9 +5,9 @@
 <p><strong>它决定一件事：</strong>这份迁移指南能否让人在没人可问的情况下把升级做完。</p>
 <nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="../expense-claim-check/">dsh-expense-claim-check</a><a href="../security-advisory-check/">dsh-security-advisory-check</a><a href="../migration-guide-check/">dsh-migration-guide-check</a><a href="../privacy-notice-check/">dsh-privacy-notice-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-migration-guide-check">npm</a></nav>
 <h2>检查规则</h2>
-<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>第一行没有 `# 标题` → error</td></tr><tr><td><code>from-to-missing</code></td><td>没有版本跨度（从 0.1.0 到 0.2.0、0.1.7 → 0.2.0）→ error；单个版本不算</td></tr><tr><td><code>breaking-missing</code></td><td>没有破坏性变更段或带标签的清单 → error</td></tr><tr><td><code>steps-missing</code></td><td>没有编号步骤 → error；散文与项目符号都不算</td></tr><tr><td><code>steps-thin</code></td><td>步骤少于下限（默认 3，可调）→ warn</td></tr><tr><td><code>verify-missing</code></td><td>没有验证方式 → warn</td></tr><tr><td><code>rollback-missing</code></td><td>没有回滚方案 → warn（--require-rollback 时 error）</td></tr><tr><td><code>backup-missing</code></td><td>没有备份提示 → warn</td></tr></table>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>没有 `# 标题`，也没有 frontmatter 的 title: → error</td></tr><tr><td><code>from-to-missing</code></td><td>既没有版本跨度（从 0.1.0 到 0.2.0），标题里也没有迁移目标（Migrating to v5）→ error；只有版本号不算</td></tr><tr><td><code>breaking-missing</code></td><td>没有破坏性变更段、也没有至少三节讲变更的小节 → error</td></tr><tr><td><code>steps-missing</code></td><td>没有编号步骤 → warn（--require-steps 时 error）；散文与项目符号都不算</td></tr><tr><td><code>steps-thin</code></td><td>步骤少于下限（默认 3，可调）→ warn</td></tr><tr><td><code>verify-missing</code></td><td>没有验证方式 → warn，仅流程型指南（有编号步骤）</td></tr><tr><td><code>rollback-missing</code></td><td>没有回滚方案 → warn，仅流程型指南（--require-rollback 时 error）</td></tr><tr><td><code>backup-missing</code></td><td>没有备份提示 → warn，仅流程型指南</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx migration-guide-check guide.md --json</code></pre><pre><code>npx migration-guide-check guide.md --min-steps 5 --require-rollback</code></pre>
+<pre><code>npx migration-guide-check guide.md --json</code></pre><pre><code>npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback</code></pre><pre><code>npx migration-guide-check guide.md --check-recovery</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 升级说明
 
@@ -15,14 +15,11 @@
 </code></pre></details>
 <pre><code>$ migration-guide-check migration-sample.md
 error from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南
-error breaking-missing 第0行 没有破坏性变更段（认得：## 破坏性变更、## 不兼容变更、## Breaking changes）——散文里提一句「这次不兼容」不是清单，读者没法逐条对照
-error steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——迁移是在做事，不是读背景
-warn verify-missing 第0行 没有验证方式（认得：## 验证、确认、冒烟、should show）——迁移完不知道该看哪，等于不知道自己成没成
-warn rollback-missing 第0行 没有回滚方案（认得：## 回滚、rollback、恢复备份）——迁移失败时，回滚是唯一不用求人的路
-warn backup-missing 第0行 没有备份提示（认得：备份、导出、backup）——改之前先留一份，是最便宜的一条建议
-fail: span unstated, 0 steps, 3 errors, 3 warnings</code></pre>
+error breaking-missing 第0行 没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单
+warn steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——有步骤的指南能照着做，没有的只能照着读
+fail: span unstated, 0 steps, 2 errors, 1 warnings</code></pre>
 <p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /migration-guide-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
-<small>只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+<small>实测两份真实指南（Vite docs/guide/migration.md 与 TanStack Query 的 Migrating to v5）：0 error、1 warn（steps-missing）。恢复类三问（验证/回滚/备份）只对流程型指南（有编号步骤）查——不加这个条件，三条在 100% 的真实指南上都会开火。只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
 </main></body></html>

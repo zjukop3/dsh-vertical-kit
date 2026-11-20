@@ -25,12 +25,9 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 ```text
 $ migration-guide-check migration-sample.md
 error from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南
-error breaking-missing 第0行 没有破坏性变更段（认得：## 破坏性变更、## 不兼容变更、## Breaking changes）——散文里提一句「这次不兼容」不是清单，读者没法逐条对照
-error steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——迁移是在做事，不是读背景
-warn verify-missing 第0行 没有验证方式（认得：## 验证、确认、冒烟、should show）——迁移完不知道该看哪，等于不知道自己成没成
-warn rollback-missing 第0行 没有回滚方案（认得：## 回滚、rollback、恢复备份）——迁移失败时，回滚是唯一不用求人的路
-warn backup-missing 第0行 没有备份提示（认得：备份、导出、backup）——改之前先留一份，是最便宜的一条建议
-fail: span unstated, 0 steps, 3 errors, 3 warnings
+error breaking-missing 第0行 没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单
+warn steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——有步骤的指南能照着做，没有的只能照着读
+fail: span unstated, 0 steps, 2 errors, 1 warnings
 ```
 
 出口码：1。
@@ -42,20 +39,21 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 
 | rule | level | meaning |
 | --- | --- | --- |
-| `title-missing` | error | no `# title` on the first line |
-| `from-to-missing` | error | no version span (从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2)；「升级到 0.2.0」不是跨度 |
-| `breaking-missing` | error | no breaking-changes section or labelled list；散文里提一句「不兼容」不算清单 |
-| `steps-missing` | error | no numbered steps；散文里的「先备份再升级」不是步骤 |
+| `title-missing` | error | no `# title` and no frontmatter `title:` |
+| `from-to-missing` | error | no version span (从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2) **and** no migration target in the title (「Migrating to v5」)；a bare version with no migration word is neither |
+| `breaking-missing` | error | no breaking-changes section, no labelled list, and fewer than three sections that read as changes (Removed…, Renamed…, Now uses…)；散文里提一句「不兼容」不算清单 |
+| `steps-missing` | warn (error with `--require-steps`) | no numbered steps；散文里的「先备份再升级」不是步骤 |
 | `steps-thin` | warn | fewer steps than the floor (default 3) |
-| `verify-missing` | warn | no way to confirm the upgrade worked |
-| `rollback-missing` | warn (error with `--require-rollback`) | no rollback path |
-| `backup-missing` | warn | no backup prompt before the change |
+| `verify-missing` | warn, **procedural guides only** | no way to confirm the upgrade worked |
+| `rollback-missing` | warn (error with `--require-rollback`), **procedural guides only** | no rollback path |
+| `backup-missing` | warn, **procedural guides only** | no backup prompt before the change |
 
 ## Use
 
 ```bash
 npx migration-guide-check guide.md --json
-npx migration-guide-check guide.md --min-steps 5 --require-rollback
+npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback
+npx migration-guide-check guide.md --check-recovery   # 全指南都问验证/回滚/备份
 ```
 
 Same function over HTTP: `POST /migration-guide-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
@@ -63,6 +61,8 @@ Same function over HTTP: `POST /migration-guide-check/api` with `{"text": "…"}
 ## Honest scope
 
 This checks the guide's **shape**, not its correctness: whether it names the jump it covers, enumerates what breaks, gives steps in order, and tells the reader how to confirm and undo. Steps that are wrong, or a span that misses a version, cannot be detected from the text — running the migration in a scratch profile is what catches those. Bullet lists do not count as steps on purpose: order matters in a migration, and a `-` list does not promise any.
+
+Measured against two real guides — Vite's `docs/guide/migration.md` and TanStack Query's "Migrating to v5": both pass with no errors and one warning (`steps-missing`). Neither is a procedure, so the recovery questions stay quiet; that gating came straight out of the measurement, because without it all three fired on 100% of real guides.
 
 Part of [dsh-vertical-kit](https://github.com/zjukop3/dsh-vertical-kit): industry-scenario checks, each one verb, each runnable without DSH.
 

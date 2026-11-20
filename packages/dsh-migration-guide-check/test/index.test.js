@@ -39,22 +39,37 @@ test('a complete guide passes with no findings at all', () => {
   assert.ok(result.checked.span, 'span 应被解析出来')
 })
 
-test('prose-only guide fires the four blockers and three warns', () => {
+test('prose-only guide fires the three blockers and the steps warn', () => {
   const result = lintMigrationGuide(bad)
   assert.equal(result.ok, false)
   const rules = result.findings.map(f => f.rule)
   for (const rule of ['from-to-missing', 'breaking-missing', 'steps-missing']) {
     assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
   }
+  // 没有编号步骤 = 不是流程型指南，恢复类三问（验证/回滚/备份）不查。
+  for (const rule of ['verify-missing', 'rollback-missing', 'backup-missing']) {
+    assert.ok(!rules.includes(rule), `${rule} 不该在非流程型指南上报：${rules.join(',')}`)
+  }
+})
+
+test('有编号步骤的流程型指南才问「怎么验证、怎么回滚、有没有备份」', () => {
+  const text = good.replace('## 验证\n\n`dsh plugin list` 应显示 0.2.0。\n\n', '').replace('## 回滚\n\n把备份的 profile 目录还原，再装回 0.1.x。\n', '').replace('1. 备份 profile 目录。\n', '1. 停掉正在跑的 profile。\n')
+  const result = lintMigrationGuide(text)
+  const rules = result.findings.map(f => f.rule)
   for (const rule of ['verify-missing', 'rollback-missing', 'backup-missing']) {
     assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
   }
 })
 
-test('单个版本不是跨度：「升级到 0.2.0」仍然是 from-to-missing', () => {
-  const text = good.replace('适用版本：0.1.0 到 0.2.0。', '升级到 0.2.0 即可。').replace('从 0.1.x 升级到 0.2.0', '升级到 0.2.0')
-  const result = lintMigrationGuide(text)
-  assert.ok(result.findings.some(f => f.rule === 'from-to-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+test('标题写了「迁移到 vN」算数，只有版本号不算', () => {
+  const target = good.replace('从 0.1.x 升级到 0.2.0', '升级到 0.2.0').replace('适用版本：0.1.0 到 0.2.0。', '')
+  assert.ok(!lintMigrationGuide(target).findings.some(f => f.rule === 'from-to-missing'), '写了目标版本不该报')
+
+  const noWord = target.replace('升级到 0.2.0', '版本说明 0.2.0')
+  assert.ok(
+    lintMigrationGuide(noWord).findings.some(f => f.rule === 'from-to-missing'),
+    JSON.stringify(lintMigrationGuide(noWord).findings.map(f => f.rule)),
+  )
 })
 
 test('散文里提一句「不兼容」不算破坏性变更清单', () => {

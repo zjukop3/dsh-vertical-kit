@@ -34,7 +34,11 @@ const ADD_CALL = /\badd\(\s*'(?:error|warn)'\s*,\s*'([a-z][a-z0-9-]*)'/g
 // `add(level, 'rollback-missing', …)`）。只认字面量级别时，这类规则会被漏掉——
 // 2026-11-20 实测：privacy 的 rights-missing 与 migration 的 rollback-missing
 // 一直不在 190 条里，等于审计对它们视而不见。第二参数才是规则名，与级别无关。
-const ADD_CALL_DYNAMIC = /\badd\(\s*[A-Za-z_$][\w$.]*\s*,\s*'([a-z][a-z0-9-]*)'/g
+// 第一参数可能是变量、三元、或任何表达式。只认标识符的版本又漏了一次：
+// `add(requireSteps ? 'error' : 'warn', 'steps-missing', …)` 既不匹配字面量模式，
+// 也不匹配「标识符」模式，于是这条规则从计数里消失（194 -> 193）。
+// 判据是「第一参数不是单个字符串字面量」，而不是「长成什么形状」。
+const ADD_CALL_DYNAMIC = /\badd\(\s*[^'"\s][^,\n]{0,80}?,\s*'([a-z][a-z0-9-]*)'/g
 // [\s\S] not [^{}]: a finding object can span lines, and `message` may carry a
 // template with braces. Matching only single-line objects produced a rule named
 // `undefined` for citelint.
