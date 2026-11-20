@@ -68,3 +68,22 @@ test('testBlocks splits per test so one block cannot borrow another assertion', 
   const source = "test('a', () => {\n  assert.ok(x)\n})\n\ntest('b', () => {\n  assert.ok(y)\n})"
   assert.equal(testBlocks(source).length, 2)
 })
+
+// 审计自己的两个方向：动态级别的规则要被数进去，注释掉的调用不能被数进去。
+// 2026-11-20 实测漏了 4 条（privacy 的 rights-missing、migration 的 rollback-missing
+// 等），它们本来就有测试，只是审计看不见——「规则都双向验证过」这句话当时是错的。
+test('ruleNames 认得级别来自变量的调用', () => {
+  const src = `
+    const level = flag ? 'error' : 'warn'
+    add(level, 'rollback-missing', 0, 'message')
+    findings.push({ level, rule: 'pushed-dynamic', line: 1, message: 'x' })
+  `
+  const names = ruleNames(src)
+  assert.ok(names.includes('rollback-missing'), names.join(','))
+})
+
+test('ruleNames 不把注释里的调用算成规则', () => {
+  const names = ruleNames(`// add('error', 'commented-out', 0, 'x')\nadd('error', 'real-rule', 0, 'x')\n`)
+  assert.ok(names.includes('real-rule'))
+  assert.ok(!names.includes('commented-out'))
+})

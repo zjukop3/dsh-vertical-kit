@@ -30,6 +30,11 @@ const packagesDir = join(root, 'packages')
 // Matching only the first reported zero rules for four of verify-kit's five
 // packages, which would have looked like a clean audit of an empty list.
 const ADD_CALL = /\badd\(\s*'(?:error|warn)'\s*,\s*'([a-z][a-z0-9-]*)'/g
+// 级别也可能来自变量（`const level = requireRollback ? 'error' : 'warn'` 然后
+// `add(level, 'rollback-missing', …)`）。只认字面量级别时，这类规则会被漏掉——
+// 2026-11-20 实测：privacy 的 rights-missing 与 migration 的 rollback-missing
+// 一直不在 190 条里，等于审计对它们视而不见。第二参数才是规则名，与级别无关。
+const ADD_CALL_DYNAMIC = /\badd\(\s*[A-Za-z_$][\w$.]*\s*,\s*'([a-z][a-z0-9-]*)'/g
 // [\s\S] not [^{}]: a finding object can span lines, and `message` may carry a
 // template with braces. Matching only single-line objects produced a rule named
 // `undefined` for citelint.
@@ -47,7 +52,7 @@ export function ruleNames(source) {
     .split('\n')
     .filter(line => !/^\s*\/\//.test(line))
     .join('\n')
-  const found = [ADD_CALL, PUSH_CALL, PUSH_CALL_REVERSED].flatMap(pattern => [...text.matchAll(pattern)].map(match => match[1]))
+  const found = [ADD_CALL, ADD_CALL_DYNAMIC, PUSH_CALL, PUSH_CALL_REVERSED].flatMap(pattern => [...text.matchAll(pattern)].map(match => match[1]))
   return [...new Set(found)]
 }
 
