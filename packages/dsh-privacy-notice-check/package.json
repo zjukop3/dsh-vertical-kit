@@ -1,0 +1,49 @@
+{
+  "name": "dsh-privacy-notice-check",
+  "version": "0.1.1",
+  "description": "Privacy-notice hygiene from markdown: what is collected, what it is used for, how long it is kept, who else sees it, who to ask, the effective date, and the rights a reader can exercise.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "bin": {
+    "privacy-notice-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "locale"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "privacy-notice",
+    "privacy-policy",
+    "retention",
+    "隐私声明",
+    "隐私政策"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-bug-report-check"
+}

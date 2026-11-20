@@ -8,6 +8,7 @@
 // Exit 0 clean, 1 gaps found.
 
 import { readdir, readFile, access } from 'node:fs/promises'
+import { existsSync, constants } from 'node:fs'
 import { resolve } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
@@ -15,6 +16,10 @@ const packagesDir = resolve(root, 'packages')
 const names = (await readdir(packagesDir, { withFileTypes: true })).filter(entry => entry.isDirectory()).map(entry => entry.name).sort()
 
 const REQUIRED_FIELDS = ['name', 'version', 'description', 'bin', 'license', 'author', 'repository', 'homepage', 'engines']
+// 纯 patch 包（聚合 bundle）不发布 bin、也没有 src 入口：它只有一份 cordis.patch.yml。
+// 用「有 dsh.bundle.patch 且没有 main」判定，而不是记一份包名清单。
+const PATCH_ONLY_FIELDS = REQUIRED_FIELDS.filter(field => field !== 'bin')
+const PATCH_ONLY_README = [/^# /m, /## What it installs|## 装什么/, /Honest scope|Limitations|诚实/]
 const REQUIRED_KEYWORDS = ['dsh', 'dsh-plugin', 'deepseek-harness']
 const REQUIRED_README = [/^# /m, /## What it decides|## 它判定什么|什么规则/, /Honest scope|诚实边界|诚实/]
 
@@ -26,7 +31,8 @@ for (const name of names) {
   const problems = []
   const pkg = JSON.parse(await readFile(resolve(dir, 'package.json'), 'utf8'))
 
-  for (const field of REQUIRED_FIELDS) {
+  const patchOnly = Boolean(pkg.dsh?.bundle?.patch) && !pkg.main && !pkg.bin
+  for (const field of patchOnly ? PATCH_ONLY_FIELDS : REQUIRED_FIELDS) {
     if (pkg[field] === undefined || pkg[field] === '') problems.push(`package.json missing ${field}`)
   }
   if (pkg.author !== 'zjukop3') problems.push(`author is ${JSON.stringify(pkg.author)}, expected zjukop3 (the identity trail must stay consistent)`)
@@ -37,26 +43,53 @@ for (const name of names) {
 
   let readme = ''
   try { readme = await readFile(resolve(dir, 'README.md'), 'utf8') } catch { problems.push('README.md missing') }
-  for (const pattern of REQUIRED_README) {
+  for (const pattern of patchOnly ? PATCH_ONLY_README : REQUIRED_README) {
     if (readme && !pattern.test(readme)) problems.push(`README missing a section matching ${pattern}`)
   }
 
   try {
+    // 纯 patch 包没有自己的 src，测试在 kit 根的 test/suite.test.js；
+    // 那里断言的是行↔依赖↔版本，比一个包内空测试更有意义。
     await access(resolve(dir, 'test', 'index.test.js'))
-  } catch { problems.push('test/index.test.js missing') }
+  } catch {
+    if (patchOnly) {
+      try {
+        await access(resolve(root, 'test', 'suite.test.js'))
+      } catch { problems.push('neither test/index.test.js nor test/suite.test.js present') }
+    } else problems.push('test/index.test.js missing')
+  }
   try {
     await access(resolve(dir, 'LICENSE'))
   } catch { problems.push('LICENSE missing') }
 
+  // bin 目标必须是可执行文件。npm 在 publish 时会把不可执行的 bin 静默丢掉，
+  // 只留一行 warn，结果 npx <cli> 直接找不到命令——2026-11-20 三个新包就是这么丢的。
+  for (const [command, target] of Object.entries(pkg.bin || {})) {
+    const binPath = resolve(dir, target)
+    try {
+      await access(binPath, constants.X_OK)
+    } catch {
+      problems.push(`bin "${command}" -> ${target} is not executable (npm drops it silently on publish)`)
+    }
+  }
+
   // The cordis patch's route id must match the src's exported name.
   const patch = await readFile(resolve(dir, 'cordis.patch.yml'), 'utf8')
   const idMatch = patch.match(/id:\s*(\S+)/)
-  const src = await readFile(resolve(dir, 'src', 'index.js'), 'utf8')
-  const nameMatch = src.match(/export const name = '(\S+)'/)
   if (!idMatch) problems.push('cordis.patch.yml has no route id')
-  if (!nameMatch) problems.push('src/index.js does not export a name')
-  if (idMatch && nameMatch && idMatch[1] !== nameMatch[1]) {
-    problems.push(`route id "${idMatch[1]}" does not match exported name "${nameMatch[1]}"`)
+  if (patchOnly) {
+    // 聚合包：每行必须指向一个有名字的包，且行 id 不能与成员自己的 id 撞车
+    // （撞车会被 Loader 判重复，见 test/suite.test.js）。
+    const rows = [...patch.matchAll(/id:\s*(\S+)\s*\n\s*name:\s*'([^']+)'/g)]
+    if (rows.length === 0) problems.push('patch-only bundle inserts no rows')
+    if (new Set(rows.map(r => r[1])).size !== rows.length) problems.push('patch-only bundle has duplicate row ids')
+  } else {
+    const src = existsSync(resolve(dir, 'src', 'index.js')) ? await readFile(resolve(dir, 'src', 'index.js'), 'utf8') : ''
+    const nameMatch = src.match(/export const name = '(\S+)'/)
+    if (!nameMatch) problems.push('src/index.js does not export a name')
+    if (idMatch && nameMatch && idMatch[1] !== nameMatch[1]) {
+      problems.push(`route id "${idMatch[1]}" does not match exported name "${nameMatch[1]}"`)
+    }
   }
 
   // The npm name must equal the package directory name.

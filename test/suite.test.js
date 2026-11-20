@@ -1,9 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { members, rowId, depsOf, drift, SIBLING_HINT } from '../scripts/sync-suite.mjs'
+import { CHECKS } from '../scripts/checks-data.mjs'
+
+const verifyKitCount = () =>
+  readdirSync(resolve(ROOT, '../dsh-verify-kit/packages')).filter((s) =>
+    existsSync(resolve(ROOT, '../dsh-verify-kit/packages', s, 'package.json')),
+  ).length
 
 const ROOT = resolve(import.meta.dirname, '..')
 const SUITE = resolve(ROOT, 'packages/dsh-check-suite')
@@ -13,11 +19,18 @@ const cjkRatio = (t) => {
   return v ? (v.match(CJK) || []).length / v.length : 0
 }
 
-test('suite 覆盖 27 个成员（22 本仓 + 5 个 verify-kit）', () => {
+test('suite 成员 = 本仓 CHECKS 里的每个检查 + verify-kit 的每个包', () => {
   assert.ok(existsSync(SIBLING_HINT), `缺 ${SIBLING_HINT}；suite 的成员从这个目录来`)
   const m = members()
-  assert.equal(m.length, 27, `期望 27 个成员，实际 ${m.length}`)
-  assert.equal(new Set(m.map((x) => x.name)).size, 27, '成员里有重名')
+  const names = new Set(m.map((x) => x.name))
+  assert.equal(names.size, m.length, '成员里有重名')
+  // 不写死数字：期望值从 checks-data（本仓有哪些检查）与隔壁目录（verify-kit 有哪些包）
+  // 推出来。写死 27 的那一版在新加三个检查后立刻红了——数字本身不是判据。
+  const expected = CHECKS.length + verifyKitCount()
+  assert.equal(m.length, expected, `期望 ${expected} 个成员（${CHECKS.length} 检查 + ${verifyKitCount()} 个 verify-kit 包），实际 ${m.length}`)
+  for (const check of CHECKS) {
+    assert.ok(names.has(check.npm), `CHECKS 里的 ${check.npm} 不在 suite 成员里`)
+  }
 })
 
 test('patch 与 workspace 不漂移（package.json 的依赖与行都由脚本生成）', () => {

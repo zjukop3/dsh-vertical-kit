@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>隐私声明检查清单 · dsh-privacy-notice-check</title><meta name="description" content="隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 隐私声明检查 / 隐私政策检查</p>
+<h1>隐私声明检查清单</h1>
+<p><strong>它决定一件事：</strong>这份声明能否回答读者「我的数据去哪、留多久、我能要求什么」。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="../expense-claim-check/">dsh-expense-claim-check</a><a href="../security-advisory-check/">dsh-security-advisory-check</a><a href="../migration-guide-check/">dsh-migration-guide-check</a><a href="../privacy-notice-check/">dsh-privacy-notice-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-privacy-notice-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>第一行没有 `# 标题` → error</td></tr><tr><td><code>data-missing</code></td><td>没有说明收集什么 → error；「不收集任何数据」也是答案</td></tr><tr><td><code>purpose-missing</code></td><td>没有用途段或带标签的一行 → error</td></tr><tr><td><code>retention-missing</code></td><td>没有保留期限 → error；「不保留」也是答案</td></tr><tr><td><code>sharing-missing</code></td><td>没有共享/第三方段 → error；散文里提到「第三方」不算声明</td></tr><tr><td><code>contact-missing</code></td><td>没有联系段、标签行或邮箱 → error</td></tr><tr><td><code>effective-date-missing</code></td><td>没有生效或更新日期 → warn</td></tr><tr><td><code>rights-missing</code></td><td>没有权利说明（## 你的权利、你有权访问/删除…）→ warn（--require-rights 时 error）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx privacy-notice-check notice.md --json</code></pre><pre><code>npx privacy-notice-check notice.md --require-rights --warnings-fail</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 隐私声明
+
+我们很重视你的隐私，会尽力保护你的信息。
+</code></pre></details>
+<pre><code>$ privacy-notice-check privacy-sample.md
+error data-missing 第0行 没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的
+error purpose-missing 第0行 没有说明用途（认得：## 使用目的、用途：…、## How we use it）——「为了提供服务」和「什么都能干」是两种声明
+error retention-missing 第0行 没有保留期限（认得：## 保留期限、保留时间：30 天，或不保留）——没有期限，「注销账号」就不等于数据会消失
+error sharing-missing 第0行 没有第三方共享说明（认得：## 共享、## 第三方、共享：…）——散文里提到「第三方」不算声明，读者指不出哪一句是承诺
+error contact-missing 第0行 没有联系方式（认得：## 联系我们、联系邮箱：…、privacy@example.com）——没有渠道，行使权利就是空话
+warn effective-date-missing 第0行 没有生效或更新日期（认得：生效日期：2026-11-01、last updated）——不知道版本的声明，无法判断哪一版约束我
+warn rights-missing 第0行 没有用户权利说明（认得：## 你的权利、你有权访问/删除…、Your rights）——只说收集不说权利，读者只能猜自己能要求什么
+fail: 5 errors, 2 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /privacy-notice-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>

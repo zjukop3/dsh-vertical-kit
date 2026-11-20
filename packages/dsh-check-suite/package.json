@@ -30,6 +30,8 @@
     "检查套件"
   ],
   "license": "MIT",
+  "author": "zjukop3",
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-commit-msg-check",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
@@ -49,11 +51,14 @@
     "dsh-license-check": "^0.2.1",
     "dsh-listing-check": "^0.2.1",
     "dsh-meeting-notes-check": "^0.1.2",
+    "dsh-migration-guide-check": "^0.1.1",
     "dsh-onboarding-check": "^0.3.1",
     "dsh-ops-runbook-check": "^0.2.1",
     "dsh-pr-description-check": "^0.2.1",
+    "dsh-privacy-notice-check": "^0.1.1",
     "dsh-release-notes-check": "^0.3.1",
     "dsh-resume-check": "^0.1.2",
+    "dsh-security-advisory-check": "^0.1.1",
     "dsh-spec-doc-check": "^0.1.1",
     "dsh-test-report-check": "^0.1.1",
     "dsh-weekly-report-check": "^0.1.1",

@@ -1,0 +1,104 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { lintSecurityAdvisory, severityOf } from '../src/index.js'
+
+const good = `# CVE-2026-12345：备份导出接口未校验归属
+
+- 严重程度：high
+- 受影响版本：dsh-review-outbox <= 0.1.10
+- 修复版本：0.1.11
+- 披露日期：2026-11-18
+
+## 影响
+
+任意登录用户可以导出他人的评审包。
+
+## 缓解措施
+
+升级前可以用 DSH_EXPORT=off 关闭导出接口。
+
+## 致谢
+
+感谢 @someone 报告，联系 security@example.com。
+`
+
+const bad = `# 备份导出接口存在越权问题
+
+我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。
+`
+
+test('a complete advisory passes with no findings at all', () => {
+  const result = lintSecurityAdvisory(good)
+  assert.deepEqual(result.findings, [])
+  assert.equal(result.checked.severity, 'high')
+  assert.equal(result.ok, true)
+})
+
+test('a prose-only advisory fires the four facts and the three accountability warns', () => {
+  const result = lintSecurityAdvisory(bad)
+  assert.equal(result.ok, false)
+  const rules = result.findings.map(finding => finding.rule)
+  for (const rule of ['id-missing', 'severity-missing', 'affected-missing', 'fixed-missing']) {
+    assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
+  }
+  for (const rule of ['workaround-missing', 'contact-missing', 'disclosure-date-missing']) {
+    assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
+  }
+  assert.ok(!rules.includes('title-missing'), '标题存在，不该报 title-missing')
+})
+
+test('「建议尽快升级」不算修复版本：没有版本号就是 fixed-missing', () => {
+  const text = good.replace('- 修复版本：0.1.11\n', '').replace('修复版本：0.1.11', '')
+  const result = lintSecurityAdvisory(text)
+  assert.ok(result.findings.some(f => f.rule === 'fixed-missing'))
+})
+
+test('有修复版本不等于有受影响范围：两个事实分开判', () => {
+  const text = good.replace('- 受影响版本：dsh-review-outbox <= 0.1.10\n', '')
+  const result = lintSecurityAdvisory(text)
+  const rules = result.findings.map(f => f.rule)
+  assert.ok(rules.includes('affected-missing'), rules.join(','))
+  assert.ok(!rules.includes('fixed-missing'), '修复版本还在，不该报 fixed-missing')
+})
+
+test('「受影响范围：无」是合法答案，不是缺失', () => {
+  const text = good.replace('dsh-review-outbox <= 0.1.10', '无')
+  const result = lintSecurityAdvisory(text)
+  assert.ok(!result.findings.some(f => f.rule === 'affected-missing'))
+})
+
+test('severity 归一化：中英两种写法都认，读不出来的返回 null', () => {
+  assert.equal(severityOf('严重程度：critical'), 'critical')
+  assert.equal(severityOf('危险等级：高危'), 'high')
+  assert.equal(severityOf('severity: Medium'), 'medium')
+  assert.equal(severityOf('严重性：低危'), 'low')
+  assert.equal(severityOf('这个漏洞挺严重的'), null)
+})
+
+test('散文里的「严重」不算等级：severity 必须被显式写成等级', () => {
+  const text = good.replace('- 严重程度：high\n', '').replace(/{{.*}}/, '')
+  const noLevel = text.replace('CVE-2026-12345：备份导出接口未校验归属', 'CVE-2026-12345：一个严重的越权问题')
+  const result = lintSecurityAdvisory(noLevel)
+  assert.equal(result.checked.severity, null)
+  assert.ok(result.findings.some(f => f.rule === 'severity-missing'))
+})
+
+test('require-workaround 把「没写缓解」升级为 error', () => {
+  const text = good.replace('## 缓解措施\n\n升级前可以用 DSH_EXPORT=off 关闭导出接口。\n\n', '')
+  const relaxed = lintSecurityAdvisory(text)
+  const strict = lintSecurityAdvisory(text, { requireWorkaround: true })
+  assert.equal(relaxed.findings.find(f => f.rule === 'workaround-missing').level, 'warn')
+  assert.equal(strict.findings.find(f => f.rule === 'workaround-missing').level, 'error')
+})
+
+test('「暂无可用缓解」也是答案：写清楚没有，比留空强', () => {
+  const text = good.replace('升级前可以用 DSH_EXPORT=off 关闭导出接口。', '暂无可用缓解，请升级到 0.1.11。')
+  const result = lintSecurityAdvisory(text)
+  assert.ok(!result.findings.some(f => f.rule === 'workaround-missing'))
+})
+
+test('GHSA 编号也被认作编号', () => {
+  const text = good.replace('CVE-2026-12345', 'GHSA-abcd-efgh-ijkl')
+  const result = lintSecurityAdvisory(text)
+  assert.ok(!result.findings.some(f => f.rule === 'id-missing'))
+})

@@ -645,5 +645,47 @@ export const CHECKS = [
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
   },
 
+  // 安全公告检查 / 漏洞公告检查
+  {
+    slug: "security-advisory-check",
+    npm: "dsh-security-advisory-check",
+    cli: "security-advisory-check",
+    noun: "安全公告检查 / 漏洞公告检查",
+    title: "安全公告检查清单",
+    description: "安全公告发布前的检查：漏洞编号（CVE/GHSA）、写死的严重程度、受影响版本范围、修复版本、今天升不了级时的缓解办法，加上报告渠道与披露日期。散文里的「严重」不是等级，只有发布页链接的「已升级」不是修复版本。",
+    decides: "这份安全公告能否让人判断「我会不会被影响、现在该做什么」",
+    rules: [["title-missing", "第一行没有 `# 标题` → error"], ["id-missing", "没有 CVE / GHSA / 公告编号 → error"], ["severity-missing", "没有写死的严重程度（严重程度：high）→ error；散文里的「严重」不算"], ["affected-missing", "没有受影响版本范围，也没写「无」→ error"], ["fixed-missing", "没有修复版本号 → error；「建议尽快升级」不算"], ["workaround-missing", "没有缓解措施或「暂无可用缓解」→ warn（--require-workaround 时 error）"], ["contact-missing", "没有报告渠道或致谢 → warn"], ["disclosure-date-missing", "没有披露日期 → warn"]],
+    usage: ["npx security-advisory-check advisory.md --json", "npx security-advisory-check advisory.md --require-workaround --warnings-fail"],
+    example: { "command": "security-advisory-check advisory-sample.md", "fixture": "# 备份导出接口存在越权问题\n\n我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。\n", "output": "$ security-advisory-check advisory-sample.md\nerror id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用\nerror severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期\nerror affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本\nerror fixed-missing 第0行 没有修复版本（认得：修复版本：0.1.11、fixed in 2.3.1）——只给发布页链接，读者还得自己找哪个版本修好的\nwarn workaround-missing 第0行 没有缓解措施（认得：缓解措施、临时规避、暂无可用缓解）——今天升不了级的人需要知道现在该做什么，哪怕答案是「没有」\nwarn contact-missing 第0行 没有报告渠道或致谢（认得：security@…、致谢、reported by）——下一个发现同类问题的人不知道往哪报\nwarn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的\nfail: severity unstated, 4 errors, 3 warnings", "exit": "1" },
+    note: "只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。",
+  },
+  // 迁移指南检查 / 升级指南检查
+  {
+    slug: "migration-guide-check",
+    npm: "dsh-migration-guide-check",
+    cli: "migration-guide-check",
+    noun: "迁移指南检查 / 升级指南检查",
+    title: "升级迁移指南检查清单",
+    description: "迁移指南的检查：覆盖哪一段版本跨度、破坏性变更是不是一张可逐条对照的清单、编号步骤、怎么确认迁移成功、怎么回滚、动手前有没有让人先备份。散文里的「不兼容」不是清单，项目符号列表也不是步骤。",
+    decides: "这份迁移指南能否让人在没人可问的情况下把升级做完",
+    rules: [["title-missing", "第一行没有 `# 标题` → error"], ["from-to-missing", "没有版本跨度（从 0.1.0 到 0.2.0、0.1.7 → 0.2.0）→ error；单个版本不算"], ["breaking-missing", "没有破坏性变更段或带标签的清单 → error"], ["steps-missing", "没有编号步骤 → error；散文与项目符号都不算"], ["steps-thin", "步骤少于下限（默认 3，可调）→ warn"], ["verify-missing", "没有验证方式 → warn"], ["rollback-missing", "没有回滚方案 → warn（--require-rollback 时 error）"], ["backup-missing", "没有备份提示 → warn"]],
+    usage: ["npx migration-guide-check guide.md --json", "npx migration-guide-check guide.md --min-steps 5 --require-rollback"],
+    example: { "command": "migration-guide-check migration-sample.md", "fixture": "# 升级说明\n\n我们改了参数名，升级后注意一下。\n", "output": "$ migration-guide-check migration-sample.md\nerror from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南\nerror breaking-missing 第0行 没有破坏性变更段（认得：## 破坏性变更、## 不兼容变更、## Breaking changes）——散文里提一句「这次不兼容」不是清单，读者没法逐条对照\nerror steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——迁移是在做事，不是读背景\nwarn verify-missing 第0行 没有验证方式（认得：## 验证、确认、冒烟、should show）——迁移完不知道该看哪，等于不知道自己成没成\nwarn rollback-missing 第0行 没有回滚方案（认得：## 回滚、rollback、恢复备份）——迁移失败时，回滚是唯一不用求人的路\nwarn backup-missing 第0行 没有备份提示（认得：备份、导出、backup）——改之前先留一份，是最便宜的一条建议\nfail: span unstated, 0 steps, 3 errors, 3 warnings", "exit": "1" },
+    note: "只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。",
+  },
+  // 隐私声明检查 / 隐私政策检查
+  {
+    slug: "privacy-notice-check",
+    npm: "dsh-privacy-notice-check",
+    cli: "privacy-notice-check",
+    noun: "隐私声明检查 / 隐私政策检查",
+    title: "隐私声明检查清单",
+    description: "隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。",
+    decides: "这份声明能否回答读者「我的数据去哪、留多久、我能要求什么」",
+    rules: [["title-missing", "第一行没有 `# 标题` → error"], ["data-missing", "没有说明收集什么 → error；「不收集任何数据」也是答案"], ["purpose-missing", "没有用途段或带标签的一行 → error"], ["retention-missing", "没有保留期限 → error；「不保留」也是答案"], ["sharing-missing", "没有共享/第三方段 → error；散文里提到「第三方」不算声明"], ["contact-missing", "没有联系段、标签行或邮箱 → error"], ["effective-date-missing", "没有生效或更新日期 → warn"], ["rights-missing", "没有权利说明（## 你的权利、你有权访问/删除…）→ warn（--require-rights 时 error）"]],
+    usage: ["npx privacy-notice-check notice.md --json", "npx privacy-notice-check notice.md --require-rights --warnings-fail"],
+    example: { "command": "privacy-notice-check privacy-sample.md", "fixture": "# 隐私声明\n\n我们很重视你的隐私，会尽力保护你的信息。\n", "output": "$ privacy-notice-check privacy-sample.md\nerror data-missing 第0行 没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的\nerror purpose-missing 第0行 没有说明用途（认得：## 使用目的、用途：…、## How we use it）——「为了提供服务」和「什么都能干」是两种声明\nerror retention-missing 第0行 没有保留期限（认得：## 保留期限、保留时间：30 天，或不保留）——没有期限，「注销账号」就不等于数据会消失\nerror sharing-missing 第0行 没有第三方共享说明（认得：## 共享、## 第三方、共享：…）——散文里提到「第三方」不算声明，读者指不出哪一句是承诺\nerror contact-missing 第0行 没有联系方式（认得：## 联系我们、联系邮箱：…、privacy@example.com）——没有渠道，行使权利就是空话\nwarn effective-date-missing 第0行 没有生效或更新日期（认得：生效日期：2026-11-01、last updated）——不知道版本的声明，无法判断哪一版约束我\nwarn rights-missing 第0行 没有用户权利说明（认得：## 你的权利、你有权访问/删除…、Your rights）——只说收集不说权利，读者只能猜自己能要求什么\nfail: 5 errors, 2 warnings", "exit": "1" },
+    note: "只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。",
+  },
 ]
 

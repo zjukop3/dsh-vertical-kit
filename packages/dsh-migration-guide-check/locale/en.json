@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Migration guide check",
+    "description": "Migration-guide hygiene from markdown: the version span the guide covers, the breaking changes as an enumerable list, numbered steps, how to verify the upgrade worked, and how to roll back."
+  }
+}

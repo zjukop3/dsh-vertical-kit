@@ -32,16 +32,22 @@
       name: 'dsh-listing-check'
     - id: check-meeting-notes
       name: 'dsh-meeting-notes-check'
+    - id: check-migration-guide
+      name: 'dsh-migration-guide-check'
     - id: check-onboarding
       name: 'dsh-onboarding-check'
     - id: check-ops-runbook
       name: 'dsh-ops-runbook-check'
     - id: check-pr-description
       name: 'dsh-pr-description-check'
+    - id: check-privacy-notice
+      name: 'dsh-privacy-notice-check'
     - id: check-release-notes
       name: 'dsh-release-notes-check'
     - id: check-resume
       name: 'dsh-resume-check'
+    - id: check-security-advisory
+      name: 'dsh-security-advisory-check'
     - id: check-spec-doc
       name: 'dsh-spec-doc-check'
     - id: check-test-report

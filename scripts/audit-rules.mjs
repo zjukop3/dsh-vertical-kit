@@ -15,6 +15,7 @@
 // leave it alone" — which is the half that decides whether a stranger keeps the
 // tool installed past the first document.
 import { readFile, readdir } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -144,6 +145,9 @@ export async function auditRules() {
   const packages = (await readdir(packagesDir)).filter(name => name.startsWith('dsh-')).sort()
   const rows = []
   for (const pkg of packages) {
+    // 纯 patch 包（聚合 bundle）没有 src：它不实现规则，只把别的包的行铺开。
+    // 用「有没有 src/index.js」判定，而不是记一份包名清单。
+    if (!existsSync(join(packagesDir, pkg, 'src', 'index.js'))) continue
     const src = await readFile(join(packagesDir, pkg, 'src', 'index.js'), 'utf8')
     const rules = ruleNames(src)
     const guards = suspiciousGuards(src)

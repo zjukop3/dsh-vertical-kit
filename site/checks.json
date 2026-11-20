@@ -1027,6 +1027,156 @@
       "page": "https://zjukop3.github.io/dsh-vertical-kit/expense-claim-check/",
       "route": "POST /expense-claim-check/api",
       "scope": "合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。"
+    },
+    {
+      "name": "dsh-security-advisory-check",
+      "cli": "security-advisory-check",
+      "slug": "security-advisory-check",
+      "noun": "安全公告检查 / 漏洞公告检查",
+      "title": "安全公告检查清单",
+      "decides": "这份安全公告能否让人判断「我会不会被影响、现在该做什么」",
+      "description": "安全公告发布前的检查：漏洞编号（CVE/GHSA）、写死的严重程度、受影响版本范围、修复版本、今天升不了级时的缓解办法，加上报告渠道与披露日期。散文里的「严重」不是等级，只有发布页链接的「已升级」不是修复版本。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "第一行没有 `# 标题` → error"
+        },
+        {
+          "rule": "id-missing",
+          "meaning": "没有 CVE / GHSA / 公告编号 → error"
+        },
+        {
+          "rule": "severity-missing",
+          "meaning": "没有写死的严重程度（严重程度：high）→ error；散文里的「严重」不算"
+        },
+        {
+          "rule": "affected-missing",
+          "meaning": "没有受影响版本范围，也没写「无」→ error"
+        },
+        {
+          "rule": "fixed-missing",
+          "meaning": "没有修复版本号 → error；「建议尽快升级」不算"
+        },
+        {
+          "rule": "workaround-missing",
+          "meaning": "没有缓解措施或「暂无可用缓解」→ warn（--require-workaround 时 error）"
+        },
+        {
+          "rule": "contact-missing",
+          "meaning": "没有报告渠道或致谢 → warn"
+        },
+        {
+          "rule": "disclosure-date-missing",
+          "meaning": "没有披露日期 → warn"
+        }
+      ],
+      "usage": [
+        "npx security-advisory-check advisory.md --json",
+        "npx security-advisory-check advisory.md --require-workaround --warnings-fail"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/security-advisory-check/",
+      "route": "POST /security-advisory-check/api",
+      "scope": "只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。"
+    },
+    {
+      "name": "dsh-migration-guide-check",
+      "cli": "migration-guide-check",
+      "slug": "migration-guide-check",
+      "noun": "迁移指南检查 / 升级指南检查",
+      "title": "升级迁移指南检查清单",
+      "decides": "这份迁移指南能否让人在没人可问的情况下把升级做完",
+      "description": "迁移指南的检查：覆盖哪一段版本跨度、破坏性变更是不是一张可逐条对照的清单、编号步骤、怎么确认迁移成功、怎么回滚、动手前有没有让人先备份。散文里的「不兼容」不是清单，项目符号列表也不是步骤。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "第一行没有 `# 标题` → error"
+        },
+        {
+          "rule": "from-to-missing",
+          "meaning": "没有版本跨度（从 0.1.0 到 0.2.0、0.1.7 → 0.2.0）→ error；单个版本不算"
+        },
+        {
+          "rule": "breaking-missing",
+          "meaning": "没有破坏性变更段或带标签的清单 → error"
+        },
+        {
+          "rule": "steps-missing",
+          "meaning": "没有编号步骤 → error；散文与项目符号都不算"
+        },
+        {
+          "rule": "steps-thin",
+          "meaning": "步骤少于下限（默认 3，可调）→ warn"
+        },
+        {
+          "rule": "verify-missing",
+          "meaning": "没有验证方式 → warn"
+        },
+        {
+          "rule": "rollback-missing",
+          "meaning": "没有回滚方案 → warn（--require-rollback 时 error）"
+        },
+        {
+          "rule": "backup-missing",
+          "meaning": "没有备份提示 → warn"
+        }
+      ],
+      "usage": [
+        "npx migration-guide-check guide.md --json",
+        "npx migration-guide-check guide.md --min-steps 5 --require-rollback"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/migration-guide-check/",
+      "route": "POST /migration-guide-check/api",
+      "scope": "只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。"
+    },
+    {
+      "name": "dsh-privacy-notice-check",
+      "cli": "privacy-notice-check",
+      "slug": "privacy-notice-check",
+      "noun": "隐私声明检查 / 隐私政策检查",
+      "title": "隐私声明检查清单",
+      "decides": "这份声明能否回答读者「我的数据去哪、留多久、我能要求什么」",
+      "description": "隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "第一行没有 `# 标题` → error"
+        },
+        {
+          "rule": "data-missing",
+          "meaning": "没有说明收集什么 → error；「不收集任何数据」也是答案"
+        },
+        {
+          "rule": "purpose-missing",
+          "meaning": "没有用途段或带标签的一行 → error"
+        },
+        {
+          "rule": "retention-missing",
+          "meaning": "没有保留期限 → error；「不保留」也是答案"
+        },
+        {
+          "rule": "sharing-missing",
+          "meaning": "没有共享/第三方段 → error；散文里提到「第三方」不算声明"
+        },
+        {
+          "rule": "contact-missing",
+          "meaning": "没有联系段、标签行或邮箱 → error"
+        },
+        {
+          "rule": "effective-date-missing",
+          "meaning": "没有生效或更新日期 → warn"
+        },
+        {
+          "rule": "rights-missing",
+          "meaning": "没有权利说明（## 你的权利、你有权访问/删除…）→ warn（--require-rights 时 error）"
+        }
+      ],
+      "usage": [
+        "npx privacy-notice-check notice.md --json",
+        "npx privacy-notice-check notice.md --require-rights --warnings-fail"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/",
+      "route": "POST /privacy-notice-check/api",
+      "scope": "只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。"
     }
   ]
 }

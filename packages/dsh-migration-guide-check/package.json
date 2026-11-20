@@ -1,0 +1,49 @@
+{
+  "name": "dsh-migration-guide-check",
+  "version": "0.1.1",
+  "description": "Migration-guide hygiene from markdown: the version span the guide covers, the breaking changes as an enumerable list, numbered steps, how to verify the upgrade worked, and how to roll back.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "bin": {
+    "migration-guide-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "locale"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "migration-guide",
+    "upgrade",
+    "breaking-changes",
+    "迁移指南",
+    "升级"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-bug-report-check"
+}

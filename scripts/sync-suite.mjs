@@ -78,6 +78,8 @@ export function manifestOf(m = members()) {
     engines: upstream.engines,
     keywords: [...new Set([...(upstream.keywords || []), 'dsh-bundle', 'check-suite', '检查套件'])],
     license: upstream.license,
+    author: upstream.author,
+    homepage: upstream.homepage,
     repository: { type: 'git', url: 'git+https://github.com/zjukop3/dsh-vertical-kit.git' },
     dependencies: depsOf(m),
     files: ['cordis.patch.yml', 'locale', 'docs', 'icon.svg', 'README.md', 'LICENSE'],
