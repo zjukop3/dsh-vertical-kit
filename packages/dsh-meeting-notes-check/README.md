@@ -70,6 +70,10 @@ npx dsh-meeting-notes-check notes.md --no-require-agenda
 
 Same function over HTTP: `POST /meeting-notes-check/api` with `{"text": "…"}` or `{"path": "…"}`, optional `{"rules": {"requireAgenda": false}}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## Measured against real meeting notes
+
+Three TC39 meeting notes (`tc39/proposal-decorators/meetings/2018-07-31.md`, `2018-08-07.md`, `2019-01-15.md`) were run through this check. All three now produce **no errors**; each carries two warnings (`decisions-missing`, `no-action-items`) that are accurate for a transcript — TC39 call notes record discussion, not resolutions, and the messages say to ignore them when a meeting genuinely produced none. Before the measurement all three failed on `date-missing`: the rule knew Chinese and numeric dates but not `Tuesday, July 31, 2018`.
+
 ## Honest scope
 
 This checks the note's **bookkeeping**, not the meeting's quality. It cannot tell whether 张三 really accepted the task or whether 下周三 was realistic — it verifies the note says who carries what by when. A meeting with genuinely no decisions passes with a warning, not a fake failure.

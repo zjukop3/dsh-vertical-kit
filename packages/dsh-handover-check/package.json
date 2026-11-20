@@ -1,6 +1,6 @@
 {
   "name": "dsh-handover-check",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Handover-document hygiene: who is leaving, who takes over, when it is effective, what is listed, which accounts and permissions move, what is unfinished, and that the receiver signed for it.",
   "type": "module",
   "main": "./src/index.js",

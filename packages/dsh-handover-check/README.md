@@ -81,6 +81,10 @@ Signature and date are the parts a reviewer notices without help. The accounts s
 
 So `access-unlisted` is an error, and it can be satisfied honestly by writing 无账号需交接. The exemption has to be written down; silence is what the rule refuses.
 
+## Measured against real HANDOVER.md files
+
+Three public `HANDOVER.md` files (`crshdn/mission-control`, `terraphim/terraphim-ai`, `Ferris-echo/FerrisPulse`) were run through this check, and all three turned out to be the **other genre**: session handovers written for the next agent or the next session (`Current State`, `What Was Done This Session`, `Files Changed`; one of them in Chinese as 「接棒 Agent 关键须知」). None has a receiver, an account transfer or a sign-off, so judging them with the people-handover rules produced seven findings on every file. The check now detects that genre and returns a single `technical-handover` warning naming the mismatch. A people handover with 交接人/接收人 is unaffected.
+
 ## Honest scope
 
 This checks the document, not the handover: it can tell you the accounts section exists and names something, never that the access was actually revoked. Verifying that needs a comparison against the systems themselves — an inventory diff, not a Markdown parser. A handover can pass every rule here and still leave a token alive; this tool has nothing to say about that, and does not pretend otherwise.

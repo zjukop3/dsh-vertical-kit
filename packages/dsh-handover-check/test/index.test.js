@@ -147,3 +147,44 @@ test('a real name, a parenthesised team, or a trailing note still pass', () => {
     assert.ok(!result.findings.some(f => f.rule === 'receiver-unassigned'), `${value}: ${JSON.stringify(result.findings.map(f => f.rule))}`)
   }
 })
+
+// 真实语料（3 份公开 HANDOVER.md）：其中两份是英文会话交接、一份是中文
+// 「接棒 Agent 关键须知」。这类文档没有接收人、没有账号转移、没有签字——
+// 用人交接的七条规则判它，7 条全报（2026-11-20 实测 0/3 零发现）。
+const sessionHandover = `# Handover — Session 2026-03-03
+
+## Current State
+
+Everything builds green.
+
+## What Was Done This Session
+
+- Fixed the parser.
+
+## Files Changed
+
+- \`src/parse.js\`
+
+## Next Session
+
+Pick up the writer.
+`
+
+test('会话交接只得到一条 technical-handover warn，不再逐条报人交接的规则', () => {
+  const result = lintHandover(sessionHandover)
+  assert.deepEqual(result.findings.map(f => f.rule), ['technical-handover'])
+  assert.equal(result.ok, true)
+  assert.equal(result.checked.sessionHandover, true)
+})
+
+test('中文的会话交接也认得，且不被硬件里的 Receiver 骗成「人交接」', () => {
+  const chinese = `# 接棒 Agent 关键须知\n\n## 本次已完成\n\n- 修了 USB Receiver 的识别\n\n## 关键须知\n\n下一段会话从这里开始。\n`
+  const result = lintHandover(chinese)
+  assert.deepEqual(result.findings.map(f => f.rule), ['technical-handover'])
+})
+
+test('真正的人交接不会被判成会话交接', () => {
+  const human = `# 交接单\n\n交接人：张三\n接收人：李四\n生效日期：2026-11-20\n\n## 事项\n\n- 交付 A（负责人：张三）\n\n## 账号与权限\n\n- 无账号需交接\n\n## 未完成事项\n\n- B\n\n接收人签字：李四\n`
+  const result = lintHandover(human)
+  assert.ok(!result.findings.some(f => f.rule === 'technical-handover'), JSON.stringify(result.findings.map(f => f.rule)))
+})

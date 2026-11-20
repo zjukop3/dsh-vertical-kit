@@ -67,10 +67,37 @@ export function listItems(text) {
   return String(text).split('\n').filter(line => ITEM.test(line))
 }
 
+// 两种文体共用一个文件名：
+//   人交接（交接单）——交接人、接收人、要转的账号与权限、未完成事项、接收人签字；
+//   会话交接（HANDOVER.md）——Current State / What Was Done This Session / Files
+//   Changed / Next Session，是给下一段会话或下一个 agent 看的。
+// 后者没有「接收人」这回事，拿人交接的七条规则去判它，等于用它没打算做的事评价它。
+// 2026-11-20 实测 3 份真实 HANDOVER.md：7 条规则全部误报，0/3 零发现。
+export const SESSION_HANDOVER =
+  /(?:^|\n)#{1,6}[^\n]*(?:current state|what was done|files changed|next session|session \d|handover.{0,20}session|接棒|本次已完成|关键须知|下一段(?:会话|对话)|交接给(?:下一个)?\s*agent)/i
+// 「人交接」的词要带角色语义。裸词 receiver 会把硬件文档里的 USB Receiver 也认成接收人
+// ——2026-11-20 实测：一份中文会话交接因此被误判成人交接，七条规则全报。
+export const HUMAN_ROLES = /(?:交接人|接收人|交出人|接手人|离职|handover\s+(?:by|to)\b|takeover\s+by|receiver\s*[：:])/i
+
+export function isSessionHandover(text) {
+  return SESSION_HANDOVER.test(String(text)) && !HUMAN_ROLES.test(String(text))
+}
+
 export function lintHandover(text, rules = {}) {
   const requirePending = rules.requirePending ?? true
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
+
+  // 会话交接：给一条 warn 说明文体不符并停在这里，不再逐条判人交接的规则。
+  if (isSessionHandover(text)) {
+    findings.push({
+      level: 'warn',
+      rule: 'technical-handover',
+      line: 0,
+      message: '这份文档是「会话交接」（Current State / What Was Done / Files Changed），不是人交接：交接人、接收人、账号转移、接收人签字这些概念在这里不适用。本条只提醒文体不符，未做其它判定',
+    })
+    return { ok: true, checked: { sessionHandover: true }, errors: 0, warnings: 1, findings }
+  }
   const prose = proseOnly(text)
 
   if (String(text).trim() === '') {

@@ -11,6 +11,10 @@ const DATE_PATTERNS = [
   /\b\d{1,2}-\d{1,2}\b/,
   /[下本]?周[一二三四五六日天末]/,
   /\d{1,2}\s*[月号日]/,
+  // 英文日期：TC39、W3C、IETF 这些标准组织的会议纪要都写 "Tuesday, July 31, 2018"。
+  // 2026-11-20 实测：只认中文与数字格式，会把 4/4 份真实纪要判成「没有日期」。
+  /\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?(?:,)?\s+\d{4}\b/i,
+  /\b\d{1,2}(?:st|nd|rd|th)?\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4}\b/i,
 ]
 const OWNER_PATTERNS = [/(?:负责人|owner|assigned)\s*[：:]/i, /@[\w\u4e00-\u9fff.-]+/, /[\w\u4e00-\u9fff]{1,6}\s*(?:负责|跟进|牵头)/]
 const ACTION_HEADINGS = /(?:^|\n)#{1,6}[^\n]*(?:行动|待办|任务|action|todo|follow)/i
@@ -20,7 +24,8 @@ const DECISION_LINE = /^[^\n]*(?:决定[：:，\s]|决议[：:，\s]|结论[：:
 const ATTENDEES_LINE = /(?:与会|参会|出席|列席|参加者|attendees?|participants?|in attendance)[人员者名单]{0,3}\s*[：:]/i
 const ATTENDEES_HEADINGS = /(?:^|\n)#{1,6}[^\n]*(?:与会|参会|出席|attendees?|participants?)/i
 const AGENDA_HEADINGS = /(?:^|\n)#{1,6}[^\n]*(?:议程|议题|agenda|topics?)/i
-const AGENDA_LINE = /^[^\n]*(?:议程[：:，\s]|议题[：:，\s]|\d+\s*[.、]\s*(?:讨论|评审|同步|对齐))/
+// 真实写法：「Agenda & notes:」这种把议程和正文合在一起的标签也是议程。
+const AGENDA_LINE = /^[^\n]*(?:议程[：:，\s]|议题[：:，\s]|\d+\s*[.、]\s*(?:讨论|评审|同步|对齐)|agenda\b[^\n]{0,20}[：:])/i
 
 function hasDate(line) {
   return DATE_PATTERNS.some(pattern => pattern.test(line))

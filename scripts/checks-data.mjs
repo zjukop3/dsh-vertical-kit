@@ -101,7 +101,7 @@ export const CHECKS = [
     description: '会议纪要发出或归档前的书记检查：日期、与会人、决定都有记录，每个行动项都有负责人和截止时间。勾选框和待办标题下的编号项算任务，普通编号讨论点不算。每条发现报行号。',
     decides: '这份纪要是否交代了谁在何时 carries 什么',
     rules: [
-      ['date-missing', '全文没有任何日期（2026-11-16、11月16日、11/16、下周三）→ error'],
+      ['date-missing', '整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）'],
       ['attendees-missing', '没有与会人/参会人/出席/Attendees 行或标题 → error'],
       ['action-no-owner', '行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号'],
       ['action-no-deadline', '行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号'],
@@ -586,7 +586,7 @@ export const CHECKS = [
     decides: '这份交接单能不能让接手人在没有人讲解的情况下接住工作与凭证',
     rules: [
       ['handover-person-missing', '没有交接人 → error'],
-      ['receiver-missing', '没有接收人 → error'],
+      ['receiver-missing', '没有接收人（人交接；会话交接会先判成 technical-handover） → error'],
       ['receiver-unassigned', '接收人写成「尚未指定/待定/TBD」等非人名 → error'],
       ['date-missing', '没有交接日期 → error'],
       ['date-unlabelled', '有日期但没有「交接日期/生效日期」字样 → warn'],

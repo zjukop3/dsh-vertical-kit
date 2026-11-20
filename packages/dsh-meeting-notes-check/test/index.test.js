@@ -89,3 +89,23 @@ test('no-action-items is a warn, not an error', () => {
   assert.equal(result.ok, true)
   assert.ok(result.findings.some(finding => finding.rule === 'no-action-items'))
 })
+
+// 真实语料（TC39 会议纪要）：日期写英文，议程写成「Agenda & notes:」。
+// 只认中文与数字日期时，4/4 份真实纪要都被判「没有日期」（2026-11-20）。
+test('英文日期也算日期（Tuesday, July 31, 2018）', () => {
+  const text = '# Decorators call agenda and notes\n\nTuesday, July 31, 2018, 17:00 UTC\n\nAttendees:\n\n- A\n- B\n\nAgenda & notes:\n\n讨论。\n'
+  const result = lintMeetingNotes(text)
+  assert.ok(!result.findings.some(f => f.rule === 'date-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('「Agenda & notes:」算议程；完全没有议程仍然报', () => {
+  const withAgenda = '# m\n\n2026-11-16\n\nAttendees:\n\n- A\n\nAgenda & notes:\n\n讨论。\n'
+  assert.ok(!lintMeetingNotes(withAgenda).findings.some(f => f.rule === 'agenda-missing'))
+  const without = '# m\n\n2026-11-16\n\nAttendees:\n\n- A\n\n讨论了一些事。\n'
+  assert.ok(lintMeetingNotes(without).findings.some(f => f.rule === 'agenda-missing'))
+})
+
+test('一份没有日期的纪要仍然报 date-missing', () => {
+  const text = '# m\n\nAttendees:\n\n- A\n\nAgenda:\n\n讨论。\n'
+  assert.ok(lintMeetingNotes(text).findings.some(f => f.rule === 'date-missing'))
+})

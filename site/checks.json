@@ -164,7 +164,7 @@
       "rules": [
         {
           "rule": "date-missing",
-          "meaning": "全文没有任何日期（2026-11-16、11月16日、11/16、下周三）→ error"
+          "meaning": "整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）"
         },
         {
           "rule": "attendees-missing",
@@ -914,7 +914,7 @@
         },
         {
           "rule": "receiver-missing",
-          "meaning": "没有接收人 → error"
+          "meaning": "没有接收人（人交接；会话交接会先判成 technical-handover） → error"
         },
         {
           "rule": "receiver-unassigned",
