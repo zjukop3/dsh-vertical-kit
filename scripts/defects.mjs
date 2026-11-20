@@ -198,6 +198,28 @@ export const DEFECTS = [
     lesson: 'The verdict was right and the pointer was wrong. Seventeen rounds of fixtures never caught it, because a fixture author checks whether it fires and never whether the line is right.',
     now: { kind: 'line', input: '# Changelog\n\n## [0.18.0] - 2026-11-01\n\n- 稳定版\n\n### v0.19.0-alpha.0（未发布）\n\n- note\n', rule: 'order', line: 7 },
   },
+  {
+    n: 18,
+    check: 'tablelint',
+    rule: 'empty-header',
+    fixedIn: 'dsh-verify-kit 0.2.0',
+    foundBy: 'third-party READMEs',
+    wrong: 'warn on 4 deliberately headerless tables across 2 repositories',
+    right: 'an all-blank header row or a blank first header is a layout card / row-label table; any other blank header still warns',
+    lesson: 'The rule was not wrong about "a column with no name". It was wrong about which documents use a nameless column on purpose.',
+    now: { kind: 'silent', input: '| | |\n| --- | --- |\n| **文件管理**<br/>树 | **Git**<br/>提交图 |\n', rule: 'empty-header' },
+  },
+  {
+    n: 19,
+    check: 'handover-check',
+    rule: 'receiver-unassigned',
+    fixedIn: '0.2.0',
+    foundBy: 'own honest handover',
+    wrong: '`接收人：尚未指定` passed with zero findings — a handover stating that nobody had taken over was accepted',
+    right: 'a non-answer in the receiver slot is an error; a real name, with or without a team in parentheses, passes',
+    lesson: 'The rule looked for the label `接收人：` and never for a name. Found by writing this project’s own handover honestly — the document said exactly that, and the check said everything was fine.',
+    now: { kind: 'fires', input: '# 交接单\n\n交接人：张三\n接收人：尚未指定\n交接日期：2026-11-19\n\n## 交接事项\n\n1. a — 负责人 李四\n2. b — 负责人 王五\n3. c — 负责人 李四\n\n## 账号与权限\n\n- GitHub owner：a@example.com\n\n## 未完成事项\n\n- x，负责人 李四\n\n## 签字确认\n\n已确认。\n', rule: 'receiver-unassigned' },
+  },
 ]
 
 export const LEDGER = {

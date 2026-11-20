@@ -17,6 +17,8 @@ import { lintListings } from '../packages/dsh-listing-check/src/index.js'
 import { lintEnvExample } from '../packages/dsh-env-example-check/src/index.js'
 import { lintOutline } from '../../dsh-verify-kit/packages/dsh-outline-lint/src/index.js'
 import { lintLicense } from '../packages/dsh-license-check/src/index.js'
+import { lintHandover } from '../packages/dsh-handover-check/src/index.js'
+import { lintTables } from '../../dsh-verify-kit/packages/dsh-tablelint/src/index.js'
 
 const LINTERS = {
   'commit-msg-check': lintCommitMessage,
@@ -29,12 +31,14 @@ const LINTERS = {
   'env-example-check': lintEnvExample,
   'outline-lint': lintOutline,
   'license-check': lintLicense,
+  'handover-check': lintHandover,
+  'tablelint': lintTables,
 }
 
 const ruleOf = name => name.split(' / ')[0]
 
 test('the ledger is well formed and every entry names a linter this test can run', () => {
-  assert.equal(LEDGER.total, 17)
+  assert.equal(LEDGER.total, 19)
   for (const defect of DEFECTS) {
     assert.ok(defect.n > 0, 'a defect has a number')
     assert.ok(defect.check, `${defect.n}: names a check`)
@@ -57,9 +61,11 @@ test('every false positive stays fixed: the reproducer no longer yields that rul
   }
 })
 
-test('every dead rule stays reachable: the reproducer yields it', () => {
+test('every rule that was missing a firing path now fires on its reproducer', () => {
+  // Three were dead code (never reachable) and one was a false negative (a rule
+  // that existed but accepted a non-answer). Both kinds must fire now.
   const dead = DEFECTS.filter(defect => defect.now.kind === 'fires')
-  assert.equal(dead.length, 3, 'three dead rules were found and fixed')
+  assert.equal(dead.length, 4, 'three dead rules plus one false negative')
   for (const defect of dead) {
     const result = LINTERS[defect.check](defect.now.input)
     assert.ok(result.findings.some(finding => finding.rule === defect.now.rule),
@@ -80,7 +86,12 @@ test('the line-number defect stays fixed: the finding lands on the heading', () 
 
 test('the sources are counted, not asserted from memory', () => {
   const audit = DEFECTS.filter(defect => defect.foundBy === 'rules audit').length
-  const realCorpus = LEDGER.total - audit
-  assert.equal(audit, 3)
-  assert.equal(realCorpus, 14)
+  const ownArtifact = DEFECTS.filter(defect => /^own (?!history|READMEs|CHANGELOGs|ADRs|runbooks)/.test(defect.foundBy)).length
+  const thirdParty = DEFECTS.filter(defect => defect.foundBy.startsWith('third-party')).length
+  const ownReal = LEDGER.total - audit - thirdParty - ownArtifact
+  assert.equal(audit, 3, 'the rules audit found three')
+  assert.equal(thirdParty, 8, 'eight came from files other people wrote')
+  assert.equal(ownArtifact, 1, 'one came from writing an honest artifact about this project')
+  assert.equal(ownReal, 7, 'the rest came from this project own real work product')
+  assert.equal(audit + thirdParty + ownArtifact + ownReal, LEDGER.total)
 })
