@@ -96,7 +96,7 @@ export function lintHandover(text, rules = {}) {
       line: 0,
       message: '这份文档是「会话交接」（Current State / What Was Done / Files Changed），不是人交接：交接人、接收人、账号转移、接收人签字这些概念在这里不适用。本条只提醒文体不符，未做其它判定',
     })
-    return { ok: true, checked: { sessionHandover: true }, errors: 0, warnings: 1, findings }
+    return { ok: true, checked: { sessionHandover: true, items: 0 }, errors: 0, warnings: 1, findings }
   }
   const prose = proseOnly(text)
 
