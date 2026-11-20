@@ -680,7 +680,7 @@
       "rules": [
         {
           "rule": "prereq-missing",
-          "meaning": "没有前置条件段 → error"
+          "meaning": "没有前置条件段 → error（认得 Pre-flight、Required configuration、Safety rules）"
         },
         {
           "rule": "steps-missing",
@@ -688,15 +688,15 @@
         },
         {
           "rule": "destructive-unwarned",
-          "meaning": "编号步骤里有危险命令但同行没写注意/备份/不可逆 → error，报行号"
+          "meaning": "编号步骤里有危险命令，本步与相邻步骤都没写注意/备份/不可逆 → error，报行号"
         },
         {
           "rule": "rollback-missing",
-          "meaning": "没有回滚段 → error"
+          "meaning": "会改变环境的 runbook（有部署/迁移类命令）没有回滚段 → error"
         },
         {
           "rule": "verify-missing",
-          "meaning": "没有验证段 → error"
+          "meaning": "没有验证段 → error（认得 Post-release sanity、Quick Probes、Health check）"
         },
         {
           "rule": "steps-thin / shell-unspecified",

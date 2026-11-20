@@ -6,11 +6,20 @@
 export const name = 'ops-runbook-check'
 export const inject = ['webServer']
 
-const PREREQ_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:前置|先决|准备|依赖|prerequisit|before you start|requirements)/i
+// 真实 runbook 把这一段叫 Pre-flight（mulch）、Safety rules（devlovers）、
+// Before you start、Preconditions。只认「前置/准备/prerequisites」会把两份真实
+// runbook 全部判成「没有前置」——2026-11-20 实测 2/2 误报。
+const PREREQ_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:前置|先决|准备|依赖|注意|安全|prerequisit|preconditions?|pre-?flight|before you start|requirements|safety|guardrails?|required configuration|setup)/i
 const PREREQ_LINE = /^[^\n]*(?:前置条件[：:，\s]|先决条件[：:，\s]|需要先|prerequisites?[：:\s])/i
-const ROLLBACK_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:回滚|回退|撤销|rollback|revert)/i
-const ROLLBACK_LINE = /^[^\n]*(?:回滚[：:，\s]|回退[：:，\s]|rollback[：:\s])/i
-const VERIFY_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:验证|确认|检查结果|verify|validation)/i
+// 判据是「文档里有真的会改变环境的命令」。标题里出现「Upgrade Posture」不算
+// ——zoom 的 preflight 就是这种，它不改任何东西，自然也没有回滚可言。
+const CHANGE_VERB =
+  /\b(?:kubectl\s+(?:apply|delete|rollout)|terraform\s+(?:apply|destroy)|helm\s+(?:install|upgrade)|npm\s+publish|docker\s+push|systemctl\s+(?:restart|stop)|alembic\s+upgrade|prisma\s+migrate|flyway\s+migrate|git\s+push|scp\s|rsync\s)|部署|上线|发布|迁移|升级到|重启/i
+const ROLLBACK_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:回滚|回退|撤销|rollback|revert|rolling back)/i
+const ROLLBACK_LINE = /^[^\n]*(?:回滚[：:，\s]|回退[：:，\s]|rollback[：:\s]|rolling back)/i
+// 真实 runbook 把验证叫 Post-release sanity（seeds）、Quick Probes（zoom）、
+// health check、smoke test。只认「验证/确认/verify」会漏掉这些。
+const VERIFY_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:验证|确认|检查结果|健康检查|verify|validation|sanity|health\s?check|smoke|probe|post-?(?:release|deploy))/i
 const VERIFY_LINE = /^[^\n]*(?:验证[：:，\s]|确认[：:，\s]|verify[：:\s])/i
 const STEP_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:步骤|操作|流程|steps?|procedure)/i
 
@@ -83,21 +92,31 @@ export function lintOpsRunbook(text, rules = {}) {
 
   // Destructive commands need a warning in the same line. This is the rule
   // that earns the package: an unnoticed rm -rf in step 4 is the incident.
-  for (const step of steps) {
+  steps.forEach((step, index) => {
     // The command and its warning are looked for in the step as a whole: a
     // numbered heading's command sits in the body under it.
     const stepBody = `${step.text}\n${step.body ?? ''}`
+    // 「先备份、再删」是真实 runbook 的常态：备份写在**上一步**，删除写在这一步。
+    // 只看当行会把 timefusion 那种写法判成「没有警示」——2026-11-20 实测误报。
+    const near = [steps[index - 1], steps[index], steps[index + 1]]
+      .filter(Boolean)
+      .map(entry => `${entry.text}\n${entry.body ?? ''}`)
+      .join('\n')
     for (const { pattern, what } of DESTRUCTIVE) {
-      if (pattern.test(stepBody) && !WARNING_NEARBY.test(stepBody)) {
+      if (pattern.test(stepBody) && !WARNING_NEARBY.test(stepBody) && !WARNING_NEARBY.test(near)) {
         add('error', 'destructive-unwarned', step.line, `第 ${step.line} 行起的步骤含 ${what} 但没有写明注意/备份/不可逆——这条命令在压力下会被照抄`)
       }
     }
-  }
+  })
 
   // Rollback: how to undo it.
   const hasRollback = lines.some(line => ROLLBACK_HEADING.test(`\n${line}`)) || lines.some(line => ROLLBACK_LINE.test(line))
-  if (requireRollback && !hasRollback) {
-    add('error', 'rollback-missing', 0, '没有回滚段（认得：## 回滚、回滚：…、Rollback）——出问题时读者没有退路')
+  // 回滚只对「会改变环境」的 runbook 有意义：部署、迁移、升级、发布。
+  // 纯演练/前置检查类（zoom 的 preflight）没有可回滚的对象，问它回滚等于问
+  // 「读一遍文档怎么回滚」。2026-11-20 实测：不加这个条件，纯检查类必报。
+  const doesChange = CHANGE_VERB.test(text)
+  if (requireRollback && doesChange && !hasRollback) {
+    add('error', 'rollback-missing', 0, '没有回滚段（认得：## 回滚、回滚：…、Rollback）——这份 runbook 会改变环境，出问题时读者没有退路')
   }
 
   // Verification: how to tell it worked.

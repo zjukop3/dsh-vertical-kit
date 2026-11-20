@@ -26,7 +26,7 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 ```text
 $ ops-runbook-check runbook-sample.md
 error prereq-missing 第0行 没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限
-error rollback-missing 第0行 没有回滚段（认得：## 回滚、回滚：…、Rollback）——出问题时读者没有退路
+error rollback-missing 第0行 没有回滚段（认得：## 回滚、回滚：…、Rollback）——这份 runbook 会改变环境，出问题时读者没有退路
 error verify-missing 第0行 没有验证段（认得：## 验证、确认：…、Verify）——没写怎么确认，读者不知道做完了没有
 error destructive-unwarned 第4行 第 4 行起的步骤含 rm -rf 但没有写明注意/备份/不可逆——这条命令在压力下会被照抄
 warn shell-unspecified 第0行 没有说明用什么 shell（认得：bash、zsh、PowerShell）——同一条命令在不同 shell 里行为不同
@@ -68,6 +68,10 @@ Same function over HTTP: `POST /ops-runbook-check/api` with `{"text": "…"}` or
 A numbered list item (`1. …`) and a numbered heading (`## 3. 构建月报页`) are both steps. Until 0.2.0 only the list item counted, so this project's own two runbooks — which order their steps as headings — were reported as having no steps at all. That is the same mistake that cost four other checks in this kit a release: requiring a spelling rather than the property.
 
 A numbered heading brings its section body with it, because the command a step performs lives under the heading. `destructive-unwarned` therefore reads the whole step, heading plus body, and points the finding at the step rather than at the command line.
+
+## Measured against real runbooks
+
+Five public runbooks (`DevLoversTeam/devlovers.net`, `jayminwest/mulch`, `jayminwest/seeds`, `monoscope-tech/timefusion`, `zoom/skills`) were run through this check. Four now pass with no findings; the fifth warns only `shell-unspecified`. Getting there took four fixes, all of them the same mistake — knowing one spelling of a section: `## Pre-flight` / `## Required configuration` count as prerequisites, `## Post-release sanity` / `## Quick Probes` count as verification, a backup **in the previous step** is a valid caution for the destructive step that follows, and rollback is only demanded when the steps actually change an environment (a preflight checklist has nothing to roll back).
 
 ## Honest scope
 

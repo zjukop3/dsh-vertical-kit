@@ -74,10 +74,14 @@ test('a step floor below the count passes, above it warns', () => {
   assert.ok(lintOpsRunbook(text, { minSteps: 5 }).findings.some(finding => finding.rule === 'steps-thin'))
 })
 
-test('the rollback requirement is configurable away', () => {
-  const text = '# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. a\n2. b\n3. c\n\n## 验证\n\n验证：ok。\n'
-  assert.ok(lintOpsRunbook(text).findings.some(finding => finding.rule === 'rollback-missing'))
-  assert.ok(!lintOpsRunbook(text, { requireRollback: false }).findings.some(finding => finding.rule === 'rollback-missing'))
+test('回滚只对会改变环境的 runbook 要求，且可关闭', () => {
+  const base = '# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. a\n2. b\n3. c\n\n## 验证\n\n验证：ok。\n'
+  // 纯检查类：步骤里没有改变环境的命令，不该问回滚（真实语料 zoom 的 preflight 就是这样）。
+  assert.ok(!lintOpsRunbook(base).findings.some(f => f.rule === 'rollback-missing'), '纯检查类不该报')
+  // 一旦步骤里有部署命令，回滚就必须写。
+  const deploys = base.replace('1. a', '1. 运行 npm publish 发布新版本')
+  assert.ok(lintOpsRunbook(deploys).findings.some(f => f.rule === 'rollback-missing'), '会改变环境就该报')
+  assert.ok(!lintOpsRunbook(deploys, { requireRollback: false }).findings.some(f => f.rule === 'rollback-missing'), '开关可关闭')
 })
 
 test('no numbered steps at all is an error naming the prose problem', () => {
@@ -152,4 +156,40 @@ git revert。
 curl 返回 200。
 `
   assert.ok(lintOpsRunbook(prose).findings.some(f => f.rule === 'steps-missing'))
+})
+
+// 真实 runbook 语料（devlovers、mulch、seeds、timefusion、zoom）。五处误报都来自
+// 「只认一种写法」，2026-11-20 实测 4/6 零发现之前是 0/4。
+test('「## Pre-flight」「## Required configuration」都算前置', () => {
+  for (const heading of ['## Pre-flight (do once per machine)', '## Required configuration', '## Safety rules']) {
+    const text = `# r bash\n\n${heading}\n\n- 机器装好 docker\n\n## 步骤\n\n1. a\n2. b\n3. c\n\n## 验证\n\n验证：ok。\n`
+    const result = lintOpsRunbook(text)
+    assert.ok(!result.findings.some(f => f.rule === 'prereq-missing'), heading)
+  }
+})
+
+test('「Post-release sanity」「Quick Probes」都算验证', () => {
+  for (const heading of ['## Post-release sanity', '## Quick Probes', '## Health check']) {
+    const text = `# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. a\n2. b\n3. c\n\n${heading}\n\n看一眼。\n`
+    const result = lintOpsRunbook(text)
+    assert.ok(!result.findings.some(f => f.rule === 'verify-missing'), heading)
+  }
+})
+
+test('备份写在上一句、删除写在下一句，不该报 destructive-unwarned', () => {
+  const text = '# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. 备份数据目录到 /tmp/backup\n2. `rm -rf /var/lib/app/wal/*`\n3. 重启服务\n\n## 验证\n\n验证：ok。\n'
+  const result = lintOpsRunbook(text)
+  assert.ok(!result.findings.some(f => f.rule === 'destructive-unwarned'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('没有备份的 rm -rf 仍然报 destructive-unwarned', () => {
+  const text = '# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. 检查磁盘\n2. `rm -rf /var/lib/app/wal/*`\n3. 重启服务\n\n## 验证\n\n验证：ok。\n'
+  const result = lintOpsRunbook(text)
+  assert.ok(result.findings.some(f => f.rule === 'destructive-unwarned'))
+})
+
+test('「Rolling back from a newer version…」这段散文就算回滚说明', () => {
+  const text = '# r bash\n\n## 前置条件\n\n- x\n\n## 步骤\n\n1. npm publish 发布\n2. b\n3. c\n\nRolling back from a newer version to an older one needs the inverse.\n\n## 验证\n\n验证：ok。\n'
+  const result = lintOpsRunbook(text)
+  assert.ok(!result.findings.some(f => f.rule === 'rollback-missing'), JSON.stringify(result.findings.map(f => f.rule)))
 })
