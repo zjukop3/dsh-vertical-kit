@@ -1,0 +1,49 @@
+{
+  "name": "dsh-contributing-check",
+  "version": "0.1.0",
+  "description": "CONTRIBUTING-guide hygiene from markdown: a working dev setup, a test command that actually runs, what a pull request is expected to look like, the style the code is held to, where to ask, how commits should read, and whether a CLA or DCO applies.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "bin": {
+    "contributing-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "locale"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "contributing",
+    "open-source",
+    "maintainer",
+    "贡献指南",
+    "开源协作"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-bug-report-check"
+}

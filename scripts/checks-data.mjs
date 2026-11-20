@@ -688,5 +688,19 @@ export const CHECKS = [
     example: { "command": "privacy-notice-check privacy-sample.md", "fixture": "# 隐私声明\n\n我们很重视你的隐私，会尽力保护你的信息。\n", "output": "$ privacy-notice-check privacy-sample.md\nerror data-missing 第0行 没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的\nerror purpose-missing 第0行 没有说明用途（认得：## 使用目的、用途：…、## How we use it）——「为了提供服务」和「什么都能干」是两种声明\nerror retention-missing 第0行 没有保留期限（认得：## 保留期限、保留时间：30 天，或不保留）——没有期限，「注销账号」就不等于数据会消失\nerror sharing-missing 第0行 没有第三方共享说明（认得：## 共享、## 第三方、共享：…）——散文里提到「第三方」不算声明，读者指不出哪一句是承诺\nerror contact-missing 第0行 没有联系方式（认得：## 联系我们、联系邮箱：…、privacy@example.com）——没有渠道，行使权利就是空话\nwarn effective-date-missing 第0行 没有生效或更新日期（认得：生效日期：2026-11-01、last updated）——不知道版本的声明，无法判断哪一版约束我\nwarn rights-missing 第0行 没有用户权利说明（认得：## 你的权利、你有权访问/删除…、Your rights）——只说收集不说权利，读者只能猜自己能要求什么\nfail: 5 errors, 2 warnings", "exit": "1" },
     note: "实测 GitHub 自己的两份政策（General Privacy Statement、Candidate Privacy Notice）零发现；cookies 政策报 5 条，那是正确的——它不是隐私声明。frontmatter 的 title: 也算标题。只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。",
   },
+  // 贡献指南检查 / CONTRIBUTING 检查
+  {
+    slug: "contributing-check",
+    npm: "dsh-contributing-check",
+    cli: "contributing-check",
+    noun: "贡献指南检查 / CONTRIBUTING 检查",
+    title: "开源贡献指南检查清单",
+    description: "给第一次来贡献的人看的检查：能跑起来的开发环境、一条真能执行的测试命令、PR 该长什么样、代码风格要求、到哪提问、提交信息约定，以及 CLA/DCO。有测试一节却没给命令，是这份文档最常见的空话。",
+    decides: "这份贡献指南能否让一个陌生人自己把第一个 PR 交上来",
+    rules: [["title-missing", "没有 `# 标题`，也没有 RST 下划线标题 → error"], ["setup-missing", "没有开发环境段，也没有 git clone / pnpm install 这类命令 → error"], ["test-missing", "没有测试段，也没有可执行测试命令 → error"], ["test-command-missing", "有测试段但里面没有一条能跑的命令 → error（「请确保测试通过」不是指令）"], ["pr-missing", "没有提交 PR 的说明 → error"], ["style-missing", "没有风格段，也没写「提交时自动格式化」→ warn（--strict 时 error）"], ["questions-missing", "没有「到哪问」→ warn（--strict 时 error）"], ["commit-missing", "没有提交信息约定（Conventional Commits / DCO）→ warn（--strict 时 error）"], ["license-missing", "没有许可 / CLA / DCO 说明 → warn（--strict 时 error）"], ["pointer-guide", "文档是「指路型」：自己没有命令，但点了明确目标 → warn，并报出目标"]],
+    usage: ["npx contributing-check CONTRIBUTING.md --json", "npx contributing-check CONTRIBUTING.md --strict --warnings-fail"],
+    example: { "command": "contributing-check contributing-sample.md", "fixture": "# Contributing\n\nThanks for your interest. Please be nice.\n", "output": "$ contributing-check contributing-sample.md\nerror setup-missing 第0行 没有开发环境段（认得：## 开发环境、## Getting started、git clone / npm ci 这类命令）——新人卡在第一步就走了\nerror test-missing 第0行 没有测试段（认得：## 测试、## Running tests）——不知道该跑什么测试的人，交上来的 PR 是红的\nerror pr-missing 第0行 没有提交 PR 的说明（认得：## Pull request、## 贡献流程、## Submitting changes）——不知道你期待什么，第一次 PR 就会踩到你的隐性规矩\nwarn style-missing 第0行 没有代码风格段（认得：## 代码风格、## Lint，或明说提交时自动格式化）——风格要求藏在评审里，等于每次评审重讲一遍\nwarn questions-missing 第0行 没有「到哪问」的说明（认得：## 提问、Discord、mailing list、good first issue）——卡住的人只有放弃和硬猜两条路\nwarn commit-missing 第0行 没有提交信息约定（认得：Conventional Commits、Signed-off-by、DCO）——评审时才发现格式不对，返工的是对方\nwarn license-missing 第0行 没有许可/CLA/DCO 说明（认得：CLA、DCO、License）——贡献者不知道自己交出去的代码按什么授权\nfail: 0 commands, 3 errors, 4 warnings", "exit": "1" },
+    note: "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。",
+  },
 ]
 

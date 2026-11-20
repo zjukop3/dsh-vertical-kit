@@ -2,7 +2,7 @@
 
 > Industry-scenario checks for deliverables an agent produced and a person is about to accept. Each is one verb, each runs without DSH, each returns the same JSON from the CLI and the host route.
 
-- https://zjukop3.github.io/dsh-vertical-kit/compare/: All 25 checks in one table — which one applies to which file, and how many rules each carries.
+- https://zjukop3.github.io/dsh-vertical-kit/compare/: All 26 checks in one table — which one applies to which file, and how many rules each carries.
 - https://zjukop3.github.io/dsh-vertical-kit/checks.json: The same set as machine-readable JSON — name, cli, noun, decides, rules, usage, page and HTTP route per check.
 - https://zjukop3.github.io/dsh-vertical-kit/agreement-check/: 合同结构检查清单 — 合同交给法务之前，先把结构定下来：甲乙方写没写、日期有没有锚、大写金额和数字对不对得上、签署栏、争议解决、违约责任。每条发现带行号，可接 CI。
 - https://zjukop3.github.io/dsh-vertical-kit/invoice-check/: 发票字段检查清单 — 发票不需要懂业务就能核对的部分：统一社会信用代码字符集、不含税+税额=价税合计的勾稽、大写金额与小写一致、发票号码位数。容差默认 0.02，可调。
@@ -29,5 +29,6 @@
 - https://zjukop3.github.io/dsh-vertical-kit/security-advisory-check/: 安全公告检查清单 — 安全公告发布前的检查：漏洞编号（CVE/GHSA）、写死的严重程度、受影响版本范围、修复版本、今天升不了级时的缓解办法，加上报告渠道与披露日期。散文里的「严重」不是等级，只有发布页链接的「已升级」不是修复版本。
 - https://zjukop3.github.io/dsh-vertical-kit/migration-guide-check/: 升级迁移指南检查清单 — 迁移指南的检查：覆盖哪一段版本跨度、破坏性变更是不是一张可逐条对照的清单、编号步骤、怎么确认迁移成功、怎么回滚、动手前有没有让人先备份。散文里的「不兼容」不是清单，项目符号列表也不是步骤。
 - https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/: 隐私声明检查清单 — 隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。
+- https://zjukop3.github.io/dsh-vertical-kit/contributing-check/: 开源贡献指南检查清单 — 给第一次来贡献的人看的检查：能跑起来的开发环境、一条真能执行的测试命令、PR 该长什么样、代码风格要求、到哪提问、提交信息约定，以及 CLA/DCO。有测试一节却没给命令，是这份文档最常见的空话。
 
-- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 25 packages, one implementation per check shared by the CLI and the host route.
+- https://github.com/zjukop3/dsh-vertical-kit: Public source code, 26 packages, one implementation per check shared by the CLI and the host route.

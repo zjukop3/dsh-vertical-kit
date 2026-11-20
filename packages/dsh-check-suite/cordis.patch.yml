@@ -14,6 +14,8 @@
       name: 'dsh-bug-report-check'
     - id: check-commit-msg
       name: 'dsh-commit-msg-check'
+    - id: check-contributing
+      name: 'dsh-contributing-check'
     - id: check-dockerfile
       name: 'dsh-dockerfile-check'
     - id: check-env-example

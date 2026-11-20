@@ -24,6 +24,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
 /** 英文标题，句子式大小写：只有首词和专有名词大写。 */
 export const EN_TITLES = {
+  'dsh-contributing-check': 'Contributing guide check',
   'dsh-security-advisory-check': 'Security advisory check',
   'dsh-migration-guide-check': 'Migration guide check',
   'dsh-privacy-notice-check': 'Privacy notice check',

@@ -1178,6 +1178,64 @@
       "page": "https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/",
       "route": "POST /privacy-notice-check/api",
       "scope": "实测 GitHub 自己的两份政策（General Privacy Statement、Candidate Privacy Notice）零发现；cookies 政策报 5 条，那是正确的——它不是隐私声明。frontmatter 的 title: 也算标题。只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。"
+    },
+    {
+      "name": "dsh-contributing-check",
+      "cli": "contributing-check",
+      "slug": "contributing-check",
+      "noun": "贡献指南检查 / CONTRIBUTING 检查",
+      "title": "开源贡献指南检查清单",
+      "decides": "这份贡献指南能否让一个陌生人自己把第一个 PR 交上来",
+      "description": "给第一次来贡献的人看的检查：能跑起来的开发环境、一条真能执行的测试命令、PR 该长什么样、代码风格要求、到哪提问、提交信息约定，以及 CLA/DCO。有测试一节却没给命令，是这份文档最常见的空话。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "没有 `# 标题`，也没有 RST 下划线标题 → error"
+        },
+        {
+          "rule": "setup-missing",
+          "meaning": "没有开发环境段，也没有 git clone / pnpm install 这类命令 → error"
+        },
+        {
+          "rule": "test-missing",
+          "meaning": "没有测试段，也没有可执行测试命令 → error"
+        },
+        {
+          "rule": "test-command-missing",
+          "meaning": "有测试段但里面没有一条能跑的命令 → error（「请确保测试通过」不是指令）"
+        },
+        {
+          "rule": "pr-missing",
+          "meaning": "没有提交 PR 的说明 → error"
+        },
+        {
+          "rule": "style-missing",
+          "meaning": "没有风格段，也没写「提交时自动格式化」→ warn（--strict 时 error）"
+        },
+        {
+          "rule": "questions-missing",
+          "meaning": "没有「到哪问」→ warn（--strict 时 error）"
+        },
+        {
+          "rule": "commit-missing",
+          "meaning": "没有提交信息约定（Conventional Commits / DCO）→ warn（--strict 时 error）"
+        },
+        {
+          "rule": "license-missing",
+          "meaning": "没有许可 / CLA / DCO 说明 → warn（--strict 时 error）"
+        },
+        {
+          "rule": "pointer-guide",
+          "meaning": "文档是「指路型」：自己没有命令，但点了明确目标 → warn，并报出目标"
+        }
+      ],
+      "usage": [
+        "npx contributing-check CONTRIBUTING.md --json",
+        "npx contributing-check CONTRIBUTING.md --strict --warnings-fail"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/contributing-check/",
+      "route": "POST /contributing-check/api",
+      "scope": "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。"
     }
   ]
 }

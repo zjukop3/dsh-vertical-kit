@@ -42,6 +42,7 @@
     "dsh-api-doc-check": "^0.1.2",
     "dsh-bug-report-check": "^0.1.1",
     "dsh-commit-msg-check": "^0.3.1",
+    "dsh-contributing-check": "^0.1.0",
     "dsh-dockerfile-check": "^0.1.1",
     "dsh-env-example-check": "^0.2.1",
     "dsh-expense-claim-check": "^0.1.1",
