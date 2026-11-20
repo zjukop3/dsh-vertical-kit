@@ -1,12 +1,13 @@
 {
   "name": "dsh-agreement-check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Contract structure checks for Chinese agreements: parties, date, amount consistency (uppercase vs digits), signature blocks, dispute resolution, breach clauses.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "agreement-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

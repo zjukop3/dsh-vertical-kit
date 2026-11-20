@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Contract structure check",
+    "description": "Contract structure checks for Chinese agreements: parties, date, amount consistency (uppercase vs digits), signature blocks, dispute resolution, breach clauses."
+  }
+}

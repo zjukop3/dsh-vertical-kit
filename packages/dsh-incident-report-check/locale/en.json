@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Incident report check",
+    "description": "Incident postmortem hygiene from markdown: a timestamped timeline, a stated impact and duration, a root cause rather than a symptom, and every follow-up carrying an owner."
+  }
+}

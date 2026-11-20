@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Dockerfile check",
+    "description": "Dockerfile hygiene: pinned base images, a non-root USER, no secrets baked into layers, COPY instead of ADD for plain copies, and package-manager cleanup."
+  }
+}

@@ -1,12 +1,13 @@
 {
   "name": "dsh-expense-claim-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Expense-claim hygiene: who is claiming, the period, the line items and whether they add up to the stated total, duplicate invoice numbers, what each expense was for, and who approved it.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "expense-claim-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

@@ -1,12 +1,13 @@
 {
   "name": "dsh-spec-doc-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Spec-doc hygiene: the problem stated, acceptance criteria a reader could actually check, an explicit out-of-scope section, and no criterion written as a wish («体验良好» can be neither accepted nor rejected).",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "spec-doc-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

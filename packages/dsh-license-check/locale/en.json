@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "License check",
+    "description": "LICENSE hygiene: a recognized license body, a title that agrees with it, a copyright line with a holder and a plausible year, and no leftover template placeholders."
+  }
+}

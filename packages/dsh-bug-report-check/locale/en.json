@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Bug report check",
+    "description": "Bug-report hygiene from markdown: a one-line title, the environment, numbered reproduction steps, and the expected-vs-actual pair that makes a bug a bug."
+  }
+}

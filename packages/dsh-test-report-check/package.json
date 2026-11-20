@@ -1,12 +1,13 @@
 {
   "name": "dsh-test-report-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Test-report hygiene from markdown: the counts must add up (passed + failed + skipped = total), the environment must be stated, and each failure needs somewhere to start.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "test-report-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

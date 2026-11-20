@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Listing check",
+    "description": "E-commerce listing hygiene from CSV/JSON exports: title length bounds, keyword stuffing, price validity and bounds, SKU completeness and duplicates."
+  }
+}

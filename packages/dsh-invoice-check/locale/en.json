@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Invoice check",
+    "description": "Invoice field checks for Chinese e-invoices: credit-code format, amount relationships (net + tax = total), uppercase/digit amount agreement, invoice number shapes."
+  }
+}

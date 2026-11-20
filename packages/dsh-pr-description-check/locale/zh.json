@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "PR 描述检查清单",
+    "description": "PR 描述回答 reviewer 的前三个问题，因此可判定：改了什么、为什么、作者怎么知道它能用；加上关联 issue、破坏性变更配迁移说明、以及检查清单是不是真读了。CLI 支持从 stdin 读，可直接接 gh pr view 管道。"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ADR check",
+    "description": "Architecture decision record hygiene: a status, the context that forced a choice, the decision itself, consequences that include the cost, and the alternatives that lost."
+  }
+}

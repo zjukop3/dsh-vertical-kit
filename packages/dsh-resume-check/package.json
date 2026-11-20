@@ -1,12 +1,13 @@
 {
   "name": "dsh-resume-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Resume hygiene from markdown: a reachable contact block, valid email and phone shapes, a work timeline that never overlaps itself, and an education section.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "resume-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

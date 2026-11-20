@@ -1,12 +1,13 @@
 {
   "name": "dsh-meeting-notes-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Meeting-note hygiene from markdown: a date, the people in the room, recorded decisions, and every action item carrying an owner and a deadline.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "meeting-notes-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

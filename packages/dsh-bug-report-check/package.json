@@ -1,12 +1,13 @@
 {
   "name": "dsh-bug-report-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bug-report hygiene from markdown: a one-line title, the environment, numbered reproduction steps, and the expected-vs-actual pair that makes a bug a bug.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "bug-report-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

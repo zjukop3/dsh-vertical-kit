@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Spec doc check",
+    "description": "Spec-doc hygiene: the problem stated, acceptance criteria a reader could actually check, an explicit out-of-scope section, and no criterion written as a wish («体验良好» can be neither accepted nor rejected)."
+  }
+}

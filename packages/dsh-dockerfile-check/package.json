@@ -1,12 +1,13 @@
 {
   "name": "dsh-dockerfile-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dockerfile hygiene: pinned base images, a non-root USER, no secrets baked into layers, COPY instead of ADD for plain copies, and package-manager cleanup.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "dockerfile-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

@@ -1,12 +1,13 @@
 {
   "name": "dsh-ops-runbook-check",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Ops runbook hygiene: prerequisites you must have in hand, numbered steps followable under stress, a rollback path, and a way to verify it worked — plus a warning beside every destructive command.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "ops-runbook-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

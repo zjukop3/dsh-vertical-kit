@@ -1,12 +1,13 @@
 {
   "name": "dsh-adr-check",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Architecture decision record hygiene: a status, the context that forced a choice, the decision itself, consequences that include the cost, and the alternatives that lost.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "adr-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

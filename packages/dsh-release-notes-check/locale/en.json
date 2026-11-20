@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Release notes check",
+    "description": "Release-note hygiene from markdown: a version heading, a date, breaking changes paired with an upgrade path, and reverse-chronological ordering."
+  }
+}

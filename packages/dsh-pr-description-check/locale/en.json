@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "PR description check",
+    "description": "Pull-request description hygiene: what changed, why, how it was verified, the issue it closes, any breaking change paired with a migration note, and no all-unchecked checklist."
+  }
+}

@@ -1,12 +1,13 @@
 {
   "name": "dsh-onboarding-check",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Onboarding doc hygiene: what must be installed first, a pasteable command, what success looks like, where to ask when it fails, and how long it takes — a doc with no time estimate does not get started.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "onboarding-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

@@ -1,12 +1,13 @@
 {
   "name": "dsh-license-check",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "LICENSE hygiene: a recognized license body, a title that agrees with it, a copyright line with a holder and a plausible year, and no leftover template placeholders.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
   },
   "bin": {
     "license-check": "./bin/cli.js"
@@ -25,7 +26,8 @@
     "bin",
     "cordis.patch.yml",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "locale"
   ],
   "keywords": [
     "dsh",

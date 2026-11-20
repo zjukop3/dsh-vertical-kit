@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Ops runbook check",
+    "description": "Ops runbook hygiene: prerequisites you must have in hand, numbered steps followable under stress, a rollback path, and a way to verify it worked — plus a warning beside every destructive command."
+  }
+}
