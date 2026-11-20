@@ -499,7 +499,7 @@ export const CHECKS = [
     rules: [
       ['empty', '文档为空 → error'],
       ['problem-missing', '没有背景/问题/目标段 → error'],
-      ['criteria-missing', '没有验收标准段 → error'],
+      ['criteria-missing', '没有验收标准段 → error（认得 Test Plan、Graduation Criteria、acceptance criteria）'],
       ['criteria-vague', '验收标准含愿望词但没有数字/阈值/可观测对象 → error，报行号'],
       ['out-of-scope-missing', '没有「不做/非目标/范围外」段 → error'],
       ['criteria-thin', '验收标准少于下限（默认 2）→ warn'],

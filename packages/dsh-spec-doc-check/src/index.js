@@ -8,7 +8,10 @@ export const inject = ['webServer']
 
 const PROBLEM_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:背景|问题|目标|动机|problem|background|goal|objective)/i
 const PROBLEM_LINE = /^[^\n]*(?:背景[：:，\s]|问题[：:，\s]|目标[：:，\s]|要解决)/
-const CRITERIA_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:验收|接受标准|完成标准|acceptance criteria|definition of done|success criteria)/i
+// 真实规格的验收标准常常叫 Test Plan 或 Graduation Criteria（Kubernetes KEP 全这样）。
+// 只认「验收标准/acceptance criteria」会在 3/3 的真实 KEP 上误报——2026-11-20 实测。
+const CRITERIA_HEADING =
+  /(?:^|\n)#{1,6}[^\n]*(?:验收|接受标准|完成标准|acceptance criteria|definition of done|success criteria|test plan|graduation criteria|exit criteria|done when)/i
 const CRITERIA_LINE = /^[^\n]*(?:验收标准[：:，\s]|接受标准[：:，\s]|完成标准[：:，\s])/i
 const OUT_OF_SCOPE_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:不做|范围外|不在范围|非目标|out of scope|non-goals?)/i
 const OUT_OF_SCOPE_LINE = /^[^\n]*(?:不做[：:，\s]|范围外|不在本次范围|非目标[：:，\s])/i

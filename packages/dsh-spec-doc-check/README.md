@@ -72,6 +72,10 @@ npx spec-doc-check - < spec.md
 
 Same function over HTTP: `POST /spec-doc-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## Measured against real specs
+
+Three Kubernetes KEPs (`135-seccomp`, `127-user-namespaces`, `1547-building-kubelet-without-docker`) were run through this check. All three now pass with no errors; one is clean and two warn `criteria-thin`, which is accurate — their acceptance criteria are prose paragraphs under `### Test Plan` rather than an enumerable list. Before the measurement all three failed with `criteria-missing`, because the rule only knew "acceptance criteria" and not the two headings the whole KEP process uses.
+
 ## Honest scope
 
 This checks the spec's **shape**, not whether the plan is right: it cannot tell that the criteria are the wrong criteria, that the problem statement is a rationalisation, or that "out of scope" omits the hard part. It verifies the document states a problem, criteria someone could check afterwards, and a boundary — the three things a reviewer needs to disagree with it precisely. Whether the plan is good is what review and the eventual result are for.

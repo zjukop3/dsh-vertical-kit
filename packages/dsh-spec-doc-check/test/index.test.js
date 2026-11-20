@@ -97,3 +97,14 @@ test('an empty document is one empty error', () => {
   assert.equal(result.ok, false)
   assert.equal(result.findings[0].rule, 'empty')
 })
+
+// 真实规格语料（Kubernetes KEP）：验收标准常常叫 Test Plan 或 Graduation Criteria。
+// 只认「验收标准/acceptance criteria」会在 3/3 的真实 KEP 上误报（2026-11-20）。
+test('「### Test Plan」「### Graduation Criteria」都算验收标准', () => {
+  for (const heading of ['## Test Plan', '## Graduation Criteria', '## Acceptance criteria']) {
+    const text = `# 方案\n\n## Motivation\n\n要解决的问题。\n\n${heading}\n\n1. 单节点 5 分钟内完成\n2. 失败时返回 code 500\n3. 日志包含 trace id\n\n## Non-Goals\n\n- 不做多租户\n`
+    const result = lintSpecDoc(text)
+    assert.ok(!result.findings.some(f => f.rule === 'criteria-missing'), heading)
+    assert.ok(!result.findings.some(f => f.rule === 'criteria-thin'), heading)
+  }
+})
