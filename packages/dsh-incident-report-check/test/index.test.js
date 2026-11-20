@@ -92,3 +92,72 @@ test('time formats recognized: with date, with seconds, with PM', () => {
   const text = '# r\n\n## 时间线\n\n- 2026-11-18 14:02:05 告警\n- 2:32 PM 恢复\n'
   assert.ok(timelineEntries(text).every(entry => entry.hasTime))
 })
+
+// 真实 postmortem 的语料修正（2026-11-20，4 份 alantech/ogx 的公开复盘）：
+// 时间线与行动项都可能是 markdown 表格，时间可能只写日期，后续一节可能叫 Prevention。
+const tableStyle = `# Postmortem: search indexing incident
+
+## Summary
+
+New products were missing from search.
+
+## Root Cause
+
+Mapping conflict on the variants field.
+
+## Timeline
+
+| Time (UTC) | Event |
+|---|---|
+| 2025-01-07 21:30 | Schema change deployed |
+| 2025-01-08 09:45 | Support tickets spike |
+| 2025-01-08 12:00 | Resolved |
+
+## Action Items
+
+| # | Action | Owner | Status |
+|---|--------|-------|--------|
+| 1 | Add mapping check to CI | Search Team | Done |
+| 2 | Add freshness alert | SRE | Done |
+`
+
+test('表格时间线被读成带时间的条目，表头与分隔行不算', () => {
+  const entries = timelineEntries(tableStyle)
+  assert.equal(entries.length, 3)
+  assert.ok(entries.every(entry => entry.hasTime))
+})
+
+test('只写日期也算时间：跨天的事故不需要分秒', () => {
+  const text = '# x\n\n## Timeline\n\n- **2023-01-08**: staging unreachable\n- **2023-02-01**: production down\n'
+  const entries = timelineEntries(text)
+  assert.equal(entries.length, 2)
+  assert.ok(entries.every(entry => entry.hasTime), JSON.stringify(entries))
+})
+
+test('表格行动项按 Owner 列判负责人', () => {
+  const items = actionItems(tableStyle)
+  assert.equal(items.length, 2)
+  assert.ok(items.every(item => item.hasOwner))
+  const empty = tableStyle.replace('| Search Team |', '|  |')
+  assert.equal(actionItems(empty).filter(item => !item.hasOwner).length, 1)
+})
+
+test('有后续一节但列不出条目 → warn actions-unlisted，而不是 error', () => {
+  const text = tableStyle.replace(/## Action Items[\s\S]*$/, '## Prevention\n\n我们会加强监控。\n')
+  const result = lintIncidentReport(text)
+  const rules = result.findings.map(f => f.rule)
+  assert.ok(rules.includes('actions-unlisted'), rules.join(','))
+  assert.ok(!rules.includes('actions-missing'), rules.join(','))
+})
+
+test('Lessons Learned 不是行动项：没有负责人的教训不该报 action-no-owner', () => {
+  const text = `${tableStyle}\n## Lessons Learned\n\n- Silent drops are worse than loud failures.\n- Monitor freshness, not just availability.\n`
+  const result = lintIncidentReport(text)
+  assert.ok(!result.findings.some(f => f.rule === 'action-no-owner'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('Summary 一节本身就算影响陈述', () => {
+  const text = tableStyle.replace('## Summary', '## Summary')
+  const result = lintIncidentReport(text)
+  assert.ok(!result.findings.some(f => f.rule === 'impact-missing'))
+})

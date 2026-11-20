@@ -46,7 +46,7 @@
     "dsh-env-example-check": "^0.2.1",
     "dsh-expense-claim-check": "^0.1.1",
     "dsh-handover-check": "^0.2.1",
-    "dsh-incident-report-check": "^0.1.1",
+    "dsh-incident-report-check": "^0.1.2",
     "dsh-invoice-check": "^0.1.3",
     "dsh-license-check": "^0.2.1",
     "dsh-listing-check": "^0.2.1",

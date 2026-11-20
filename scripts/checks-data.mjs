@@ -412,10 +412,10 @@ export const CHECKS = [
     description: '事故复盘的四个判定：带时间的时间线（条目必须带时间）、影响段（影响谁、多久）、根因段而不是处置、后续行动项每个人都挂负责人。「重启后恢复」是处置不是原因。',
     decides: '这份复盘是否给出了时间线、影响、根因与有人负责的后续',
     rules: [
-      ['timeline-missing / timeline-entry-untimed', '没有时间线段，或条目没带时间 → error，报行号'],
+      ['timeline-missing / timeline-entry-untimed', '没有时间线段（列表或表格都认），或条目既无日期也无时刻 → error，报行号'],
       ['impact-missing', '没有影响段 → error'],
       ['root-cause-missing', '没有根因段 → error'],
-      ['actions-missing / action-no-owner', '没有后续行动项，或行动项没负责人 → error，报行号'],
+      ['actions-missing / action-no-owner / actions-unlisted', '没有后续段、条目没负责人（列表或 Owner 列都认）→ error；有段但列不出条目 → warn'],
       ['timeline-thin', '时间线条目少于下限（默认 2）→ warn'],
       ['duration-missing', '全文没有时长 → warn'],
     ],
@@ -426,7 +426,7 @@ export const CHECKS = [
     example: {
       "command": "incident-report-check incident-sample.md",
       "fixture": "# 服务挂了\n\n今天下午服务挂了，重启后恢复了。",
-      "output": "$ incident-report-check incident-sample.md\nerror timeline-missing 第0行 没有时间线（认得：## 时间线 / ## 事件过程 + 带时间的条目）——没有时间的事故报告回答不了「挂了多久」\nerror impact-missing 第0行 没有影响段（认得：## 影响、影响：…、受影响…）——不知道影响谁的报告无法定级\nerror root-cause-missing 第0行 没有根因段（认得：## 根因、根本原因：…、root cause）——「重启后恢复」是处置，不是原因\nerror actions-missing 第0行 没有后续行动项（认得：## 行动项 / ## 后续 + 条目）——没有后续的复盘只写了一份文档\nwarn duration-missing 第0行 全文没有时长（认得：23 分钟、1 小时、45 秒）——读者要自己拿时间线相减才知道挂了多久\nfail: 0 timeline entries, 0 follow-ups, 4 errors, 1 warnings",
+      "output": "$ incident-report-check incident-sample.md\nerror timeline-missing 第0行 没有时间线（认得：## 时间线 / ## 事件过程 + 带时间的条目）——没有时间的事故报告回答不了「挂了多久」\nerror impact-missing 第0行 没有影响段（认得：## 影响、影响：…、受影响…）——不知道影响谁的报告无法定级\nerror root-cause-missing 第0行 没有根因段（认得：## 根因、根本原因：…、root cause）——「重启后恢复」是处置，不是原因\nerror actions-missing 第0行 没有后续行动项（认得：## 行动项 / ## 后续 / ## Prevention / ## Action Items）——没有后续的复盘只写了一份文档\nwarn duration-missing 第0行 全文没有时长（认得：23 分钟、1 小时、45 秒）——读者要自己拿时间线相减才知道挂了多久\nfail: 0 timeline entries, 0 follow-ups, 4 errors, 1 warnings",
       "exit": "1"
 },
     note: '只验结构，不验根因是否找对：报告可以写一个听起来合理但错误的根因，这个工具分辨不出。它验证文档给出了时间线、影响、原因与有人负责的后续——读者评估分析前需要的四件事。责任归属是人类实践，代码不编码它。',

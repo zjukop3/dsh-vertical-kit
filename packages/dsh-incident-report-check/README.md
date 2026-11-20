@@ -26,7 +26,7 @@ $ incident-report-check incident-sample.md
 error timeline-missing 第0行 没有时间线（认得：## 时间线 / ## 事件过程 + 带时间的条目）——没有时间的事故报告回答不了「挂了多久」
 error impact-missing 第0行 没有影响段（认得：## 影响、影响：…、受影响…）——不知道影响谁的报告无法定级
 error root-cause-missing 第0行 没有根因段（认得：## 根因、根本原因：…、root cause）——「重启后恢复」是处置，不是原因
-error actions-missing 第0行 没有后续行动项（认得：## 行动项 / ## 后续 + 条目）——没有后续的复盘只写了一份文档
+error actions-missing 第0行 没有后续行动项（认得：## 行动项 / ## 后续 / ## Prevention / ## Action Items）——没有后续的复盘只写了一份文档
 warn duration-missing 第0行 全文没有时长（认得：23 分钟、1 小时、45 秒）——读者要自己拿时间线相减才知道挂了多久
 fail: 0 timeline entries, 0 follow-ups, 4 errors, 1 warnings
 ```
@@ -59,6 +59,10 @@ npx incident-report-check postmortem.md --min-timeline 4
 ```
 
 Same function over HTTP: `POST /incident-report-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
+
+## Measured against real postmortems
+
+Four public postmortems (`alantech/iasql` ×3, `ogx-ai/ogx` ×1) were run through this check. Three things changed as a result: the timeline is read from **markdown tables** as well as lists, a **date counts as a time** (a cross-day incident does not have a clock), and follow-ups may live under `## Prevention` / `## Action Items` with an **Owner column**. After those fixes: one report is clean, one has two warnings, and two keep `action-no-owner` errors — those are true positives: their prevention bullets name no owner.
 
 ## Honest scope
 
