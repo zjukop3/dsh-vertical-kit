@@ -242,7 +242,7 @@ export const CHECKS = [
     rules: [
       ['endpoints-missing', '没有「METHOD + 路径」形式的端点 → error'],
       ['examples-missing', '没有代码块示例 → error'],
-      ['auth-missing', '没有鉴权说明（鉴权/认证/Authorization/Bearer）→ error'],
+      ['auth-missing', '全文没有鉴权说明 → error（明说无需鉴权、或只在本机/Unix socket 上监听，都算说清了）'],
       ['error-shape-missing', '没有错误响应说明（错误/失败/4xx/5xx）→ warn'],
     ],
     usage: [
@@ -252,7 +252,7 @@ export const CHECKS = [
     example: {
       "command": "api-doc-check api-sample.md",
       "fixture": "# 接口说明\n\n我们的接口在 /v1/items 上，可以用。",
-      "output": "$ api-doc-check api-sample.md\nerror endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用\nerror examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例\nerror auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer）——不知道怎么证明身份的接口文档不可用\nwarn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样\nfail: 0 endpoints, 0 examples, 3 errors, 1 warnings",
+      "output": "$ api-doc-check api-sample.md\nerror endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用\nerror examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例\nerror auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer，或明说无需鉴权 / 只在本机与 Unix socket 上监听）——不知道怎么证明身份的接口文档不可用\nwarn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样\nfail: 0 endpoints, 0 examples, 3 errors, 1 warnings",
       "exit": "1"
 },
     note: '只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。',

@@ -25,7 +25,7 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 $ api-doc-check api-sample.md
 error endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用
 error examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例
-error auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer）——不知道怎么证明身份的接口文档不可用
+error auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer，或明说无需鉴权 / 只在本机与 Unix socket 上监听）——不知道怎么证明身份的接口文档不可用
 warn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样
 fail: 0 endpoints, 0 examples, 3 errors, 1 warnings
 ```
@@ -52,6 +52,10 @@ npx api-doc-check api.md --min-endpoints 5
 ```
 
 Same function over HTTP: `POST /api-doc-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
+
+## Measured against real API docs
+
+Three public API documents (`lablup/all-smi`, `audreyt/ethercalc`, `anylyralabs/LogShare`) were run through this check; all three pass with no findings. Both fixes came from them: an API that listens on loopback or a Unix socket has no authentication surface, so `auth-missing` no longer fires on a `http://localhost:<port>` or `--unix-socket` document, and an explicit 「无需鉴权」 counts as the answer. Separately, a bare `token` no longer satisfies the auth rule — pagination tokens are everywhere and prove nothing about identity.
 
 ## Honest scope
 

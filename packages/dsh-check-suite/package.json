@@ -39,7 +39,7 @@
   "dependencies": {
     "dsh-adr-check": "^0.2.2",
     "dsh-agreement-check": "^0.1.4",
-    "dsh-api-doc-check": "^0.1.1",
+    "dsh-api-doc-check": "^0.1.2",
     "dsh-bug-report-check": "^0.1.1",
     "dsh-commit-msg-check": "^0.3.1",
     "dsh-dockerfile-check": "^0.1.1",

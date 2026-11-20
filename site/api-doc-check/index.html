@@ -5,7 +5,7 @@
 <p><strong>它决定一件事：</strong>这份接口文档是否交代了怎么调、怎么证明身份、失败长什么样。</p>
 <nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="../expense-claim-check/">dsh-expense-claim-check</a><a href="../security-advisory-check/">dsh-security-advisory-check</a><a href="../migration-guide-check/">dsh-migration-guide-check</a><a href="../privacy-notice-check/">dsh-privacy-notice-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-api-doc-check">npm</a></nav>
 <h2>检查规则</h2>
-<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>endpoints-missing</code></td><td>没有「METHOD + 路径」形式的端点 → error</td></tr><tr><td><code>examples-missing</code></td><td>没有代码块示例 → error</td></tr><tr><td><code>auth-missing</code></td><td>没有鉴权说明（鉴权/认证/Authorization/Bearer）→ error</td></tr><tr><td><code>error-shape-missing</code></td><td>没有错误响应说明（错误/失败/4xx/5xx）→ warn</td></tr></table>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>endpoints-missing</code></td><td>没有「METHOD + 路径」形式的端点 → error</td></tr><tr><td><code>examples-missing</code></td><td>没有代码块示例 → error</td></tr><tr><td><code>auth-missing</code></td><td>全文没有鉴权说明 → error（明说无需鉴权、或只在本机/Unix socket 上监听，都算说清了）</td></tr><tr><td><code>error-shape-missing</code></td><td>没有错误响应说明（错误/失败/4xx/5xx）→ warn</td></tr></table>
 <h2>用法</h2>
 <pre><code>npx api-doc-check api.md --json</code></pre><pre><code>npx api-doc-check api.md --min-endpoints 5</code></pre>
 <h2>真实输入输出</h2>
@@ -15,7 +15,7 @@
 <pre><code>$ api-doc-check api-sample.md
 error endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用
 error examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例
-error auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer）——不知道怎么证明身份的接口文档不可用
+error auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer，或明说无需鉴权 / 只在本机与 Unix socket 上监听）——不知道怎么证明身份的接口文档不可用
 warn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样
 fail: 0 endpoints, 0 examples, 3 errors, 1 warnings</code></pre>
 <p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>

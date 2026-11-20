@@ -35,8 +35,19 @@ export function lintApiDoc(text, rules = {}) {
   }
 
   // Auth: how a caller proves identity, stated once somewhere.
-  const hasAuth = lines.some(line => /(?:鉴权|认证|授权|api[_\s-]?key|token|bearer|auth)/i.test(line))
-  if (!hasAuth) add('error', 'auth-missing', 0, '全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer）——不知道怎么证明身份的接口文档不可用')
+  //
+  // 两种真实写法不算缺失：一是明说「无需鉴权」；二是这份 API 只在本机/Unix socket 上
+  // 监听——问它「怎么证明身份」等于问本机进程怎么证明自己是本机。2026-11-20 实测：
+  // all-smi 的文档（unix socket + localhost）在这条上被误报。
+  const AUTH_NONE = /(?:无需(?:鉴权|认证|授权)|不需要(?:鉴权|认证|授权)|不涉及鉴权|no auth(?:entication)?(?: required)?|unauthenticated)/i
+  const LOOPBACK_ONLY = /(?:https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):\d+|--unix-socket|unix:\/\/)/i
+  const hasAuth =
+    // 光有 `token` 不算鉴权说明：分页文档里到处是「下一段 token」。
+    // 认的是能证明身份的那些写法（access token / bearer / api key / Authorization）。
+    lines.some(line => /(?:鉴权|认证|授权|api[_\s-]?key|access[_\s-]?token|auth[_\s-]?token|bearer|authorization|auth\b)/i.test(line)) ||
+    AUTH_NONE.test(text) ||
+    LOOPBACK_ONLY.test(text)
+  if (!hasAuth) add('error', 'auth-missing', 0, '全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer，或明说无需鉴权 / 只在本机与 Unix socket 上监听）——不知道怎么证明身份的接口文档不可用')
 
   // Every documented error shape: a doc that only shows success leaves the
   // reader guessing what a failure looks like.

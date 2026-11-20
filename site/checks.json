@@ -378,7 +378,7 @@
         },
         {
           "rule": "auth-missing",
-          "meaning": "没有鉴权说明（鉴权/认证/Authorization/Bearer）→ error"
+          "meaning": "全文没有鉴权说明 → error（明说无需鉴权、或只在本机/Unix socket 上监听，都算说清了）"
         },
         {
           "rule": "error-shape-missing",
@@ -776,7 +776,7 @@
         },
         {
           "rule": "criteria-missing",
-          "meaning": "没有验收标准段 → error"
+          "meaning": "没有验收标准段 → error（认得 Test Plan、Graduation Criteria、acceptance criteria）"
         },
         {
           "rule": "criteria-vague",

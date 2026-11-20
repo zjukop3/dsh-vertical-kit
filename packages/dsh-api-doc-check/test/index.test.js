@@ -69,3 +69,18 @@ test('error shape is a warn, not an error', () => {
   assert.equal(result.ok, true)
   assert.ok(result.findings.some(finding => finding.rule === 'error-shape-missing' && finding.level === 'warn'))
 })
+
+// 真实语料（all-smi / ethercalc / LogShare 三份真实 API 文档）：本机与 Unix socket 的
+// API 没有鉴权面，问它「怎么证明身份」等于问本机进程怎么证明自己是本机。
+test('明说「无需鉴权」或只在本机/Unix socket 上监听时，不报 auth-missing', () => {
+  const base = '## 接口\n\nGET /v1/items\n\n```\ncurl http://api.example.com/v1/items\n```\n\n```\n{"ok":true}\n```\n\n错误：404 表示不存在。\n'
+  assert.ok(lintApiDoc(base).findings.some(f => f.rule === 'auth-missing'), '远端 API 没写鉴权应报')
+  assert.ok(!lintApiDoc(`${base}\n本服务无需鉴权。\n`).findings.some(f => f.rule === 'auth-missing'))
+  assert.ok(!lintApiDoc(`${base}\ncurl http://localhost:9090/metrics\n`).findings.some(f => f.rule === 'auth-missing'))
+})
+
+test('分页里的 token 不算鉴权说明', () => {
+  const text = '## 接口\n\nGET /v1/items\n\n```\ncurl https://api.example.com/v1/items\n```\n\n```\n{"next_page_token":"abc"}\n```\n\n错误：4xx。\n'
+  assert.ok(lintApiDoc(text).findings.some(f => f.rule === 'auth-missing'), '只有分页 token 不该算鉴权')
+  assert.ok(!lintApiDoc(text.replace('错误：4xx。', '使用 Authorization: Bearer <token>。错误：4xx。')).findings.some(f => f.rule === 'auth-missing'))
+})
