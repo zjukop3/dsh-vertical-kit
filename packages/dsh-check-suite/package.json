@@ -58,7 +58,7 @@
     "dsh-privacy-notice-check": "^0.1.1",
     "dsh-release-notes-check": "^0.3.1",
     "dsh-resume-check": "^0.1.2",
-    "dsh-security-advisory-check": "^0.1.1",
+    "dsh-security-advisory-check": "^0.1.2",
     "dsh-spec-doc-check": "^0.1.1",
     "dsh-test-report-check": "^0.1.1",
     "dsh-weekly-report-check": "^0.1.1",

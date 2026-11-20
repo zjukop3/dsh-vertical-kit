@@ -1,6 +1,6 @@
 {
   "name": "dsh-security-advisory-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Security-advisory hygiene from markdown: an identifier (CVE/GHSA), a stated severity, the affected version range, the fixed version, and the way out for people who cannot upgrade today.",
   "type": "module",
   "main": "./src/index.js",

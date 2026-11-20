@@ -22,8 +22,7 @@ error total-mismatch 第0行 明细相加是 1513.5，合计行写的是 1600，
 error approver-missing 第0行 没有审批人（认得：审批人：、批准人：、Approved by）——没有人批过的报销单不该进入付款
 warn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销
 warn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批
-fail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings
-</code></pre>
+fail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings</code></pre>
 <p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /expense-claim-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>

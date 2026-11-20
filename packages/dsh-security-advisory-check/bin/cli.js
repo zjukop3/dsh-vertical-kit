@@ -6,11 +6,12 @@ import { lintSecurityAdvisory } from '../src/index.js'
 const args = process.argv.slice(2)
 const target = args.find(argument => !argument.startsWith('--'))
 if (!target) {
-  process.stderr.write('usage: security-advisory-check advisory.md [--json] [--warnings-fail] [--require-workaround]\n')
+  process.stderr.write('usage: security-advisory-check advisory.md [--json] [--warnings-fail] [--check-workaround] [--check-contact]\n')
   process.exit(2)
 }
 const rules = {}
-if (args.includes('--require-workaround')) rules.requireWorkaround = true
+if (args.includes('--check-workaround') || args.includes('--require-workaround')) rules.checkWorkaround = true
+if (args.includes('--check-contact')) rules.checkContact = true
 try {
   const result = await lintSecurityAdvisory(await readFile(target, 'utf8'), rules)
   if (args.includes('--json')) {

@@ -34,6 +34,11 @@ const AFFECTED_NONE = /(?:受影响|影响范围)[^\n]{0,20}?(?:无|none|不适�
 // The fixed version, as a version. A link to the releases page is not one.
 const FIXED_VERSION = /(?:修复版本|已修复|修复于|修复在|fixed in|patched in|resolved in|upgrade to)[^\n]{0,60}?v?\d+\.\d+/i
 
+// 尚未修复的公告是合法文档，但必须说出来。实测 20 条真实 GHSA 记录里 20 条都没有
+// patched_versions，其中 13 条正文也没提任何修复——「没修」和「漏写」在文本上
+// 分不开，而这正是读者要的那一句。
+const FIXED_NONE = /(?:暂无(?:可用)?(?:的)?修复|尚未修复|无修复版本|暂不修复|will not be fixed|won.t fix|no (?:fix|patched version|fix available)|unpatched|not planned)/i
+
 // The way out for people who cannot upgrade today, or an explicit statement
 // that there is none. Silence is the one answer that leaves a reader stuck.
 const WORKAROUND = /(?:缓解|规避|临时措施|降级|关闭|禁用|workaround|mitigation|no workaround|暂无(?:可用)?的?缓解)/i
@@ -53,7 +58,8 @@ export function severityOf(text) {
 }
 
 export function lintSecurityAdvisory(text, rules = {}) {
-  const requireWorkaround = rules.requireWorkaround ?? false
+  const checkWorkaround = rules.checkWorkaround ?? rules.requireWorkaround ?? false
+  const checkContact = rules.checkContact ?? false
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = text.split('\n')
@@ -74,16 +80,18 @@ export function lintSecurityAdvisory(text, rules = {}) {
     add('error', 'affected-missing', 0, '没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本')
   }
 
-  if (!FIXED_VERSION.test(text)) {
-    add('error', 'fixed-missing', 0, '没有修复版本（认得：修复版本：0.1.11、fixed in 2.3.1）——只给发布页链接，读者还得自己找哪个版本修好的')
+  if (!FIXED_VERSION.test(text) && !FIXED_NONE.test(text)) {
+    add('error', 'fixed-missing', 0, '既没有修复版本，也没写「暂无可用修复」（认得：修复版本：0.1.11、fixed in 2.3.1、暂无可用修复）——读者分不清「没修」和「漏写」')
   }
 
-  if (!WORKAROUND.test(text)) {
-    const level = requireWorkaround ? 'error' : 'warn'
-    add(level, 'workaround-missing', 0, '没有缓解措施（认得：缓解措施、临时规避、暂无可用缓解）——今天升不了级的人需要知道现在该做什么，哪怕答案是「没有」')
+  // 默认不查这两条：实测 20 条真实 GHSA 记录里 18 条正文没有缓解措施、15 条没有
+  // 联系渠道（由平台代收）。一条在大多数合法文档上都开火的 warn 是噪音，
+  // 它会训练读者忽略所有 warn。作者在意时用 --check-workaround / --check-contact。
+  if (checkWorkaround && !WORKAROUND.test(text)) {
+    add('warn', 'workaround-missing', 0, '没有缓解措施（认得：缓解措施、临时规避、暂无可用缓解）——今天升不了级的人需要知道现在该做什么，哪怕答案是「没有」')
   }
 
-  if (!has(CONTACT)) {
+  if (checkContact && !has(CONTACT)) {
     add('warn', 'contact-missing', 0, '没有报告渠道或致谢（认得：security@…、致谢、reported by）——下一个发现同类问题的人不知道往哪报')
   }
 

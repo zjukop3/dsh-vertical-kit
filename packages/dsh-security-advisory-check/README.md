@@ -27,11 +27,9 @@ $ security-advisory-check advisory-sample.md
 error id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用
 error severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期
 error affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本
-error fixed-missing 第0行 没有修复版本（认得：修复版本：0.1.11、fixed in 2.3.1）——只给发布页链接，读者还得自己找哪个版本修好的
-warn workaround-missing 第0行 没有缓解措施（认得：缓解措施、临时规避、暂无可用缓解）——今天升不了级的人需要知道现在该做什么，哪怕答案是「没有」
-warn contact-missing 第0行 没有报告渠道或致谢（认得：security@…、致谢、reported by）——下一个发现同类问题的人不知道往哪报
+error fixed-missing 第0行 既没有修复版本，也没写「暂无可用修复」（认得：修复版本：0.1.11、fixed in 2.3.1、暂无可用修复）——读者分不清「没修」和「漏写」
 warn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的
-fail: severity unstated, 4 errors, 3 warnings
+fail: severity unstated, 4 errors, 1 warnings
 ```
 
 出口码：1。
@@ -47,21 +45,24 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | `id-missing` | error | no CVE / GHSA / 公告编号：line |
 | `severity-missing` | error | no stated level (严重程度：high)；「挺严重的」不是等级 |
 | `affected-missing` | error | no version range (`<= 0.1.10`, `affected < 2.3.0`) and no explicit 「无」 |
-| `fixed-missing` | error | no fixed version number；「建议尽快升级」不是版本 |
-| `workaround-missing` | warn (error with `--require-workaround`) | no mitigation and no 「暂无可用缓解」 |
-| `contact-missing` | warn | no reporting channel or credit line |
+| `fixed-missing` | error | neither a fixed version nor an explicit 「暂无可用修复」；「建议尽快升级」is not a version |
+| `workaround-missing` | warn, **off by default** (`--check-workaround`) | no mitigation and no 「暂无可用缓解」 |
+| `contact-missing` | warn, **off by default** (`--check-contact`) | no reporting channel or credit line |
 | `disclosure-date-missing` | warn | no disclosure date |
 
 ## Use
 
 ```bash
 npx security-advisory-check advisory.md --json
-npx security-advisory-check advisory.md --require-workaround --warnings-fail
+npx security-advisory-check advisory.md --check-workaround --check-contact
+npx security-advisory-check advisory.md --warnings-fail
 ```
 
 Same function over HTTP: `POST /security-advisory-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.
 
 ## Honest scope
+
+Measured against 20 real GHSA records: 7 pass with no findings, and the other 13 fire exactly one rule — `fixed-missing`. None of those 20 carried a `patched_versions` value, and 13 did not mention a fix in the text either. That number is the point of the rule: from the document alone a reader cannot tell "not fixed yet" from "the author forgot", and the fix is one sentence.
 
 This checks whether the advisory **answers the reader's two questions**, not whether the vulnerability is real, whether the range is correct, or whether the severity was assigned honestly. A document can pass every rule here and still be wrong about who is affected — that is what a reproduction and a second pair of eyes are for. It also does not parse CVSS vectors or recompute scores.
 

@@ -27,7 +27,6 @@ error approver-missing 第0行 没有审批人（认得：审批人：、批准�
 warn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销
 warn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批
 fail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings
-
 ```
 
 出口码：1。

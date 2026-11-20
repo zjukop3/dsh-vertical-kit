@@ -1055,15 +1055,15 @@
         },
         {
           "rule": "fixed-missing",
-          "meaning": "没有修复版本号 → error；「建议尽快升级」不算"
+          "meaning": "既没有修复版本，也没写「暂无可用修复」→ error；「建议尽快升级」不算"
         },
         {
           "rule": "workaround-missing",
-          "meaning": "没有缓解措施或「暂无可用缓解」→ warn（--require-workaround 时 error）"
+          "meaning": "没有缓解措施或「暂无可用缓解」→ warn，默认不查（--check-workaround 打开）"
         },
         {
           "rule": "contact-missing",
-          "meaning": "没有报告渠道或致谢 → warn"
+          "meaning": "没有报告渠道或致谢 → warn，默认不查（--check-contact 打开）"
         },
         {
           "rule": "disclosure-date-missing",
@@ -1072,11 +1072,11 @@
       ],
       "usage": [
         "npx security-advisory-check advisory.md --json",
-        "npx security-advisory-check advisory.md --require-workaround --warnings-fail"
+        "npx security-advisory-check advisory.md --check-workaround --check-contact"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/security-advisory-check/",
       "route": "POST /security-advisory-check/api",
-      "scope": "只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。"
+      "scope": "实测 20 条真实 GHSA 记录：7 条零发现、13 条只报 fixed-missing（那 20 条都没有 patched_versions，其中 13 条正文也没提修复）。缓解与联系渠道默认不查：真实公告里 18/20 与 15/20 都没有，默认报等于噪音。只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。"
     },
     {
       "name": "dsh-migration-guide-check",

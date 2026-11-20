@@ -34,16 +34,17 @@ test('a complete advisory passes with no findings at all', () => {
   assert.equal(result.ok, true)
 })
 
-test('a prose-only advisory fires the four facts and the three accountability warns', () => {
+test('a prose-only advisory fires the four facts plus the disclosure warn', () => {
   const result = lintSecurityAdvisory(bad)
   assert.equal(result.ok, false)
   const rules = result.findings.map(finding => finding.rule)
   for (const rule of ['id-missing', 'severity-missing', 'affected-missing', 'fixed-missing']) {
     assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
   }
-  for (const rule of ['workaround-missing', 'contact-missing', 'disclosure-date-missing']) {
-    assert.ok(rules.includes(rule), `${rule} 没报：${rules.join(',')}`)
-  }
+  assert.ok(rules.includes('disclosure-date-missing'), rules.join(','))
+  // 缓解与联系渠道默认不查：真实公告里 18/20 与 15/20 都没有，默认报等于噪音。
+  assert.ok(!rules.includes('workaround-missing'), rules.join(','))
+  assert.ok(!rules.includes('contact-missing'), rules.join(','))
   assert.ok(!rules.includes('title-missing'), '标题存在，不该报 title-missing')
 })
 
@@ -83,18 +84,45 @@ test('散文里的「严重」不算等级：severity 必须被显式写成等�
   assert.ok(result.findings.some(f => f.rule === 'severity-missing'))
 })
 
-test('require-workaround 把「没写缓解」升级为 error', () => {
+test('check-workaround 是开关：不开不报，开了才报', () => {
   const text = good.replace('## 缓解措施\n\n升级前可以用 DSH_EXPORT=off 关闭导出接口。\n\n', '')
-  const relaxed = lintSecurityAdvisory(text)
-  const strict = lintSecurityAdvisory(text, { requireWorkaround: true })
-  assert.equal(relaxed.findings.find(f => f.rule === 'workaround-missing').level, 'warn')
-  assert.equal(strict.findings.find(f => f.rule === 'workaround-missing').level, 'error')
+  const off = lintSecurityAdvisory(text)
+  const on = lintSecurityAdvisory(text, { checkWorkaround: true })
+  assert.ok(!off.findings.some(f => f.rule === 'workaround-missing'), '默认不该报')
+  assert.equal(on.findings.find(f => f.rule === 'workaround-missing').level, 'warn')
+  // 旧参数名仍然被接受，避免 0.1.1 的调用方突然失效
+  assert.ok(lintSecurityAdvisory(text, { requireWorkaround: true }).findings.some(f => f.rule === 'workaround-missing'))
 })
 
-test('「暂无可用缓解」也是答案：写清楚没有，比留空强', () => {
+test('check-contact 同样是一个开关', () => {
+  // 整节删掉，包括「## 致谢」这个标题——只删邮箱那半句的话，标题仍然算渠道，
+  // 那是测试自己写错了，不是规则漏报。
+  const text = good.replace('## 致谢\n\n感谢 @someone 报告，联系 security@example.com。\n', '')
+  assert.ok(!lintSecurityAdvisory(text).findings.some(f => f.rule === 'contact-missing'), '默认不该报')
+  assert.ok(lintSecurityAdvisory(text, { checkContact: true }).findings.some(f => f.rule === 'contact-missing'), '开关打开应报')
+})
+
+test('「暂无可用缓解」也是答案：开关打开时也不该报', () => {
   const text = good.replace('升级前可以用 DSH_EXPORT=off 关闭导出接口。', '暂无可用缓解，请升级到 0.1.11。')
-  const result = lintSecurityAdvisory(text)
+  const result = lintSecurityAdvisory(text, { checkWorkaround: true })
   assert.ok(!result.findings.some(f => f.rule === 'workaround-missing'))
+})
+
+// 真实语料：20 条 GHSA 记录里 20 条没有 patched_versions、其中 13 条正文也没提
+// 修复。"没修" 与 "漏写" 在文本上分不开，所以「暂无可用修复」必须被当作答案。
+test('写了「暂无可用修复」就不再报 fixed-missing', () => {
+  const text = good.replace('- 修复版本：0.1.11\n', '').replace('## 影响\n', '## 影响\n\n该问题暂无可用修复版本。\n')
+  const result = lintSecurityAdvisory(text)
+  assert.ok(!result.findings.some(f => f.rule === 'fixed-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('真实 GHSA 正文形态：只给描述时恰好报四个事实缺失', () => {
+  const descriptionOnly = `# Proxy bypass in the widget loader\n\n### Impact\n\nAn attacker can reach internal hosts through the loader.\n\n### Patches\n\nUsers should upgrade.\n`
+  const result = lintSecurityAdvisory(descriptionOnly)
+  const errors = result.findings.filter(f => f.level === 'error').map(f => f.rule).sort()
+  assert.deepEqual(errors, ['affected-missing', 'fixed-missing', 'id-missing', 'severity-missing'])
+  // 正文里没有披露日期，这一条按 warn 报；缓解与联系渠道默认不查。
+  assert.deepEqual(result.findings.filter(f => f.level === 'warn').map(f => f.rule), ['disclosure-date-missing'])
 })
 
 test('GHSA 编号也被认作编号', () => {

@@ -604,7 +604,7 @@ export const CHECKS = [
     example: {
       command: 'handover-check handover-sample.md',
       fixture: '# 交接单\n\n交接人：张三\n接收人：李四\n2026-11-19\n\n1. 事项一\n2. 事项二\n3. 事项三\n',
-      output: '$ handover-check handover-sample.md\nerror access-unlisted 第0行 没有账号/权限段（认得：## 账号与权限、账号：、Access）——交接单不列账号，等于留下一组没人管的活凭证\nerror signoff-missing 第0行 没有接收人签字/确认（认得：## 签字确认、已确认、Sign-off）——没签字就没有人核对过交接是否完整\nwarn date-unlabelled 第0行 全文有日期 2026-11-19，但没有「交接日期/生效日期」字样\nwarn no-owners 第0行 3 条事项里没有一条写了负责/接手人——接手人只能自己猜从哪开始\nwarn pending-missing 第0行 没有未完成/遗留事项段（认得：## 未完成事项、遗留：、Known issues）——只看已完成的部分，接手人会在第二周撞墙\nfail: 3 items, 2 errors, 3 warnings',
+      "output": "$ handover-check handover-sample.md\nerror access-unlisted 第0行 没有账号/权限段（认得：## 账号与权限、账号：、Access）——交接单不列账号，等于留下一组没人管的活凭证\nerror signoff-missing 第0行 没有接收人签字/确认（认得：## 签字确认、已确认、Sign-off）——没签字就没有人核对过交接是否完整\nwarn date-unlabelled 第0行 全文有日期 2026-11-19，但没有「交接日期/生效日期」字样\nwarn no-owners 第0行 3 条事项里没有一条写了负责/接手人——接手人只能自己猜从哪开始\nwarn pending-missing 第0行 没有未完成/遗留事项段（认得：## 未完成事项、遗留：、Known issues）——只看已完成的部分，接手人会在第二周撞墙\nfail: 3 items, 2 errors, 3 warnings",
       exit: '1',
     },
     note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
@@ -639,7 +639,7 @@ export const CHECKS = [
     example: {
       command: 'expense-claim-check claim-sample.md',
       fixture: '报销人：张三\n报销期间：2026-11-01 至 2026-11-15\n\n- 高铁票 553.50 元\n- 住宿 960.00 元\n\n合计：1600.00 元\n',
-      output: '$ expense-claim-check claim-sample.md\nerror total-mismatch 第0行 明细相加是 1513.5，合计行写的是 1600，差 86.5（容差 0.01）——要么抄错，要么有一行没列出来\nerror approver-missing 第0行 没有审批人（认得：审批人：、批准人：、Approved by）——没有人批过的报销单不该进入付款\nwarn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销\nwarn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批\nfail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings\n',
+      "output": "$ expense-claim-check claim-sample.md\nerror total-mismatch 第0行 明细相加是 1513.5，合计行写的是 1600，差 86.5（容差 0.01）——要么抄错，要么有一行没列出来\nerror approver-missing 第0行 没有审批人（认得：审批人：、批准人：、Approved by）——没有人批过的报销单不该进入付款\nwarn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销\nwarn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批\nfail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings",
       exit: '1',
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
@@ -654,10 +654,10 @@ export const CHECKS = [
     title: "安全公告检查清单",
     description: "安全公告发布前的检查：漏洞编号（CVE/GHSA）、写死的严重程度、受影响版本范围、修复版本、今天升不了级时的缓解办法，加上报告渠道与披露日期。散文里的「严重」不是等级，只有发布页链接的「已升级」不是修复版本。",
     decides: "这份安全公告能否让人判断「我会不会被影响、现在该做什么」",
-    rules: [["title-missing", "第一行没有 `# 标题` → error"], ["id-missing", "没有 CVE / GHSA / 公告编号 → error"], ["severity-missing", "没有写死的严重程度（严重程度：high）→ error；散文里的「严重」不算"], ["affected-missing", "没有受影响版本范围，也没写「无」→ error"], ["fixed-missing", "没有修复版本号 → error；「建议尽快升级」不算"], ["workaround-missing", "没有缓解措施或「暂无可用缓解」→ warn（--require-workaround 时 error）"], ["contact-missing", "没有报告渠道或致谢 → warn"], ["disclosure-date-missing", "没有披露日期 → warn"]],
-    usage: ["npx security-advisory-check advisory.md --json", "npx security-advisory-check advisory.md --require-workaround --warnings-fail"],
-    example: { "command": "security-advisory-check advisory-sample.md", "fixture": "# 备份导出接口存在越权问题\n\n我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。\n", "output": "$ security-advisory-check advisory-sample.md\nerror id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用\nerror severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期\nerror affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本\nerror fixed-missing 第0行 没有修复版本（认得：修复版本：0.1.11、fixed in 2.3.1）——只给发布页链接，读者还得自己找哪个版本修好的\nwarn workaround-missing 第0行 没有缓解措施（认得：缓解措施、临时规避、暂无可用缓解）——今天升不了级的人需要知道现在该做什么，哪怕答案是「没有」\nwarn contact-missing 第0行 没有报告渠道或致谢（认得：security@…、致谢、reported by）——下一个发现同类问题的人不知道往哪报\nwarn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的\nfail: severity unstated, 4 errors, 3 warnings", "exit": "1" },
-    note: "只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。",
+    rules: [["title-missing", "第一行没有 `# 标题` → error"], ["id-missing", "没有 CVE / GHSA / 公告编号 → error"], ["severity-missing", "没有写死的严重程度（严重程度：high）→ error；散文里的「严重」不算"], ["affected-missing", "没有受影响版本范围，也没写「无」→ error"], ["fixed-missing", "既没有修复版本，也没写「暂无可用修复」→ error；「建议尽快升级」不算"], ["workaround-missing", "没有缓解措施或「暂无可用缓解」→ warn，默认不查（--check-workaround 打开）"], ["contact-missing", "没有报告渠道或致谢 → warn，默认不查（--check-contact 打开）"], ["disclosure-date-missing", "没有披露日期 → warn"]],
+    usage: ["npx security-advisory-check advisory.md --json", "npx security-advisory-check advisory.md --check-workaround --check-contact"],
+    example: { "command": "security-advisory-check advisory-sample.md", "fixture": "# 备份导出接口存在越权问题\n\n我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。\n", "output": "$ security-advisory-check advisory-sample.md\nerror id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用\nerror severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期\nerror affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本\nerror fixed-missing 第0行 既没有修复版本，也没写「暂无可用修复」（认得：修复版本：0.1.11、fixed in 2.3.1、暂无可用修复）——读者分不清「没修」和「漏写」\nwarn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的\nfail: severity unstated, 4 errors, 1 warnings", "exit": "1" },
+    note: "实测 20 条真实 GHSA 记录：7 条零发现、13 条只报 fixed-missing（那 20 条都没有 patched_versions，其中 13 条正文也没提修复）。缓解与联系渠道默认不查：真实公告里 18/20 与 15/20 都没有，默认报等于噪音。只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。",
   },
   // 迁移指南检查 / 升级指南检查
   {
