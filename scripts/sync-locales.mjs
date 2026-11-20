@@ -58,6 +58,9 @@ export function publishedPackages(base = root) {
     if (!existsSync(pkgPath)) continue
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
     if (pkg.private) continue
+    // 只有检查包才有 CHECKS 条目；dsh-check-suite 这类 bundle 的 locale 是手写的，
+    // 用推导出的条目集合排除，而不是再写一份名单。
+    if (!byNpm.has(pkg.name)) continue
     out.push({ dir: resolve(dataDir, dir), name: pkg.name, pkg, entry: byNpm.get(pkg.name) })
   }
   return out

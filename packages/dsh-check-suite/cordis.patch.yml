@@ -1,0 +1,60 @@
+# dsh-check-suite: 一次插入全部检查包。每个包自己注入 webServer 并挂载
+# 自己的检查端点；这一层只负责把行铺开，不带任何运行时代码。
+#
+# 行 id 用 check-<slug>，刻意与各包自己 patch 里的 id（<slug>-check）不同，
+# 这样两者同时存在时不会被 Loader 判成重复 id。
+- insert:
+    - id: check-adr
+      name: 'dsh-adr-check'
+    - id: check-agreement
+      name: 'dsh-agreement-check'
+    - id: check-api-doc
+      name: 'dsh-api-doc-check'
+    - id: check-bug-report
+      name: 'dsh-bug-report-check'
+    - id: check-commit-msg
+      name: 'dsh-commit-msg-check'
+    - id: check-dockerfile
+      name: 'dsh-dockerfile-check'
+    - id: check-env-example
+      name: 'dsh-env-example-check'
+    - id: check-expense-claim
+      name: 'dsh-expense-claim-check'
+    - id: check-handover
+      name: 'dsh-handover-check'
+    - id: check-incident-report
+      name: 'dsh-incident-report-check'
+    - id: check-invoice
+      name: 'dsh-invoice-check'
+    - id: check-license
+      name: 'dsh-license-check'
+    - id: check-listing
+      name: 'dsh-listing-check'
+    - id: check-meeting-notes
+      name: 'dsh-meeting-notes-check'
+    - id: check-onboarding
+      name: 'dsh-onboarding-check'
+    - id: check-ops-runbook
+      name: 'dsh-ops-runbook-check'
+    - id: check-pr-description
+      name: 'dsh-pr-description-check'
+    - id: check-release-notes
+      name: 'dsh-release-notes-check'
+    - id: check-resume
+      name: 'dsh-resume-check'
+    - id: check-spec-doc
+      name: 'dsh-spec-doc-check'
+    - id: check-test-report
+      name: 'dsh-test-report-check'
+    - id: check-weekly-report
+      name: 'dsh-weekly-report-check'
+    - id: check-citelint
+      name: 'dsh-citelint'
+    - id: check-hashcheck
+      name: 'dsh-hashcheck'
+    - id: check-numberlint
+      name: 'dsh-numberlint'
+    - id: check-outline-lint
+      name: 'dsh-outline-lint'
+    - id: check-tablelint
+      name: 'dsh-tablelint'

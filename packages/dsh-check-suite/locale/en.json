@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Check suite",
+    "description": "One install for 27 document and delivery checks. Each check mounts its own endpoint and reports findings with line numbers: commit messages, PR descriptions, release notes, ADRs, runbooks, handovers, invoices, expense claims, resumes, specs, test reports, tables, outlines, numbers, citations and deliverable hashes.",
+    "detail": "docs/DETAIL.md"
+  }
+}
