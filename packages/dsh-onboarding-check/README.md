@@ -23,12 +23,12 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 
 ```text
 $ onboarding-check onb-sample.md
-error prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对
 error command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做
-error success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了
+warn prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对
+warn success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了
 warn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项
 warn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做
-fail: 0/0 blocks runnable, 3 errors, 2 warnings
+fail: 0/0 blocks runnable, 1 errors, 4 warnings
 ```
 
 出口码：1。
@@ -41,9 +41,9 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 | rule | level | meaning |
 | --- | --- | --- |
 | `empty` | error | the doc has no content |
-| `prereq-missing` | error | no 前置要求/Prerequisites section — the reader discovers a version mismatch at step 3 |
+| `prereq-missing` | warn (error with `--strict`) | no 前置要求/Prerequisites section — the reader discovers a version mismatch at step 3 |
 | `command-missing` | error | no fenced block containing an install-ish command (`npm`/`pnpm`/`npx`/`pip`/`git clone`/`docker run`/…) — a doc you can only read is not onboarding |
-| `success-missing` | error | no expected-output section — 「你应该看到」, 「## 输出示例」, `## Output`, `You should see` all count; without it the reader cannot tell success from silent failure |
+| `success-missing` | warn (error with `--strict`) | no expected-output section — 「你应该看到」, 「## 输出示例」, `## Output`, `You should see` all count; without it the reader cannot tell success from silent failure |
 | `help-missing` | warn | no 遇到问题 / issue link — when it fails the only option left is giving up |
 | `time-estimate-missing` | warn | no duration anywhere (5 分钟 / under 10 minutes / 半小时) |
 
@@ -84,6 +84,10 @@ The structural rules — prerequisites, expected output, help path — are judge
 This is not fussiness. A README that documents this check shows its output, and that output contains the sentence 「认得：## 前置条件、需要先…」. A rules table that says `no 前置条件 section` is one space away from being a prerequisites line. Before 0.2.0 both counted, so a README with no prerequisites section passed `prereq-missing` by quoting the rule that says it is missing — the check reading its own error message as the reader's prerequisites. Two of the twenty READMEs in this kit were passing that way. They are not passing now.
 
 Command detection still reads the real text, because that one rule is about the code blocks.
+
+## Measured against the ecosystem's own READMEs
+
+37 real plugin READMEs from this ecosystem were run through this check: 2 pass clean. More useful than that number is which rules fire — `help-missing` 27/37, `time-estimate-missing` 24/37, `prereq-missing` 23/37, `success-missing` 22/37, and `command-missing` only 2/37. That distribution set the levels: an error means "a reader cannot follow this", so only `command-missing` stays an error — a README with no pasteable command cannot be followed. The other two, absent from most healthy READMEs, are warnings, and `--strict` restores them as errors for projects that want the higher bar.
 
 ## Honest scope
 

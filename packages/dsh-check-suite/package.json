@@ -53,7 +53,7 @@
     "dsh-listing-check": "^0.2.1",
     "dsh-meeting-notes-check": "^0.1.2",
     "dsh-migration-guide-check": "^0.1.2",
-    "dsh-onboarding-check": "^0.3.1",
+    "dsh-onboarding-check": "^0.3.2",
     "dsh-ops-runbook-check": "^0.2.2",
     "dsh-pr-description-check": "^0.2.1",
     "dsh-privacy-notice-check": "^0.1.2",

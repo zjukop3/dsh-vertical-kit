@@ -53,6 +53,7 @@ export function codeBlocks(text) {
 }
 
 export function lintOnboarding(text, rules = {}) {
+  const strict = rules.strict ?? false
   const requireTime = rules.requireTime ?? true
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
@@ -67,7 +68,12 @@ export function lintOnboarding(text, rules = {}) {
 
   // Prerequisites: what must already be installed.
   const hasPrereq = prose.some(line => PREREQ_HEADING.test(`\n${line}`)) || prose.some(line => PREREQ_LINE.test(line))
-  if (!hasPrereq) add('error', 'prereq-missing', 0, '没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对')
+  // 实测 37 份真实生态 README：prereq-missing 23/37（62%）。这些文档本身能用——
+  // error 只该留给「照着做不了」的那一类（没有可粘贴命令）。所以默认 warn，
+  // --strict 时才升级。success-missing 同理（22/37）。
+  if (!hasPrereq) {
+    add(strict ? 'error' : 'warn', 'prereq-missing', 0, '没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对')
+  }
 
   // A pasteable command: the thing onboarding is actually for.
   const blocks = codeBlocks(text)
@@ -78,7 +84,9 @@ export function lintOnboarding(text, rules = {}) {
 
   // Success: what the reader should see when it worked.
   const hasSuccess = prose.some(line => SUCCESS_HEADING.test(`\n${line}`)) || prose.some(line => SUCCESS_LINE.test(line))
-  if (!hasSuccess) add('error', 'success-missing', 0, '没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了')
+  if (!hasSuccess) {
+    add(strict ? 'error' : 'warn', 'success-missing', 0, '没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了')
+  }
 
   // Help: where to go when it fails.
   if (!prose.some(line => HELP_HEADING.test(`\n${line}`)) && !HELP_LINE.test(proseOnly(text))) {

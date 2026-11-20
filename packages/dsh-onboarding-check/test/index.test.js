@@ -114,7 +114,7 @@ ok: 0 errors
 
 跑通约 2 分钟。卡住在仓库开 issue。
 `
-  const result = lintOnboarding(doc)
+  const result = lintOnboarding(doc, { strict: true })
   assert.ok(result.findings.some(f => f.rule === 'prereq-missing' && f.level === 'error'), 'the fence must not satisfy it')
 })
 
@@ -241,4 +241,23 @@ ok
 约 2 分钟。出问题在仓库开 issue。
 `
   assert.ok(lintOnboarding(doc).findings.some(f => f.rule === 'command-missing'))
+})
+
+// 实测 37 份真实生态 README：prereq-missing 23/37、success-missing 22/37，而
+// command-missing 只有 2/37。error 只该留给「照着做不了」的那一类——没有可粘贴命令。
+// 前两条默认降级为 warn，--strict 时才恢复为 error。
+test('prereq/success 默认是 warn，strict 才是 error', () => {
+  const doc = '# x\n\n```bash\nnpm test\n```\n\n跑通约 2 分钟。卡住开 issue。\n'
+  const relaxed = lintOnboarding(doc)
+  assert.equal(relaxed.findings.find(f => f.rule === 'prereq-missing').level, 'warn')
+  assert.equal(relaxed.findings.find(f => f.rule === 'success-missing').level, 'warn')
+  const strict = lintOnboarding(doc, { strict: true })
+  assert.equal(strict.findings.find(f => f.rule === 'prereq-missing').level, 'error')
+  assert.equal(strict.findings.find(f => f.rule === 'success-missing').level, 'error')
+})
+
+test('没有可粘贴命令仍然是 error：这条在真实语料里只占 2/37', () => {
+  const doc = '# x\n\n## 前置要求\n\n装 DSH。\n\n## 你应该看到\n\nok。\n\n跑通约 2 分钟。开 issue 提问。\n'
+  const result = lintOnboarding(doc)
+  assert.ok(result.findings.some(f => f.rule === 'command-missing' && f.level === 'error'))
 })

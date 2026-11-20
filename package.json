@@ -13,7 +13,8 @@
     "check": "npm run audit:links && npm run audit:packages && npm run audit:rules && node scripts/sync-example-output.mjs --check && node scripts/sync-locales.mjs --check && node scripts/sync-suite.mjs --check",
     "audit:packages": "node scripts/audit-packages.mjs",
     "audit:rules": "node scripts/audit-rules.mjs",
-    "push:verified": "node scripts/push-verified.mjs"
+    "push:verified": "node scripts/push-verified.mjs",
+    "audit:versions": "node scripts/audit-versions.mjs"
   },
   "license": "MIT",
   "author": "zjukop3"

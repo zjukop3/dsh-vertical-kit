@@ -872,7 +872,7 @@
         },
         {
           "rule": "prereq-missing",
-          "meaning": "没有前置要求段 → error"
+          "meaning": "没有前置要求段 → warn（--strict 时 error）——实测 37 份真实 README 里 23 份没有"
         },
         {
           "rule": "command-missing",
@@ -880,7 +880,7 @@
         },
         {
           "rule": "success-missing",
-          "meaning": "没有「你应该看到」段 → error（分不清成功与静默失败）"
+          "meaning": "没有「你应该看到」段 → warn（--strict 时 error）——22/37 的真实 README 没有"
         },
         {
           "rule": "help-missing",
