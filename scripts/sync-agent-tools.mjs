@@ -44,14 +44,14 @@ async function members() {
   for (const check of CHECKS) {
     const dir = resolve(root, 'packages', check.npm)
     const manifest = JSON.parse(await readFile(resolve(dir, 'package.json'), 'utf8'))
-    out.push({ slug: check.slug, pkg: manifest.name, version: manifest.version, exportName: await lintExportOf(dir), genre: check.noun ?? check.title })
+    out.push({ slug: check.slug, pkg: manifest.name, version: manifest.version, exportName: await lintExportOf(dir), local: `../../${check.npm}/src/index.js`, genre: check.noun ?? check.title })
   }
   for (const entry of VERIFY_KIT) {
     const dir = resolve(SIBLING, entry.pkg)
     const manifest = JSON.parse(await readFile(resolve(dir, 'package.json'), 'utf8'))
     const mod = await import(resolve(dir, 'src', 'index.js'))
     if (typeof mod[entry.exportName] !== 'function') throw new Error(`${entry.pkg}: 没有导出 ${entry.exportName}`)
-    out.push({ slug: entry.slug, pkg: manifest.name, version: manifest.version, exportName: entry.exportName, genre: entry.slug })
+    out.push({ slug: entry.slug, pkg: manifest.name, version: manifest.version, exportName: entry.exportName, local: `../../../dsh-verify-kit/packages/${entry.pkg}/src/index.js`, genre: entry.slug })
   }
   return out.sort((a, b) => a.slug.localeCompare(b.slug))
 }
@@ -60,9 +60,12 @@ export function generatedSource(list) {
   const header = `// 由 scripts/sync-agent-tools.mjs 生成，勿手改。
 // ${list.length} 个检查：本仓库 ${list.length - VERIFY_KIT.length} 个 + verify-kit ${VERIFY_KIT.length} 个。
 // 手改的话，新加一个检查包时这条工具会静默漏掉它——而报错看起来像「没有这个检查」。
+// local 是开发仓里的回落路径：安装后按包名解析（用户那边全靠它），在没有装齐依赖的
+// 工作区里按相对路径读到隔壁包的源码。少了这个回落，工作区测试实际测的是 node_modules
+// 里已发布的旧副本——绿着，但测的不是这份代码。
 export const CHECKS = [`
   const rows = list
-    .map(entry => `  { slug: '${entry.slug}', pkg: '${entry.pkg}', exportName: '${entry.exportName}', genre: ${JSON.stringify(entry.genre)} },`)
+    .map(entry => `  { slug: '${entry.slug}', pkg: '${entry.pkg}', exportName: '${entry.exportName}', local: ${JSON.stringify(entry.local)}, genre: ${JSON.stringify(entry.genre)} },`)
     .join('\n')
   return `${header}\n${rows}\n]\n\nexport const SLUGS = CHECKS.map(entry => entry.slug)\n\nexport const BY_SLUG = new Map(CHECKS.map(entry => [entry.slug, entry]))\n`
 }

@@ -16,7 +16,14 @@ test('every embedded scenario example matches a fresh CLI run', async t => {
   for (const check of CHECKS) {
     assert.ok(check.example, `${check.slug} has an example`)
     const cli = resolve(root, 'packages', check.npm, 'bin', 'cli.js')
-    const target = join(directory, `${check.slug}-input${check.slug === 'listing-check' ? '.csv' : check.slug === 'invoice-check' ? '.txt' : '.md'}`)
+    // 文件名必须与示例里那条命令写的一致：有些检查看文件扩展名（plugin-entry-check 只对
+    // .yml 说文件名的事），用自己拼的 `<slug>-input.md` 会得到与 sync-example-output 不同的
+    // 结果——两条闸各自绿着，而它们测的不是同一件事。
+    const fromCommand = (check.example.command.match(/(\S+\.(?:md|txt|json|yml|csv))/g) || []).pop()
+    const fileName = fromCommand
+      ? fromCommand.split('/').pop()
+      : `${check.slug}-input${check.slug === 'listing-check' ? '.csv' : check.slug === 'invoice-check' ? '.txt' : '.md'}`
+    const target = join(directory, fileName)
     await writeFile(target, check.example.fixture.replace(/\\n/g, '\n'))
     const run = spawnSync(process.execPath, [cli, target], { encoding: 'utf8' })
     const actual = `${run.stdout}${run.stderr}`.trim().split('\n').map(line => line.trim())

@@ -35,7 +35,15 @@ let cache = new Map()
 async function linterOf(entry) {
   const key = entry.pkg
   if (!cache.has(key)) {
-    const mod = await import(entry.pkg)
+    let mod
+    try {
+      mod = await import(entry.pkg)
+    } catch (error) {
+      // 开发仓里没有把这些包装成依赖：按生成时记下的相对路径读隔壁包的源码。
+      // 没有这条回落，工作区测试会悄悄测到 node_modules 里已发布的旧副本。
+      if (error?.code !== 'ERR_MODULE_NOT_FOUND' || !entry.local) throw error
+      mod = await import(new URL(entry.local, import.meta.url))
+    }
     cache.set(key, mod[entry.exportName])
   }
   return cache.get(key)

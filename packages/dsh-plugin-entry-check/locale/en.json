@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Plugin catalog entry check",
+    "description": "Check an awesome-dsh-plugin catalog entry before submitting it: filename, name/url agreement, subpackage path, the 23 categories, a bilingual description, the icon, and the aggregation-bundle hint. Sixteen rules, no network."
+  }
+}

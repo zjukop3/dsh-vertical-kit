@@ -1282,6 +1282,88 @@
       "page": "https://zjukop3.github.io/dsh-vertical-kit/perf-report-check/",
       "route": "POST /perf-report-check/api",
       "scope": "实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。"
+    },
+    {
+      "name": "dsh-plugin-entry-check",
+      "cli": "plugin-entry-check",
+      "slug": "plugin-entry-check",
+      "noun": "目录条目检查 / 收录条目检查",
+      "title": "插件目录条目检查清单",
+      "decides": "这份目录条目会不会被目录的 CI 打回，以及打回在哪一行",
+      "description": "提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、中英双语描述、图标，以及「一次装一组」的聚合包提示。十六条规则，不联网。",
+      "rules": [
+        {
+          "rule": "empty",
+          "meaning": "条目是空的 → error"
+        },
+        {
+          "rule": "yaml-shape",
+          "meaning": "列表、块标量、制表符、深于一层的嵌套 → error（明确不支持，不猜）"
+        },
+        {
+          "rule": "duplicate-key",
+          "meaning": "同一个键写两次 → error（YAML 静默取后一个）"
+        },
+        {
+          "rule": "unknown-key",
+          "meaning": "url/name/category/description/icon 之外的键 → error"
+        },
+        {
+          "rule": "missing-key",
+          "meaning": "url/name/category/description 缺项 → error"
+        },
+        {
+          "rule": "url-shape",
+          "meaning": "不是 https://github.com/<owner>/<repo>[/tree/<ref>/<path>]，或带结尾斜杠/.git/blob → error"
+        },
+        {
+          "rule": "name-shape",
+          "meaning": "name 必须是 owner/repo[#sub]，且与 url 指向同一个仓库 → error"
+        },
+        {
+          "rule": "sub-path",
+          "meaning": "#sub 必须等于 url 路径的最后一段，且两者互为前提 → error"
+        },
+        {
+          "rule": "category",
+          "meaning": "不在上游那 23 个取值里 → error"
+        },
+        {
+          "rule": "description-keys",
+          "meaning": "en 与 zh 缺一 → error"
+        },
+        {
+          "rule": "description-placeholder",
+          "meaning": "描述还是 TODO / lorem → error"
+        },
+        {
+          "rule": "description-thin",
+          "meaning": "描述短到说不清它做什么 → warn"
+        },
+        {
+          "rule": "description-parity",
+          "meaning": "中文那半明显短于英文（按汉字数比词数）→ warn"
+        },
+        {
+          "rule": "icon-shape",
+          "meaning": "不是绝对 https 地址或不是图片扩展名 → warn"
+        },
+        {
+          "rule": "bundle-hint",
+          "meaning": "描述自己说「一次装一组」→ warn（上游第 7 条不收聚合包）"
+        },
+        {
+          "rule": "filename",
+          "meaning": "文件名与 url 推出的 owner__repo--path.yml 不一致 → warn"
+        }
+      ],
+      "usage": [
+        "npx dsh-plugin-entry-check data/plugins/owner__repo.yml",
+        "npx dsh-plugin-entry-check - < entry.yml"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/plugin-entry-check/",
+      "route": "POST /plugin-entry-check/api",
+      "scope": "语料是五份真实条目：四份已合并进 awesome-dsh-plugin，一份是我自己在评审中的 PR #18109。它们必须零发现——第一版在它们身上报出四种误报（嵌套 description 被读成缺失、#sub 拿整条路径去比、正文里合法的 <name> 被当成占位符、汉字数比英文字符数判译文像占位），四条同一个毛病：量的是我以为的写法。另有两处按上游正文纠正：分类是 23 个不是 24 个；#sub 写的是包目录名，不是路径。它读不到仓库，所以 dsh.bundle 声明、仓库年龄、代码是否真的有内容，仍由评审判定；第 7 条也只能给提示。"
     }
   ]
 }

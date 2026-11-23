@@ -1,9 +1,9 @@
 # dsh-check-suite
 
-One install for 32 document and delivery checks. Each check mounts its own endpoint
+One install for 33 document and delivery checks. Each check mounts its own endpoint
 under `/<check>/api` and reports findings with line numbers.
 
-Installing 32 packages one at a time is 32 install commands and 32 confirmations.
+Installing 33 packages one at a time is 33 install commands and 33 confirmations.
 This bundle inserts all of them in a single row set, so a profile can turn the whole
 set on or off at once.
 
@@ -19,9 +19,10 @@ set on or off at once.
 | Reports | `dsh-weekly-report-check`, `dsh-test-report-check`, `dsh-bug-report-check`, `dsh-perf-report-check` |
 | Code and config | `dsh-dockerfile-check`, `dsh-env-example-check`, `dsh-api-doc-check`, `dsh-license-check`, `dsh-onboarding-check` |
 | Governance and disclosure | `dsh-security-advisory-check`, `dsh-privacy-notice-check`, `dsh-contributing-check` |
+| Release engineering | `dsh-plugin-entry-check` |
 | Verification kit | `dsh-tablelint`, `dsh-outline-lint`, `dsh-numberlint`, `dsh-citelint`, `dsh-hashcheck` |
 
-32 in total. Each row id is `check-<slug>`, deliberately different from the id in the
+33 in total. Each row id is `check-<slug>`, deliberately different from the id in the
 package's own patch (`<slug>-check`), so installing a single check alongside the suite
 does not produce a duplicate Loader id.
 
@@ -45,7 +46,7 @@ dsh plugin --profile <profile> add dsh-check-suite
 leaving it out returns `error: --profile <name> is required`. Use the profile you boot,
 for example `desktop` for the Desktop app.
 
-Then confirm 32 rows landed before assuming they did:
+Then confirm 33 rows landed before assuming they did:
 
 ```
 dsh plugin --profile <profile> why dsh-check-suite
@@ -71,7 +72,7 @@ Open an issue at <https://github.com/zjukop3/dsh-vertical-kit/issues> with the c
 name, the request you sent and the response you got. A finding you believe is wrong is
 a bug report about a rule, and each package's README names its rule ids.
 
-Removing the bundle removes the 32 rows; the packages stay in the profile until they
+Removing the bundle removes the 33 rows; the packages stay in the profile until they
 are uninstalled.
 
 ## Verify
