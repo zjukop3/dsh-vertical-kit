@@ -1,6 +1,6 @@
 {
   "name": "dsh-document-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "One agent tool, 31 document checks: the model verifies a document it produced against a genre's structural rules before delivering it, and gets findings with rule ids and line numbers.",
   "type": "module",
   "main": "./src/index.js",

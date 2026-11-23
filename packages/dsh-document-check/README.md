@@ -50,8 +50,15 @@ Values of the `check` parameter: `adr-check`, `agreement-check`, `api-doc-check`
 `security-advisory-check`, `spec-doc-check`, `tablelint`, `test-report-check`,
 `weekly-report-check`.
 
-`adr`, `ADR-check` and `dsh-adr-check` all resolve to `adr-check`: the caller should
-not have to remember which spelling this project prefers.
+The CLI and `lintDocument()` are tolerant: `adr`, `ADR-check` and `dsh-adr-check` all
+resolve to `adr-check`, because a human typing a command has no enum in front of them.
+
+Whether the **tool** also tolerates a short form depends on the host: `defineTool` from
+`@deepseek-ai/dsh-tools` 0.1.0-rc.6 validates arguments against the enum before
+`execute` runs, so `document_check({check: 'adr'})` is refused there with the whole
+list in the error; 0.2.2-rc.5 does not validate at that layer, so the call falls
+through to the tolerant resolver. Measured 2026-11-23 on the Desktop host; the enum
+still lists only exact values, which is what a model should copy from.
 
 ## Use it from the CLI
 

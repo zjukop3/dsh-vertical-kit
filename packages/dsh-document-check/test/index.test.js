@@ -51,6 +51,19 @@ test('slug 唯一，且每个都是包名去掉 dsh- 与 -check 之后的形状'
   }
 })
 
+// 「枚举之外的值会不会被拒」取决于宿主：`defineTool` 在 @deepseek-ai/dsh-tools
+// 0.1.0-rc.6（Desktop 提供的那个）里会在 execute 前做 schema 校验，在 0.2.2-rc.5（本仓库
+// devDependency）里不会。所以这条测试只断言我们自己保证的部分：lintDocument 宽容地把
+// adr 归一到 adr-check，而 schema 里的 enum 就是那 31 个精确值。
+// 第一版 README 写成「工具也宽容」，在装好的 Desktop 上是错的——这个差别是实测发现的。
+test('宽容发生在 lintDocument 这一层；schema 枚举仍只列精确值', async () => {
+  const tool = defineDocumentCheckTool()
+  assert.ok(tool.parameters.properties.check.enum.includes('adr-check'))
+  assert.ok(!tool.parameters.properties.check.enum.includes('adr'), '枚举里不该有短写：模型照抄枚举值')
+  const value = await lintDocument('adr', '# ADR-1\n\n## 背景\n\n慢。\n')
+  assert.equal(value.check, 'adr-check')
+})
+
 test('检查名的拼法宽容：adr / adr-check / ADR-CHECK / dsh-adr-check 都落到同一个', () => {
   assert.equal(resolveSlug('adr'), 'adr-check')
   assert.equal(resolveSlug('adr-check'), 'adr-check')
