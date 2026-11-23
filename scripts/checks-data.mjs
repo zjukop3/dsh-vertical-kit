@@ -33,6 +33,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'invoice-check',
@@ -62,6 +63,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'listing-check',
@@ -91,6 +93,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'meeting-notes-check',
@@ -120,6 +123,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'resume-check',
@@ -149,6 +153,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'release-notes-check',
@@ -176,6 +181,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。',
+    corpus: { layer: 'strangers', source: '其他插件仓库的 CHANGELOG', count: 11, first: '折叠的 <details> 历史附录被当成主时间线；order 报的行号系统性偏上一行' },
   },
   {
     slug: 'weekly-report-check',
@@ -202,6 +208,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'bug-report-check',
@@ -230,6 +237,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验缺陷严重性：它验证报告说了在哪、怎么复现、差在哪；bug 是否真实存在，靠复现。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'api-doc-check',
@@ -256,6 +264,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。',
+    corpus: { layer: 'own', source: '本项目 host 路由的接口参考', count: 1, first: '文档写对了，但探针发现六处形状写错——那是文档的错，不是检查的错' },
   },
   {
     slug: 'test-report-check',
@@ -283,6 +292,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'commit-msg-check',
@@ -313,6 +323,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '两类规则不是一回事。「与流派无关」的四条——主题超长、句尾句号、正文前缺空行、! 没有配 trailer——任何仓库、任何语言都是同样地错，所以是 error。「带流派」的一条——类型前缀是 Conventional Commits 的约定，用 `Verb 名词` 写的仓库和中文提交信息没有英文类型词可用，对它们报错不是在挑错，是把自己的规矩套在别人头上；这类默认 warn，要强制传 --require-type。只验信息形状，不验提交内容：diff 是否做了主题说的事，靠评审。',
+    corpus: { layer: 'own', source: '三个仓库的提交历史', count: 120, first: '83% 报 type-missing——那是团队约定不是缺陷；56% 主题超 72 字，那是真问题' },
   },
   {
     slug: 'dockerfile-check',
@@ -343,6 +354,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验文件文本，不验构建出的镜像：它看不见基础镜像里有什么、最终 stage 是不是你要的那个、镜像里到底有没有那个 USER。它验证文件写下了这些决定；镜像行为对不对，靠扫描和实跑。',
+    corpus: { layer: 'strangers', source: '第三方 Dockerfile', count: 2, first: '一份以 root 收尾（真缺陷），一份干净——检查不是见谁咬谁' },
   },
   {
     slug: 'env-example-check',
@@ -371,6 +383,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '认的占位符形态：空值、<尖括号>、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。',
+    corpus: { layer: 'strangers', source: '第三方 .env.example', count: 1, first: '把文档里的 https://remote.example.edu/... 判成提交了真值' },
   },
   {
     slug: 'license-check',
@@ -402,6 +415,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '认得 12 种许可证正文（MIT/Apache-2.0/BSD-2/BSD-3/ISC/GPL-2.0/GPL-3.0/LGPL-3.0/AGPL-3.0/MPL-2.0/Unlicense/CC0-1.0），按正文短语匹配而非标题——所以「标题 MIT 正文 GPL」会被抓。只验文件形态与身份，不验法律效力：许可是否合适、依赖是否兼容、版权人是否正确的法律主体，都不是机器能担保的部分。',
+    corpus: { layer: 'strangers', source: '其他插件仓库的 LICENSE', count: 21, first: '把 Apache-2.0 定义段的 "the copyright owner" 当成版权声明行，4 份正确文件被报错' },
   },
   {
     slug: 'incident-report-check',
@@ -430,6 +444,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验结构，不验根因是否找对：报告可以写一个听起来合理但错误的根因，这个工具分辨不出。它验证文档给出了时间线、影响、原因与有人负责的后续——读者评估分析前需要的四件事。责任归属是人类实践，代码不编码它。',
+    corpus: { layer: 'own', source: '本项目的复盘', count: 1, first: '无' },
   },
   {
     slug: 'ops-runbook-check',
@@ -458,6 +473,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。',
+    corpus: { layer: 'own', source: '本项目的 runbook', count: 4, first: '两份用 ## 3. 编号标题的 runbook 被报「完全没有编号步骤」' },
   },
   {
     slug: 'pr-description-check',
@@ -487,6 +503,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。',
+    corpus: { layer: 'own', source: '已合并的目录 PR 正文', count: 19, first: '19/19 报缺 what/why/test，其实三个问题都用散文答了' },
   },
   {
     slug: 'spec-doc-check',
@@ -516,6 +533,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '愿望词表：良好/优秀/合理/友好/快速/流畅/尽量/适当/完善/稳定/高效/简洁（含英文同级词）。只要同一条里出现数字、阈值或可观测对象（状态码、字段、命令、百分比）就放行——规则只在「只剩下愿望」时才响。只验文档形状，不验方案是否正确：标准是不是错的标准、问题陈述是不是事后合理化、范围外是不是回避了难点，这些评审才能说。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'adr-check',
@@ -547,6 +565,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '状态取值：proposed/accepted/rejected/deprecated/superseded（含中文同级词）。代价词：代价/缺点/劣势/风险/成本/trade-off/downside；好处词：好处/优点/优势/收益/benefit/upside。只验记录形状，不验决策对不对：背景是否漏了大家都知道的约束、备选是不是稻草人、代价是否被压低——这些只有后果本身会在后来揭晓。',
+    corpus: { layer: 'own', source: '本项目的决策记录', count: 5, first: '只看项目符号，把写在段落行上的「好处：」「代价：」判成未标注' },
   },
   {
     slug: 'onboarding-check',
@@ -575,6 +594,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',
+    corpus: { layer: 'strangers', source: '其他插件仓库的 README', count: 39, first: '不认识 `dsh plugin add`（生态里 216 个文件用它）；把所有代码块都遮蔽，连作者写在注释里的成功提示也遮蔽了' },
   },
   {
     slug: 'handover-check',
@@ -608,6 +628,7 @@ export const CHECKS = [
       exit: '1',
     },
     note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
     slug: 'expense-claim-check',
@@ -643,6 +664,7 @@ export const CHECKS = [
       exit: '1',
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
+    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
 
   // 安全公告检查 / 漏洞公告检查
@@ -658,6 +680,7 @@ export const CHECKS = [
     usage: ["npx dsh-security-advisory-check advisory.md --json", "npx dsh-security-advisory-check advisory.md --check-workaround --check-contact"],
     example: { "command": "security-advisory-check advisory-sample.md", "fixture": "# 备份导出接口存在越权问题\n\n我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。\n", "output": "$ security-advisory-check advisory-sample.md\nerror id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用\nerror severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期\nerror affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本\nerror fixed-missing 第0行 既没有修复版本，也没写「暂无可用修复」（认得：修复版本：0.1.11、fixed in 2.3.1、暂无可用修复）——读者分不清「没修」和「漏写」\nwarn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的\nfail: severity unstated, 4 errors, 1 warnings", "exit": "1" },
     note: "实测 20 条真实 GHSA 记录：7 条零发现、13 条只报 fixed-missing（那 20 条都没有 patched_versions，其中 13 条正文也没提修复）。缓解与联系渠道默认不查：真实公告里 18/20 与 15/20 都没有，默认报等于噪音。只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。",
+    corpus: { layer: 'strangers', source: '真实 GHSA 公告', count: 20, first: '13 条只报 fixed-missing——那 20 条都没有 patched_versions，多数正文也没提修复' },
   },
   // 迁移指南检查 / 升级指南检查
   {
@@ -673,6 +696,7 @@ export const CHECKS = [
       "npx dsh-migration-guide-check guide.md --check-recovery"],
     example: { "command": "migration-guide-check migration-sample.md", "fixture": "# 升级说明\n\n我们改了参数名，升级后注意一下。\n", "output": "$ migration-guide-check migration-sample.md\nerror from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南\nerror breaking-missing 第0行 没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单\nwarn steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——有步骤的指南能照着做，没有的只能照着读\nfail: span unstated, 0 steps, 2 errors, 1 warnings", "exit": "1" },
     note: "实测两份真实指南（Vite docs/guide/migration.md 与 TanStack Query 的 Migrating to v5）：0 error、1 warn（steps-missing）。恢复类三问（验证/回滚/备份）只对流程型指南（有编号步骤）查——不加这个条件，三条在 100% 的真实指南上都会开火。只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。",
+    corpus: { layer: 'strangers', source: '真实迁移指南（Vite、TanStack Query）', count: 2, first: '恢复类三问在 100% 的真实指南上开火；改成只对流程型指南查' },
   },
   // 隐私声明检查 / 隐私政策检查
   {
@@ -687,6 +711,7 @@ export const CHECKS = [
     usage: ["npx dsh-privacy-notice-check notice.md --json", "npx dsh-privacy-notice-check notice.md --require-rights --warnings-fail"],
     example: { "command": "privacy-notice-check privacy-sample.md", "fixture": "# 隐私声明\n\n我们很重视你的隐私，会尽力保护你的信息。\n", "output": "$ privacy-notice-check privacy-sample.md\nerror data-missing 第0行 没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的\nerror purpose-missing 第0行 没有说明用途（认得：## 使用目的、用途：…、## How we use it）——「为了提供服务」和「什么都能干」是两种声明\nerror retention-missing 第0行 没有保留期限（认得：## 保留期限、保留时间：30 天，或不保留）——没有期限，「注销账号」就不等于数据会消失\nerror sharing-missing 第0行 没有第三方共享说明（认得：## 共享、## 第三方、共享：…）——散文里提到「第三方」不算声明，读者指不出哪一句是承诺\nerror contact-missing 第0行 没有联系方式（认得：## 联系我们、联系邮箱：…、privacy@example.com）——没有渠道，行使权利就是空话\nwarn effective-date-missing 第0行 没有生效或更新日期（认得：生效日期：2026-11-01、last updated）——不知道版本的声明，无法判断哪一版约束我\nwarn rights-missing 第0行 没有用户权利说明（认得：## 你的权利、你有权访问/删除…、Your rights）——只说收集不说权利，读者只能猜自己能要求什么\nfail: 5 errors, 2 warnings", "exit": "1" },
     note: "实测 GitHub 自己的两份政策（General Privacy Statement、Candidate Privacy Notice）零发现；cookies 政策报 5 条，那是正确的——它不是隐私声明。frontmatter 的 title: 也算标题。只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。",
+    corpus: { layer: 'strangers', source: 'GitHub 自己的隐私政策', count: 3, first: 'frontmatter 的 title: 之前不算标题' },
   },
   // 贡献指南检查 / CONTRIBUTING 检查
   {
@@ -701,6 +726,7 @@ export const CHECKS = [
     usage: ["npx dsh-contributing-check CONTRIBUTING.md --json", "npx dsh-contributing-check CONTRIBUTING.md --strict --warnings-fail"],
     example: { "command": "contributing-check contributing-sample.md", "fixture": "# Contributing\n\nThanks for your interest. Please be nice.\n", "output": "$ contributing-check contributing-sample.md\nerror setup-missing 第0行 没有开发环境段（认得：## 开发环境、## Getting started、git clone / npm ci 这类命令）——新人卡在第一步就走了\nerror test-missing 第0行 没有测试段（认得：## 测试、## Running tests）——不知道该跑什么测试的人，交上来的 PR 是红的\nerror pr-missing 第0行 没有提交 PR 的说明（认得：## Pull request、## 贡献流程、## Submitting changes）——不知道你期待什么，第一次 PR 就会踩到你的隐性规矩\nwarn style-missing 第0行 没有代码风格段（认得：## 代码风格、## Lint，或明说提交时自动格式化）——风格要求藏在评审里，等于每次评审重讲一遍\nwarn questions-missing 第0行 没有「到哪问」的说明（认得：## 提问、Discord、mailing list、good first issue）——卡住的人只有放弃和硬猜两条路\nwarn commit-missing 第0行 没有提交信息约定（认得：Conventional Commits、Signed-off-by、DCO）——评审时才发现格式不对，返工的是对方\nwarn license-missing 第0行 没有许可/CLA/DCO 说明（认得：CLA、DCO、License）——贡献者不知道自己交出去的代码按什么授权\nfail: 0 commands, 3 errors, 4 warnings", "exit": "1" },
     note: "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。",
+    corpus: { layer: 'strangers', source: 'vite / k8s / django / rust / node 的 CONTRIBUTING', count: 5, first: '四份「指路型」指南被逐节判——改成只给一条 pointer-guide 并点出目标' },
   },
   // 性能报告检查 / 压测与基准报告
   {
@@ -715,6 +741,7 @@ export const CHECKS = [
     usage: ["npx dsh-perf-report-check report.md --json", "npx dsh-perf-report-check report.md --strict --warnings-fail"],
     example: { "command": "perf-report-check perf-sample.md", "fixture": "# 首页接口压测\n\n## 测试环境\n\n机器：8 核 16G\n\n## 结果\n\n20 并发下很慢，平均 4.9 秒。\n", "output": "$ perf-report-check perf-sample.md\nerror latency-missing 第0行 没有可比较的度量（认得：p50 340ms、p95、中位数 191ms、33 906 files/s、7-run medians）——单次跑出来的一个数字说明不了分布\nwarn baseline-missing 第0行 没有基线对照（认得：基线、优化前、对照、baseline）——没有对照的数字，读者不知道这是好还是坏\nwarn repro-missing 第0行 没有复现方式（认得：## 复现、locust、k6、wrk 命令）——别人无法验证这组数字\nfail: 0 percentiles, 1 errors, 2 warnings", "exit": "1" },
     note: "实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。",
+    corpus: { layer: 'strangers', source: '公开性能与压测报告', count: 6, first: '标题不在第一行、结论段叫 Findings、median of 3 reps 都算度量' },
   },
   {
     slug: 'plugin-entry-check',
@@ -753,6 +780,7 @@ export const CHECKS = [
       exit: '1',
     },
     note: "语料是五份真实条目：四份已合并进 awesome-dsh-plugin，一份是我自己在评审中的 PR #18109。它们必须零发现——第一版在它们身上报出四种误报（嵌套 description 被读成缺失、#sub 拿整条路径去比、正文里合法的 <name> 被当成占位符、汉字数比英文字符数判译文像占位），四条同一个毛病：量的是我以为的写法。另有两处按上游正文纠正：分类是 23 个不是 24 个；#sub 写的是包目录名，不是路径。它读不到仓库，所以 dsh.bundle 声明、仓库年龄、代码是否真的有内容，仍由评审判定；第 7 条也只能给提示。",
+    corpus: { layer: 'own', source: '真实目录条目（四份已合并 + 一份在评审）', count: 5, first: '四种误报：嵌套 description 被判缺失、#sub 拿整条路径比、正文 <name> 被判占位、汉字比英文字符' },
   },
 ]
 

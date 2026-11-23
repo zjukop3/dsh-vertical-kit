@@ -67,35 +67,38 @@ function home() {
 // their head, and guessing which one applies is how a tool gets ignored. One
 // table, generated from the same CHECKS data the individual pages use, so it
 // cannot drift from them.
-const CORPUS_BODY = `<p>这里的 22 个检查，判定规则是不是「验证过」，取决于它在多少份<strong>真实文档</strong>上跑过。自己造的 fixture 只能证明&quot;我想到的情况它判对了&quot;，证明不了&quot;别人写的东西它不会误报&quot;——因为在我编的 fixture 里，「正确」和「被检查器接受」是同一件事。</p>
-<p>分三层：跑过<strong>陌生人写的</strong>文件、跑过<strong>自家真实产物</strong>、只有自造样例。</p>
-<h2>第一层：跑过别人写的文件（5 个检查）</h2>
-<table><tr><th>检查</th><th>语料</th><th>份数</th><th>第一次跑出的问题</th></tr><tr><td>onboarding-check</td><td>其他插件仓库的 README</td><td>39</td><td>不认识 <code>dsh plugin add</code>（生态里 216 个文件用它）；把所有代码块都遮蔽，连作者写在 shell 注释里的成功提示也遮蔽了</td></tr><tr><td>license-check</td><td>其他插件仓库的 LICENSE</td><td>21</td><td>把 Apache-2.0 定义段的 <code>&quot;the copyright owner&quot;</code> 当成版权声明行，4 份正确文件被报错</td></tr><tr><td>release-notes-check</td><td>其他插件仓库的 CHANGELOG</td><td>11</td><td>折叠的 <code>&lt;details&gt;</code> 历史附录被当成主时间线；<code>order</code> 报的行号系统性偏上一行</td></tr><tr><td>dockerfile-check</td><td>第三方 Dockerfile</td><td>2</td><td>一份以 root 收尾（真缺陷），一份干净——检查不是见谁咬谁</td></tr><tr><td>env-example-check</td><td>第三方 .env.example</td><td>1</td><td>把文档里的 <code>https://remote.example.edu/...</code> 判成提交了真值</td></tr></table>
-<p><strong>剩下仍报错的两份是真发现，不是误报</strong>：一份 LICENSE 的正文不是任何标准许可证；另一份<strong>标题写 MIT、正文是 AGPL-3.0</strong>；英文版 changelog 把未发布的 alpha 重列在新版本之后，而它的中文版把同一条放进了折叠区。</p>
-<h2>第二层：跑过自家真实产物（6 个检查）</h2>
-<table><tr><th>检查</th><th>语料</th><th>份数</th><th>第一次跑出的问题</th></tr><tr><td>commit-msg-check</td><td>三个仓库的提交历史</td><td>120</td><td>83% 报 <code>type-missing</code>——那是团队约定不是缺陷；56% 主题超 72 字，那是真问题</td></tr><tr><td>pr-description-check</td><td>已合并的目录 PR 正文</td><td>19</td><td>19/19 报缺 what/why/test，其实三个问题都用散文答了；另 2 个被误判&quot;声明了破坏性变更&quot;</td></tr><tr><td>adr-check</td><td>本项目的决策记录</td><td>3</td><td>只看项目符号，把写在段落行上的「好处：」「代价：」判成未标注</td></tr><tr><td>incident-report-check</td><td>事故复盘</td><td>1</td><td>无</td></tr><tr><td>ops-runbook-check</td><td>四份 runbook</td><td>4</td><td>两份用 <code>## 3.</code> 编号标题的 runbook 被报&quot;完全没有编号步骤&quot;</td></tr><tr><td>api-doc-check</td><td>host 路由的接口参考</td><td>1</td><td>文档写对了，但探针发现六处形状写错——那是文档的错，不是检查的错</td></tr></table>
-<h2>第三层：只有自造样例（11 个检查）</h2>
-<p>这些检查的每条规则都在测试里被观察到两个方向——坏文档会报、好文档沉默——但那个&quot;好文档&quot;是我写的。<strong>没有陌生人的真实文件跑过它们。</strong></p>
+/** 语料页正文：三层、份数、合计全部从 CHECKS 的 corpus 字段推出来。
+ *  以前这里是一段手写的 HTML，写着「22 个检查」「5 + 6 + 11」「17 个缺陷」——三处数字各自
+ *  过期在不同的月份。一个专门讲可信度的页面在自己的数字上撒谎，比不写更糟。 */
+function corpusBody() {
+  const by = layer => CHECKS.filter(check => (check.corpus?.layer ?? 'fixtures') === layer)
+  const strangers = by('strangers')
+  const own = by('own')
+  const fixtures = by('fixtures')
+  const table = rows => {
+    const head = '<tr><th>检查</th><th>语料</th><th>份数</th><th>第一次跑出的问题</th></tr>'
+    const body = rows.map(check => `<tr><td>${esc(check.slug)}</td><td>${esc(check.corpus.source)}</td><td>${check.corpus.count}</td><td>${esc(check.corpus.first)}</td></tr>`).join('')
+    return `<table>${head}${body}</table>`
+  }
+  const total = [...strangers, ...own].reduce((sum, check) => sum + check.corpus.count, 0)
+  const skipSources = ['rules audit', 'own honest handover', 'installing it and calling it']
+  const fromReal = LEDGER.total - skipSources.reduce((sum, key) => sum + (LEDGER.bySource[key] ?? 0), 0)
+  return `<p>这里的 ${CHECKS.length} 个检查，判定规则是不是「验证过」，取决于它在多少份<strong>真实文档</strong>上跑过。自己造的 fixture 只能证明「我想到的情况它判对了」，证明不了「别人写的东西它不会误报」——因为在我编的 fixture 里，「正确」和「被检查器接受」是同一件事。</p>
+<p>分三层：跑过<strong>陌生人写的</strong>文件、跑过<strong>自家真实产物</strong>、只有自造样例。合计 ${total} 份真实文档。</p>
+<h2>第一层：跑过别人写的文件（${strangers.length} 个检查）</h2>
+${table(strangers)}
+<h2>第二层：跑过自家真实产物（${own.length} 个检查）</h2>
+${table(own)}
+<h2>第三层：只有自造样例（${fixtures.length} 个检查）</h2>
+<p>这些检查的每条规则都在测试里被观察到两个方向——坏文档会报、好文档沉默——但那个「好文档」是我写的。<strong>没有陌生人的真实文件跑过它们。</strong></p>
 <ul>
-<li>agreement-check（合同）</li>
-<li>invoice-check（发票）</li>
-<li>listing-check（商品信息）</li>
-<li>meeting-notes-check（会议纪要）</li>
-<li>resume-check（简历）</li>
-<li>weekly-report-check（周报）</li>
-<li>bug-report-check（缺陷报告）</li>
-<li>test-report-check（测试报告）</li>
-<li>spec-doc-check（需求文档）</li>
-<li>handover-check（交接单）</li>
-<li>expense-claim-check（报销单）</li>
+${fixtures.map(check => `<li>${esc(check.slug)}（${esc(check.noun)}）</li>`).join('\n')}
 </ul>
+<p>要补哪一个，看<a href="../compare/">对照表</a>里你手上正好有文件的那一行；脱敏后开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>。</p>
 <h2>为什么第一层最重要</h2>
-<p>到目前为止找出 <strong>17 个检测器缺陷</strong>，其中 <strong>14 个</strong>是&quot;规则要求某一种写法，而真实文档用了另一种同样合法的写法&quot;。这个缺陷在自造 fixture 上永远不会暴露。</p>
-<p>最典型的一个是第十七个：<code>order</code> 报的行号系统性偏上一行——判定是对的，指针是错的，用户按报的行号找会落在空行上。这件事我写了十七轮都没发现，因为我写 fixture 时只关心&quot;有没有报&quot;，从不关心&quot;报的行号对不对&quot;。第一个陌生人的 changelog 第一次就暴露了它。</p>
-<h2>如果你手上有一份</h2>
-<p>任意一条判断错了——多报了不该报的、或漏了该报的——请开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>，附上<strong>脱敏后</strong>的原文片段和 CLI 的原样输出。</p>
-<p>提交前请把真名、公司、金额、地址、证件号、联系方式、内网域名替换成占位符。这份内容会成为那条规则的回归测试，所以它会进仓库、会公开。</p>
-<p>第三层那十一个检查，我一个人补不上——我没有别人的合同、别人的简历、别人的报销单。</p>`
+<p>到目前为止找出 <strong>${LEDGER.total} 个检测器缺陷</strong>，其中 <strong>${fromReal} 个</strong>是拿真实文件跑出来的。这个缺陷在自造 fixture 上永远不会暴露。</p>
+<p>最典型的一个是 <code>order</code> 报的行号系统性偏上一行——判定是对的，指针是错的，用户按报的行号找会落在空行上。这件事我写了十几轮都没发现，因为我写 fixture 时只关心「有没有报」，从不关心「报的行号对不对」。第一个陌生人的 changelog 第一次就暴露了它。</p>`
+}
 
 // 这条不是「第 28 个检查」，是唯一一个给 agent 用的入口：31 个检查里任何一条都能通过它
 // 被模型自己调用。它值得单独一页，因为读者要回答的问题不一样——不是「哪个检查适合这份
@@ -217,10 +220,10 @@ await writeFile(resolve(root, 'site', 'compare', 'index.html'), compare())
 // a real document, so the gap is the honest disclosure that matters most.
 function corpusPage() {
   return `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>每条规则的语料状况 · dsh-vertical-kit</title><meta name="description" content="22 个检查里，九个有真实语料、十一个只有自造样例。这份自报说明每条规则的验证程度，以及为什么这件事决定了工具装上去第一天会不会误报。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/corpus/`)}"><style>${styles}</style></head><body><main>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>每条规则的语料状况 · dsh-vertical-kit</title><meta name="description" content="这 ${CHECKS.length} 个检查里，${CHECKS.filter(check => (check.corpus?.layer ?? 'fixtures') !== 'fixtures').length} 个跑过真实文档，其余只有自造样例。这份自报说明每条规则的验证程度，以及为什么这件事决定了工具装上去第一天会不会误报。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/corpus/`)}"><style>${styles}</style></head><body><main>
 <p class="eyebrow">DSH VERTICAL KIT · CORPUS STATUS</p>
 <h1>每条规则的语料状况</h1>
-${CORPUS_BODY}
+${corpusBody()}
 <h2>另外两处</h2>
 <p>这套材料不是只有本 kit。同一个作者另两个仓库各有一份：<a href="https://zjukop3.github.io/dsh-verify-kit/corpus/">五个通用检查跑过什么</a>（里面记着第 18 个缺陷——<code>tablelint</code> 对故意无表头的表格误报，就是拿第三方 README 试出来的）；以及 <a href="https://zjukop3.github.io/dsh-review-outbox/handover/">项目交接单</a>（唯一维护者写给"如果明天他不在"，接收人一栏至今是「尚未指定」）。</p>
 <p><a href="../">← 回到 ${CHECKS.length} 个检查一览</a></p>
