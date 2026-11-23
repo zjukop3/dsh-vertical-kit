@@ -37,7 +37,7 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 22 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 476 tests, no network
+npm test   # 517 tests, no network
 ```
 
 ## 两道闸
@@ -51,6 +51,8 @@ npm test   # 476 tests, no network
 审计还会单独报一类**嫌疑守卫**：如果某条规则藏在 `if (` 后面，而那个条件里有一个**能匹配空字符串的正则字面量**，这条规则可能永远不会跑。这不是理论——`expense-claim-check` 里 `if (!has(X, /(?:^|\n)/))` 让整个期限分支不可达，而 `/(?:^|\n)/` 匹配任何字符串。判定方式是把这个正则字面量交给引擎自己问 `new RegExp(body).test('')`，而不是靠文本猜——第一版靠文本猜，把 `/^https?:\/\//` 里的 `//` 误判成空正则。
 
 一个诚实的边界：**审计分不出"死规则"和"没人写触发测试"**。一条没有触发测试的规则有两种可能——没人写，或者它根本跑不起来；静态分析看到的症状完全一样。只有**人去写那条测试**时，才会知道是哪一种。所以报告里两条都只说"要么未测，要么不可达"，并附上规则自己的消息文本让人判断。本 kit 到目前为止三条死规则（`subject-empty`、`sku-empty`、`empty-heading`）都是这样被找出来的——不是因为审计诊断出了它们，而是因为写测试的人写了测试，然后发现它不会红。
+
+**两扇门对账**（`test/tool-route-parity.test.js`）。`dsh-document-check` 之后，同一批规则有三扇门：CLI、host 路由、以及模型通过工具调用的那一层。任意两扇不一致，用户就拿到两个互相矛盾的裁决，而两边的测试各自绿着。这条闸把 32 个检查逐个起一个真 socket，把同一份文档同时喂给路由和工具，断言 level/rule/line/message 逐条相同——工具侧只允许两处差异：截断到 25 条，以及去掉给人看面板的 `checked` 明细。
 
 **Dogfood 闸**（`test/dogfood.test.js`）。把每个检查指向本项目自己真的在发的文件，要求它什么都不报：23 个 README 过 onboarding-check 零 error 零 warn、3 个 CHANGELOG 过 release-notes-check、20+ 个 LICENSE 过 license-check，以及真实的 120 条提交历史里没有任何一条因为"类型前缀"被 error 挡住（那是团队约定，不是 git 硬要求）。规则一旦开始对本项目自己写的东西报错，这组测试先红。它已经抓到一次：`dsh-review-outbox` 的 README 缺求助路径。
 
