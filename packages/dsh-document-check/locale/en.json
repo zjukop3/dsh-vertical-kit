@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Document check (agent tool)",
+    "description": "One tool, 31 document checks: the model verifies a document it produced against a genre's structural rules before delivering it, and gets findings with rule ids and line numbers. Local, no network, no model calls."
+  }
+}

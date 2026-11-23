@@ -55,6 +55,7 @@ function home() {
 <table><tr><th>检查清单</th><th>npm 包</th><th>搜索名词</th><th>它决定什么</th></tr>${rows}</table>
 <p><a href="./defects/">${LEDGER.total} 个检测器缺陷（每条带复现输入）→</a></p>\n<p><a href="./corpus/">这 ${CHECKS.length} 个检查的语料状况（哪些真有真实文件跑过）→</a></p>
 <p><a href="./compare/">全部 ${CHECKS.length} 个检查一览 →</a>（按文件类型选：合同/发票/纪要/简历/Dockerfile/LICENSE…）</p>
+<p><a href="${esc(`${ORIGIN}/document-check/`)}">一条工具，${CHECKS.length + 4} 个检查 →</a>（<code>dsh-document-check</code>：让 agent 在交付前自己查，不用人记得去 POST）</p>
 <h2>定位</h2>
 <p>护城河不在深度——专业产品随时碾压深度。在：离线可跑、出口码接 CI、免费、host 路由与 CLI 调同一函数。定位是「专业人士的前五分钟」，不是「专业人士的替代」。通用的五个检查（哈希/引用/结构/表格/数字）在 <a href="${KIT}">dsh-verify-kit</a>。</p>
 <small><a href="${REPO}">github.com/zjukop3/dsh-vertical-kit</a> · MIT · ${CHECKS.length} 个检查 · 全部免费</small>
@@ -95,6 +96,44 @@ const CORPUS_BODY = `<p>这里的 22 个检查，判定规则是不是「验证�
 <p>任意一条判断错了——多报了不该报的、或漏了该报的——请开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>，附上<strong>脱敏后</strong>的原文片段和 CLI 的原样输出。</p>
 <p>提交前请把真名、公司、金额、地址、证件号、联系方式、内网域名替换成占位符。这份内容会成为那条规则的回归测试，所以它会进仓库、会公开。</p>
 <p>第三层那十一个检查，我一个人补不上——我没有别人的合同、别人的简历、别人的报销单。</p>`
+
+// 这条不是「第 28 个检查」，是唯一一个给 agent 用的入口：31 个检查里任何一条都能通过它
+// 被模型自己调用。它值得单独一页，因为读者要回答的问题不一样——不是「哪个检查适合这份
+// 文件」，而是「怎么让 agent 在交付前自己查」。
+const TOOL = { slug: 'document-check', pkg: 'dsh-document-check' }
+
+function toolPage() {
+  const rows = CHECKS.map(check => `<tr><td><code>${esc(check.slug)}</code></td><td>${esc(check.title)}</td><td>${esc(check.decides)}</td></tr>`).join('')
+  const nav = CHECKS.map(entry => `<a href="../${entry.slug}/">${entry.npm}</a>`).join('')
+  return `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>一条工具，${CHECKS.length + 4} 个检查：让 agent 在交付前自己查 · dsh-vertical-kit</title><meta name="description" content="dsh-document-check 把本项目的文档检查注册成一条 agent 工具 document_check：模型在交付前按文体自查，拿到带规则名与行号的结论。本地跑，不联网、不调模型。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/document-check/`)}"><style>${styles}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · AGENT TOOL</p>
+<h1>一条工具，${CHECKS.length + 4} 个检查</h1>
+<p>这些检查原本只有 HTTP 端点：人得记得去 <code>POST</code>，agent 没有理由调用它。工具的差别不是包装，是位置——它出现在模型能自己看见、自己决定调用的那一层，于是「交付前先查一遍」这件事才可能真的发生。</p>
+<h2>为什么是一条，不是 ${CHECKS.length + 4} 条</h2>
+<p>${CHECKS.length + 4} 条工具定义会挤占上下文，而模型在前十分钟里分不清 <code>adr_check</code> 与 <code>spec_doc_check</code> 该用哪个。一条工具加一个 <code>check</code> 参数：genre 的选择留在模型已经知道的地方——它刚写完的那份文档里。</p>
+<h2>装</h2>
+<pre><code>dsh plugin --profile &lt;profile&gt; add ${TOOL.pkg}</code></pre>
+<p><code>--profile</code> 是必填项。工具在下一个会话出现在 agent 的工具集里；在那之前「确认装好了」只证明包装上了，不证明工具注册了。</p>
+<h2>调用长什么样</h2>
+<pre><code>document_check({ check: 'adr-check', text })
+→ ok: false, 3 error(s), 1 warning(s)
+  error status-missing line 0: 没有状态（认得：状态：已接受、Status: Accepted、…）
+  error decision-missing line 0: 没有决定段——ADR 的核心就是那一句「我们选了 X」</code></pre>
+<p>每次最多回 25 条并显式标注截断：把两百条灌进上下文的检查器会被关掉，而前 25 条本来就是该先修的。</p>
+<h2>能查哪些</h2>
+<table><tr><th>check</th><th>检查清单</th><th>它决定什么</th></tr>${rows}</table>
+<p>另加 <code>citelint</code>、<code>numberlint</code>、<code>outline-lint</code>、<code>tablelint</code> 四个通用检查（来自 <a href="${KIT}">dsh-verify-kit</a>）。<code>hashcheck</code> 不在里面：它算摘要，不读文档。</p>
+<h2>边界</h2>
+<ul>
+<li><strong>只判结构。</strong>它说这份 ADR 有「后果」段，从不说这个后果可以接受。</li>
+<li><strong>不猜文体。</strong>拿简历去过 <code>invoice-check</code> 是被允许且没用的；工具相信调用方。</li>
+<li><strong>清单是生成的。</strong>新加一个检查却没重跑生成器，工具会说自己有 ${CHECKS.length + 4} 个而仓库里有更多——测试就卡这一条。</li>
+</ul>
+<nav class="nav">${nav}</nav>
+<p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
+</main></body></html>`
+}
 
 function compare() {
   const rows = CHECKS.map(check => {
@@ -228,9 +267,11 @@ ${rows}
 <p><a href="./">← 回到 ${CHECKS.length} 个检查一览</a></p>
 </main></body></html>`
 }
+await mkdir(resolve(root, 'site', TOOL.slug), { recursive: true })
+await writeFile(resolve(root, 'site', TOOL.slug, 'index.html'), toolPage())
 await mkdir(resolve(root, 'site', 'defects'), { recursive: true })
 await writeFile(resolve(root, 'site', 'defects', 'index.html'), defectsPage())
-const urls = [`${ORIGIN}/`, `${ORIGIN}/compare/`, `${ORIGIN}/corpus/`, `${ORIGIN}/defects/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
+const urls = [`${ORIGIN}/`, `${ORIGIN}/document-check/`, `${ORIGIN}/compare/`, `${ORIGIN}/corpus/`, `${ORIGIN}/defects/`, ...CHECKS.map(check => `${ORIGIN}/${check.slug}/`)]
 await writeFile(resolve(root, 'site/robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${ORIGIN}/sitemap.xml\n`)
 if (indexNow) await writeFile(resolve(root, `site/${indexNow.key}.txt`), `${indexNow.key}\n`)
 await writeFile(resolve(root, 'site/sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(loc => `  <url><loc>${esc(loc)}</loc></url>`).join('\n')}\n</urlset>\n`)

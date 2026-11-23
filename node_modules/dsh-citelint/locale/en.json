@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Citation check",
+    "description": "Citation lint for delivered reports: numbering gaps, duplicate sources, sources that are listed but never cited, and local links that do not exist."
+  }
+}

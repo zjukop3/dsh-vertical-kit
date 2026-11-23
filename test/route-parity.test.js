@@ -15,7 +15,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
-import { mkdtempSync, writeFileSync, rmSync, readdirSync, existsSync } from 'node:fs'
+import { mkdtempSync, writeFileSync, rmSync, readdirSync, existsSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -76,6 +76,9 @@ for (const dir of readdirSync(PACKAGES).sort()) {
   if (known.has(dir)) continue
   const src = join(PACKAGES, dir, 'src/index.js')
   if (!existsSync(src)) continue // bundle 没有运行时代码
+  // 只收「注册路由的包」。判据是它自己声明了 webServer，而不是「它在 packages/ 里」：
+  // dsh-document-check 注册的是 agent 工具，没有路由，按目录推导会把它硬拉进来。
+  if (!/inject\s*=\s*\[[^\]]*['"]webServer['"]/.test(readFileSync(src, 'utf8'))) continue
   const mod = await import(`../packages/${dir}/src/index.js`)
   const lint = Object.keys(mod).find(key => /^lint[A-Z]/.test(key))
   if (!lint || typeof mod.apply !== 'function') continue

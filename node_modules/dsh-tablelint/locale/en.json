@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Table structure check",
+    "description": "Markdown table check for generated reports: rows with the wrong cell count, a delimiter row that disagrees with the header, duplicate or empty headers, and tables with no rows."
+  }
+}

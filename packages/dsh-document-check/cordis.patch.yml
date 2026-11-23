@@ -1,0 +1,4 @@
+# 一条工具，不是一条路由：它不占端口，通过 ctx.tools 把 31 个检查交给 agent 调用。
+- insert:
+    - id: document-check
+      name: 'dsh-document-check'

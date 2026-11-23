@@ -1,0 +1,4 @@
+# One package adds a verification route next to the Host API.
+- insert:
+    - id: numberlint
+      name: 'dsh-numberlint'

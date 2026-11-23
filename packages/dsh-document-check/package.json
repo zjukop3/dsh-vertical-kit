@@ -1,0 +1,84 @@
+{
+  "name": "dsh-document-check",
+  "version": "0.1.0",
+  "description": "One agent tool, 31 document checks: the model verifies a document it produced against a genre's structural rules before delivering it, and gets findings with rule ids and line numbers.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "bin": {
+    "dsh-document-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "locale"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "agent-tool",
+    "document-check",
+    "交付检查",
+    "文档检查"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-document-check",
+  "dependencies": {
+    "dsh-adr-check": "^0.2.4",
+    "dsh-agreement-check": "^0.1.5",
+    "dsh-api-doc-check": "^0.1.4",
+    "dsh-bug-report-check": "^0.1.3",
+    "dsh-citelint": "^0.1.5",
+    "dsh-commit-msg-check": "^0.3.3",
+    "dsh-contributing-check": "^0.1.2",
+    "dsh-dockerfile-check": "^0.1.3",
+    "dsh-env-example-check": "^0.2.3",
+    "dsh-expense-claim-check": "^0.1.3",
+    "dsh-handover-check": "^0.2.5",
+    "dsh-incident-report-check": "^0.1.4",
+    "dsh-invoice-check": "^0.1.4",
+    "dsh-license-check": "^0.2.3",
+    "dsh-listing-check": "^0.2.2",
+    "dsh-meeting-notes-check": "^0.1.5",
+    "dsh-migration-guide-check": "^0.1.4",
+    "dsh-numberlint": "^0.1.4",
+    "dsh-onboarding-check": "^0.3.5",
+    "dsh-ops-runbook-check": "^0.2.4",
+    "dsh-outline-lint": "^0.1.6",
+    "dsh-perf-report-check": "^0.1.2",
+    "dsh-pr-description-check": "^0.2.3",
+    "dsh-privacy-notice-check": "^0.1.4",
+    "dsh-release-notes-check": "^0.3.3",
+    "dsh-resume-check": "^0.1.6",
+    "dsh-security-advisory-check": "^0.1.4",
+    "dsh-spec-doc-check": "^0.1.4",
+    "dsh-tablelint": "^0.2.2",
+    "dsh-test-report-check": "^0.1.6",
+    "dsh-weekly-report-check": "^0.1.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "*"
+  }
+}

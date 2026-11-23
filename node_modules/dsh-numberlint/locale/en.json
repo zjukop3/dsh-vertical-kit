@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Number consistency check",
+    "description": "Number consistency check for one document: the same quantity written 4,985 and 4985, the same percentage with and without a space, and ranges with mixed dashes."
+  }
+}

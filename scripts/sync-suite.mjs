@@ -29,6 +29,13 @@ export function members(base = root, sibling = SIBLING) {
       if (!existsSync(p)) continue
       const pkg = JSON.parse(readFileSync(p, 'utf8'))
       if (pkg.private || !pkg.name) continue
+      // 只收「注册一条路由」的包：suite 的全部意义是插入这些行。判据是这个包自己声明了
+      // webServer——不是「它在 packages/ 目录里」。dsh-document-check 是第一份反例：
+      // 它注册的是 agent 工具，没有路由，收进 suite 会让 33 行里有一行什么也不挂。
+      const entrySource = resolve(dir, slug, 'src', 'index.js')
+      const declaresWebServer = existsSync(entrySource)
+        && /inject\s*=\s*\[[^\]]*['"]webServer['"]/.test(readFileSync(entrySource, 'utf8'))
+      if (!declaresWebServer) continue
       const patchPath = resolve(dir, slug, 'cordis.patch.yml')
       const ownId = existsSync(patchPath)
         ? (readFileSync(patchPath, 'utf8').match(/-\s*id:\s*([\w-]+)/) || [])[1]

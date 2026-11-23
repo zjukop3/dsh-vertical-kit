@@ -160,6 +160,13 @@ export async function auditRules() {
     const src = await readFile(join(packagesDir, pkg, 'src', 'index.js'), 'utf8')
     const rules = ruleNames(src)
     const guards = suspiciousGuards(src)
+    // 0 条规则的包不在这条闸的射程内：它不实现规则，只把别的包的检查器接起来
+    // （dsh-document-check 就是这种）。第一版把它报成「(whole package) NEITHER」——
+    // 看起来像一条缺方向的规则，其实是一个没有规则的包，报出来只会教人调高阈值。
+    if (rules.length === 0) {
+      console.log(`skip ${pkg}（0 条规则：它不实现规则，只调别人的）`)
+      continue
+    }
     const testDir = join(packagesDir, pkg, 'test')
     const testFiles = (await readdir(testDir)).filter(name => name.endsWith('.test.js'))
     const blocks = []
