@@ -108,3 +108,33 @@ test('发布产物里真的有 patch、locale、DETAIL、icon（不是只在磁�
 test('DETAIL.md 在 1 MiB 以内（pluginManager.detailMaxBytes 默认值）', () => {
   assert.ok(statSync(resolve(SUITE, 'docs/DETAIL.md')).size <= 1024 * 1024)
 })
+// 套件 README 里凡是为「成员数」报数的地方，都必须等于推导出来的成员数。
+//
+// 2026-11-23：成员从 27 长到 32（新加了 security-advisory / migration-guide /
+// privacy-notice / contributing / perf-report 五个），README 与 package.json 的
+// description 一路还在说 27。`test/suite.test.js` 早就用 CHECKS.length + 隔壁包数
+// 推导期望值，所以代码那侧一直是绿的——撒的谎全在文字里。
+// 判据落在「这个数字指的是不是成员数」上：只挑出明确在报成员数的句式，不去猜别的数字。
+test('README 与 description 里的成员数不能与推导值不一致', () => {
+  const n = members().length
+  const readme = readFileSync(resolve(SUITE, 'README.md'), 'utf8')
+  const claims = []
+  for (const [, num, shape] of readme.matchAll(/(\d+)\s*(document and delivery checks|packages one at a time|confirmations|in total|rows landed|removes the \d+ rows|install commands)/g)) {
+    claims.push({ num: Number(num), shape })
+  }
+  assert.ok(claims.length >= 3, `README 里没找到报数的句子（找到 ${claims.length} 处），闸失效了`)
+  const wrong = claims.filter((c) => c.num !== n).map((c) => `「${c.num} ${c.shape}」应为 ${n}`)
+  assert.deepEqual(wrong, [], `suite 成员 ${n} 个，README 写错：\n${wrong.join('\n')}`)
+
+  // description 里的数字同样由生成器推出，这里再核一次产物，防止有人手改 package.json
+  const description = JSON.parse(readFileSync(resolve(SUITE, 'package.json'), 'utf8')).description
+  const declared = description.match(/One install for (\d+) document and delivery checks/)
+  assert.ok(declared, 'description 缺少「One install for N …」句式')
+  assert.equal(Number(declared[1]), n, `description 说 ${declared[1]} 个，实际 ${n}`)
+})
+
+test('README 的表格点到了每一个成员', () => {
+  const readme = readFileSync(resolve(SUITE, 'README.md'), 'utf8')
+  const missing = members().map((x) => x.name).filter((name) => !readme.includes(`\`${name}\``))
+  assert.deepEqual(missing, [], `README 表格漏了这些成员：${missing.join(', ')}`)
+})

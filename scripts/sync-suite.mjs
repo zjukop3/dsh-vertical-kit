@@ -64,14 +64,27 @@ export function depsOf(m = members()) {
   return deps
 }
 
+// 版本号不归生成器管。0.1.1 那天它把写死的 '0.1.0' 盖回了手改的版本，`--check` 于是报
+// DRIFT——生成器的职责是从 workspace 推导**依赖和行**，版本是发布决定，得留着。
+export function currentVersion() {
+  const manifestPath = resolve(SUITE_DIR, 'package.json')
+  if (!existsSync(manifestPath)) return '0.1.0'
+  try {
+    return JSON.parse(readFileSync(manifestPath, 'utf8')).version || '0.1.0'
+  } catch {
+    return '0.1.0'
+  }
+}
+
 export function manifestOf(m = members()) {
   const dir = resolve(root, 'packages/dsh-commit-msg-check/package.json')
   const upstream = JSON.parse(readFileSync(dir, 'utf8'))
   return {
     name: 'dsh-check-suite',
-    version: '0.1.0',
-    description:
-      'One install for 27 document and delivery checks: commit messages, PR descriptions, release notes, ADRs, runbooks, handovers, invoices, expense claims, resumes, spec and test reports, plus table, outline, number, citation and hash checks. Each check contributes its own HTTP endpoint; every finding carries a line number.',
+    version: currentVersion(),
+    // 数字由成员数推出来：写死的 27 在加到 32 个成员之后就一直在撒谎，而 README、
+    // 首页表格和这句话是读者唯一会看到的三个数字。
+    description: `One install for ${m.length} document and delivery checks: commit messages, PR descriptions, release notes, ADRs, runbooks, handovers, invoices, expense claims, resumes, spec and test reports, plus table, outline, number, citation and hash checks. Each check contributes its own HTTP endpoint; every finding carries a line number.`,
     type: 'module',
     exports: { './locale/*.json': './locale/*.json', './icon': './icon.svg' },
     dsh: { bundle: { patch: './cordis.patch.yml' } },

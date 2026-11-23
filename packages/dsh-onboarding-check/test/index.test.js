@@ -77,7 +77,9 @@ test('help-missing is a warn, not an error', () => {
 })
 
 test('several time shapes are recognized', () => {
-  for (const phrase of ['5 分钟', '约 15 分钟', 'under 10 minutes', '1 小时', '半小时', '30 mins']) {
+  // 「37 seconds」这一条来自实测：套件 README 里写的是「装 27 个包实测 37 秒」，
+  // 第一版规则只认分钟/小时，于是这份文档被判成没写耗时估计。
+  for (const phrase of ['5 分钟', '约 15 分钟', 'under 10 minutes', '1 小时', '半小时', '30 mins', '实测 37 秒', '37 seconds', 'about 40 secs']) {
     const text = good.replace('（约 10 分钟）', `（${phrase}）`)
     assert.ok(!lintOnboarding(text).findings.some(finding => finding.rule === 'time-estimate-missing'), phrase)
   }

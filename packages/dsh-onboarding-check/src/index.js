@@ -13,7 +13,11 @@ const SUCCESS_LINE = /^[^\n]*(?:应该看到|你会看到|成功后|完成后|�
 const HELP_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:求助|帮助|联系|遇到问题|getting help|troubleshoot|support)/i
 const HELP_LINE = /(?:提 issue|开 issue|联系我们|加群|在 \S* 提问|ask (?:in|on)|open an issue|file an issue)/i
 // A time estimate: 5 分钟、约 15 分钟、under 10 minutes、1 小时.
-const TIME_ESTIMATE = /\d+\s*(?:分钟|分|小时|minutes?|mins?|hours?|hrs?)|\bhalf an hour\b|半小时/i
+// 判据是「这里有没有给时长」，不是「有没有用分钟这个单位」。第一版只认分钟/小时，
+// 于是「37 seconds」「约 40 秒」这种真实、可测的估计被判成没写——我自己的套件 README
+// 写了实测 37 秒，dogfood 闸立刻就红了。
+const TIME_ESTIMATE =
+  /\d+\s*(?:秒|分钟|分|小时|seconds?|secs?|minutes?|mins?|hours?|hrs?)|\bhalf an hour\b|半小时/i
 // A pasteable command: a fenced block containing an install-ish command.
 const FENCE = /```[\s\S]*?```/g
 // `dsh` belongs at the front of this list: it is the primary way a plugin is
@@ -95,7 +99,7 @@ export function lintOnboarding(text, rules = {}) {
 
   // Time: the rule that earns the package.
   if (requireTime && !TIME_ESTIMATE.test(text)) {
-    add('warn', 'time-estimate-missing', 0, '没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做')
+    add('warn', 'time-estimate-missing', 0, '没有耗时估计（认得：约 5 分钟、37 秒、15 分钟、under 10 minutes、40 seconds）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做')
   }
 
   const order = { error: 0, warn: 1 }

@@ -50,6 +50,18 @@ export function firstNpxTarget(readme) {
   return null
 }
 
+/** README 里所有 `dsh plugin …` 命令行（只看代码块）。 */
+export function pluginCommands(readme) {
+  const out = []
+  for (const block of fencedBlocks(readme)) {
+    if (!/^(?:bash|sh|shell|console)?$/.test(block.info)) continue
+    for (const line of block.lines) {
+      if (/^\s*(?:\$\s*)?dsh\s+plugin\b/.test(line)) out.push(line.trim())
+    }
+  }
+  return out
+}
+
 test('README 里第一条 npx 命令指向的是本包的一个 bin 键', () => {
   const failures = []
   for (const { name, dir } of packages()) {
@@ -99,4 +111,22 @@ test('每个有 CLI 的包都给出了至少一条 npx 命令（没有就说明�
     return firstNpxTarget(readFileSync(readmePath, 'utf8')) === null
   })
   assert.deepEqual(silent.map(p => p.name), [], `这些包的 README 没有 npx 命令：${silent.map(p => p.name).join(', ')}`)
+})
+// DSH 侧的同一个坑：`dsh plugin` 的 --profile 是 requiredOption（CLI 0.2.2-rc.5
+// lib/bin-*.js:116）。README 里写 `dsh plugin add dsh-check-suite` 照抄的结果是
+//   error: --profile <name> is required
+// 一个 bundle 的 README 只有这一条命令，它就是陌生人路径的全部；写错等于没写。
+test('README 里每个 dsh plugin 命令都带 --profile', () => {
+  const failures = []
+  const readmes = [{ name: 'README.md（仓库首页）', path: join(ROOT, 'README.md') }]
+  for (const { name, dir } of packages()) readmes.push({ name, path: join(dir, 'README.md') })
+  for (const { name, path } of readmes) {
+    if (!existsSync(path)) continue
+    for (const command of pluginCommands(readFileSync(path, 'utf8'))) {
+      if (!/--profile\s+\S+/.test(command)) {
+        failures.push(`${name}: 「${command}」缺 --profile <name>；照抄会得到 error: --profile <name> is required`)
+      }
+    }
+  }
+  assert.deepEqual(failures, [], failures.join('\n'))
 })

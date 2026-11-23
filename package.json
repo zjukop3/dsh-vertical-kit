@@ -14,7 +14,8 @@
     "audit:packages": "node scripts/audit-packages.mjs",
     "audit:rules": "node scripts/audit-rules.mjs",
     "push:verified": "node scripts/push-verified.mjs",
-    "audit:versions": "node scripts/audit-versions.mjs"
+    "audit:versions": "node scripts/audit-versions.mjs",
+    "audit:mirror": "node scripts/audit-mirror.mjs"
   },
   "license": "MIT",
   "author": "zjukop3"

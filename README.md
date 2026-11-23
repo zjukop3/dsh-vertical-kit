@@ -37,7 +37,7 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 22 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 278 tests, no network
+npm test   # 434 tests, no network
 ```
 
 ## 两道闸
@@ -53,6 +53,34 @@ npm test   # 278 tests, no network
 一个诚实的边界：**审计分不出"死规则"和"没人写触发测试"**。一条没有触发测试的规则有两种可能——没人写，或者它根本跑不起来；静态分析看到的症状完全一样。只有**人去写那条测试**时，才会知道是哪一种。所以报告里两条都只说"要么未测，要么不可达"，并附上规则自己的消息文本让人判断。本 kit 到目前为止三条死规则（`subject-empty`、`sku-empty`、`empty-heading`）都是这样被找出来的——不是因为审计诊断出了它们，而是因为写测试的人写了测试，然后发现它不会红。
 
 **Dogfood 闸**（`test/dogfood.test.js`）。把每个检查指向本项目自己真的在发的文件，要求它什么都不报：23 个 README 过 onboarding-check 零 error 零 warn、3 个 CHANGELOG 过 release-notes-check、20+ 个 LICENSE 过 license-check，以及真实的 120 条提交历史里没有任何一条因为"类型前缀"被 error 挡住（那是团队约定，不是 git 硬要求）。规则一旦开始对本项目自己写的东西报错，这组测试先红。它已经抓到一次：`dsh-review-outbox` 的 README 缺求助路径。
+
+## 发版之后：三个地方都会说谎
+
+`npm publish` 的退出码不是证据，registry 的 `latest` 也不是。这一轮（2026-11-23）三处
+出问题的地方都不是代码：
+
+1. **退不出来**。名字首发时 registry 只肯建一个 `0.0.0-stage` 占位版本，真正的版本要
+   等它落地再发第二次；期间 `npx <新名字>` 是 404。
+2. **镜像卡住**。`registry.npmmirror.com` 把 `dist-tags.latest` 一直指在那个空壳占位上。
+   在一个干净 profile 里照 README 敲安装命令，pnpm 报
+   `ERR_NPPM_TARBALL_EXTRACT … Invalid checksum for TAR header`——读者装不上，而我的
+   registry 一切正常。
+3. **命令本身是错的**。bundle 的 README 写 `dsh plugin add dsh-check-suite`，
+   而 `dsh plugin` 的 `--profile` 是必填项，照抄得到 `error: --profile <name> is required`。
+
+所以发版之后跑三条，每条都按产物判定：
+
+```bash
+npm run audit:versions   # 本地版本 vs registry：new / aligned / ahead / current
+npm run audit:mirror     # registry 的 latest vs 镜像的 latest（--sync 触发重新抓取）
+git push                  # push:verified 会读远端默认分支，不看退出码
+```
+
+`audit:mirror` 的判据是「读者走完 README 会装到什么」，所以它清点的是 **suite 依赖闭包**
+（33 个：本仓库 28 个 + 住在 verify-kit 的 5 个），不是本仓库的目录数。它的六种状态里
+`stale-stage` 单独成一种：镜像只剩预发布占位包时，等多久都不会自己好，而 `behind` 会。
+两个方向都验过——把 `classify` 改成恒返回 `ok`，或把版本比较退回字符串比较，
+`test/audit-mirror.test.js` 各有 3 条变红。
 
 ## 输出示例
 
@@ -84,5 +112,7 @@ Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；C
 1. 打开「插件」，启用实验性「自定义插件索引」。
 2. 「发现 → 添加索引源」，添加：`https://zjukop3.github.io/dsh-review-outbox/plugins.json`
 3. 按名字搜索安装。五个通用检查（`hashcheck` / `citelint` / `outline-lint` / `tablelint` / `numberlint`）在 [dsh-verify-kit](https://github.com/zjukop3/dsh-verify-kit)；本仓库的二十个场景检查见 [README 顶部表格](README.md) 或 [对照表](https://zjukop3.github.io/dsh-vertical-kit/compare/)。
+
+27 个检查一条命令装完：`dsh plugin --profile <profile> add dsh-check-suite`（`--profile` 必填，见 [套件说明](packages/dsh-check-suite)）。
 
 不装 DSH 也可以：`npx <名字> --help` 直接用，或按下面的 CLI 说明。
