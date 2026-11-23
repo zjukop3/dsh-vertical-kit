@@ -89,7 +89,9 @@ for (const cwd of targets) {
       //   non-fast-forward — the remote moved, no amount of retrying will help.
       const entire = String(error.stderr || error.message)
       if (/commit-msg|hook/i.test(first) || /rejected|non-fast-forward|fetch first|failed to push some refs/i.test(entire)) break
-      execFileSync('sleep', [String(attempt * 5)])
+      // 退避秒数可以关掉，只为让「推不上去」这条路径进得了测试：真跑一遍六次退避要 75 秒，
+      // 而这条路径恰恰是本项目踩过三次的地方（循环报告成功、实际什么都没推上去）。
+      execFileSync('sleep', [String(Number(process.env.PUSH_VERIFIED_SLEEP ?? attempt * 5))])
     }
   }
 
