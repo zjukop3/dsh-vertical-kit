@@ -1,6 +1,6 @@
 {
   "name": "dsh-incident-report-check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Incident postmortem hygiene from markdown: a timestamped timeline, a stated impact and duration, a root cause rather than a symptom, and every follow-up carrying an owner.",
   "type": "module",
   "main": "./src/index.js",

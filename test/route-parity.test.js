@@ -15,6 +15,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer } from 'node:http'
+import { mkdtempSync, writeFileSync, rmSync, readdirSync, existsSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
 const CASES = [
   { pkg: 'dsh-agreement-check', lint: 'lintContract', path: '/agreement-check/api', sample: '甲方：甲公司\n乙方：乙公司\n' },
@@ -60,7 +63,26 @@ function makeCtx() {
   return { ctx, state }
 }
 
-for (const entry of CASES) {
+// 手写样例只管「有意义的输入」；覆盖面归目录。第一版只有这 20 条，剩下 7 个包
+// （contributing / expense-claim / handover / migration-guide / perf-report /
+// privacy-notice / security-advisory）根本没被这条闸看过——修 bug 的时候我改了 24 个
+// 文件，闸只认得其中 17 个。所以没写样例的包也用一句通用文本进来跑：这三条断言比的是
+// 「两条路是否一致」，一致性不需要有意义的输入。
+const PACKAGES = resolve(import.meta.dirname, '../packages')
+const GENERIC_SAMPLE = '# 文档\n\n内容。\n'
+const known = new Map(CASES.map(entry => [entry.pkg, entry]))
+const ENTRIES = [...CASES]
+for (const dir of readdirSync(PACKAGES).sort()) {
+  if (known.has(dir)) continue
+  const src = join(PACKAGES, dir, 'src/index.js')
+  if (!existsSync(src)) continue // bundle 没有运行时代码
+  const mod = await import(`../packages/${dir}/src/index.js`)
+  const lint = Object.keys(mod).find(key => /^lint[A-Z]/.test(key))
+  if (!lint || typeof mod.apply !== 'function') continue
+  ENTRIES.push({ pkg: dir, lint, path: null, sample: GENERIC_SAMPLE })
+}
+
+for (const entry of ENTRIES) {
   test(`${entry.pkg}: the route returns exactly what the direct call returns`, async () => {
     const mod = await import(`../packages/${entry.pkg}/src/index.js`)
     assert.equal(typeof mod.apply, 'function', `${entry.pkg} must export apply`)
@@ -69,10 +91,10 @@ for (const entry of CASES) {
     const { ctx, state } = makeCtx()
     mod.apply(ctx, {})
     assert.ok(state.route, `${entry.pkg} apply() must register a route`)
-    assert.equal(state.route.path, entry.path)
+    if (entry.path) assert.equal(state.route.path, entry.path)
 
     await withServer(state.route.handler, async base => {
-      const response = await fetch(`${base}${entry.path}`, {
+      const response = await fetch(`${base}${state.route.path}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ text: entry.sample }),
@@ -84,17 +106,48 @@ for (const entry of CASES) {
     })
   })
 
+  // 文档说「text 或 path 二选一」。第一版只测了 text，于是 path 那条分支从来没跑过。
+  // 2026-11-23 在真机上按文档 POST {"path": …}：24 个包坏在同一种写法上——
+  //   (await import('node:fs/promises')).readFile(...) 少了最外面的 await，
+  // 拿到的是 Promise。有的包当场 400「text.split is not a function」，更糟的是
+  // commit-msg-check 把 String(promise) 当成正文，对所有 path 请求稳定给出
+  // subject=16（"[object Promise]" 的长度）和一条 type-missing——不是报错，是
+  // 一本正经地给假判决。判据是「同一份文档走两条路必须给同一个答复」，不是「path 不报错」。
+  test(`${entry.pkg}: path 分支必须与 text 分支给出同一个答复`, async () => {
+    const mod = await import(`../packages/${entry.pkg}/src/index.js`)
+    const { ctx, state } = makeCtx()
+    mod.apply(ctx, {})
+
+    const dir = mkdtempSync(join(tmpdir(), 'dsh-route-parity-'))
+    const file = join(dir, 'sample.txt')
+    writeFileSync(file, entry.sample, 'utf8')
+    try {
+      await withServer(state.route.handler, async base => {
+        const response = await fetch(`${base}${state.route.path}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ path: file }),
+        })
+        const body = await response.json()
+        assert.equal(response.status, 200, `${entry.pkg}: path 分支状态码 ${response.status}，body=${JSON.stringify(body).slice(0, 120)}`)
+        assert.deepEqual(body, mod[entry.lint](entry.sample), `${entry.pkg}: 同一份文档，path 与 text 给出不同答复`)
+      })
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   test(`${entry.pkg}: the route refuses a GET and an empty body`, async () => {
     const mod = await import(`../packages/${entry.pkg}/src/index.js`)
     const { ctx, state } = makeCtx()
     mod.apply(ctx, {})
 
     await withServer(state.route.handler, async base => {
-      const get = await fetch(`${base}${entry.path}`)
+      const get = await fetch(`${base}${state.route.path}`)
       assert.equal(get.status, 405)
       assert.match(String((await get.json()).error), /POST only/)
 
-      const empty = await fetch(`${base}${entry.path}`, {
+      const empty = await fetch(`${base}${state.route.path}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: '{}',

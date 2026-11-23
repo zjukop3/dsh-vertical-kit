@@ -106,9 +106,9 @@ export function apply(ctx, config = {}) {
       const chunks = []
       for await (const chunk of req) chunks.push(chunk)
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')
-      const text = typeof body.text === 'string' && body.text ? body.text : body.path ? (await import('node:fs/promises')).readFile(body.path, 'utf8') : ''
+      const text = typeof body.text === 'string' && body.text ? body.text : body.path ? await (await import('node:fs/promises')).readFile(body.path, 'utf8') : ''
       if (!text) return send(400, { error: 'text or path is required' })
-      return send(200, lintLoadtestReport(text, body.rules))
+      return send(200, lintPerfReport(text, body.rules))
     } catch (error) {
       return send(400, { error: error.message || 'request failed' })
     }

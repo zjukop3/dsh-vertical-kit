@@ -220,6 +220,32 @@ export const DEFECTS = [
     lesson: 'The rule looked for the label `接收人：` and never for a name. Found by writing this project’s own handover honestly — the document said exactly that, and the check said everything was fine.',
     now: { kind: 'fires', input: '# 交接单\n\n交接人：张三\n接收人：尚未指定\n交接日期：2026-11-19\n\n## 交接事项\n\n1. a — 负责人 李四\n2. b — 负责人 王五\n3. c — 负责人 李四\n\n## 账号与权限\n\n- GitHub owner：a@example.com\n\n## 未完成事项\n\n- x，负责人 李四\n\n## 签字确认\n\n已确认。\n', rule: 'receiver-unassigned' },
   },
+  {
+    n: 20,
+    check: 'perf-report-check',
+    rule: '(route)',
+    fixedIn: '0.1.2',
+    foundBy: 'installing it and calling it',
+    wrong: 'every request to /perf-report-check/api returned 400 {"error":"lintLoadtestReport is not defined"} — from 0.1.0 on',
+    right: 'the handler calls lintPerfReport, the function the package actually exports',
+    lesson:
+      'The CLI worked the whole time, so every test that ran the linter passed. The endpoint referenced a name left over from an earlier draft and nothing in the suite ever posted to it: route-parity had a hand-written list of 20 packages, and this one was not on it.',
+    now: { kind: 'route', lint: 'lintPerfReport', path: '/perf-report-check/api', input: '# 压测报告\n\n## 负载\n\n1000 QPS。\n' },
+  },
+  {
+    n: 21,
+    check: 'adr-check',
+    rule: '(route path 分支)',
+    fixedIn: 'patch',
+    foundBy: 'installing it and calling it',
+    wrong:
+      '同类 24 个包：POST {"path": "…"} returned 400 text.split is not a function；commit-msg-check 更糟——它把 String(promise) 当正文，对任何 path 请求稳定给出 subject=16（"[object Promise]" 的长度）和一条 type-missing',
+    right: 'path 分支与 text 分支对同一份文档给出逐字相同的答复',
+    lesson:
+      'README 写「text 或 path 二选一」，测试只喂了 text。`(await import(…)).readFile(…)` 的 await 绑在 import 上，readFile 返回的是 Promise——24 个包抄了同一行。查 bug 的时候我改了 24 个文件，而那条闸只认得其中 17 个。',
+    now: { kind: 'route', lint: 'lintAdr', path: '/adr-check/api', input: '# ADR-014 采用事件溯源\n\n## 背景\n\n订单服务写放大严重。\n' },
+  },
+
 ]
 
 export const LEDGER = {
@@ -232,4 +258,11 @@ export const LEDGER = {
     acc[defect.check] = (acc[defect.check] ?? 0) + 1
     return acc
   }, {}),
+  // 21 条里不全是规则：第 20、21 条是端点（path 分支）。文字里凡说「N 条规则」的地方
+  // 得用 ruleCount，别拿 total 冒充——这正是这个文件存在的理由。
+  byKind: DEFECTS.reduce((acc, defect) => {
+    acc[defect.now.kind] = (acc[defect.now.kind] ?? 0) + 1
+    return acc
+  }, {}),
+  ruleCount: DEFECTS.filter(defect => defect.now.kind !== 'route').length,
 }

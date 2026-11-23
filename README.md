@@ -37,14 +37,14 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 22 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 434 tests, no network
+npm test   # 476 tests, no network
 ```
 
 ## 两道闸
 
 `npm run check` 除了检查包元数据，还会跑两道防"半条规则"的闸。
 
-**缺陷台账**（`scripts/defects.mjs` + `test/defects.test.js`）。这 22 个检查里，**17 条规则曾经量的是拼写而不是性质**——规则要求某一种写法，而真实文档用的是另一种同样合法的写法；或者反过来，规则永远触发不了而测试绿着。台账逐条记了复现输入、当时的判定、现在的判定和发现方式，站点在 [`/defects/`](https://zjukop3.github.io/dsh-vertical-kit/defects/)。它不是自述：测试会把每条复现输入喂给当前代码，误报那条必须不再出现、死规则那条必须出现、行号必须落在标题上。分布是 **14 条靠把检查器指向真实文件发现，3 条靠规则审计扫出**——两种方法各自找到的那批，另一种都找不到。
+**缺陷台账**（`scripts/defects.mjs` + `test/defects.test.js`）。这 22 个检查里，**19 条规则曾经量的是拼写而不是性质**，另外 **2 条是端点**（`path` 分支与 `text` 分支给出不同答复）——规则要求某一种写法，而真实文档用的是另一种同样合法的写法；或者反过来，规则永远触发不了而测试绿着。台账逐条记了复现输入、当时的判定、现在的判定和发现方式，站点在 [`/defects/`](https://zjukop3.github.io/dsh-vertical-kit/defects/)。它不是自述：测试会把每条复现输入喂给当前代码，误报那条必须不再出现、死规则那条必须出现、行号必须落在标题上。分布是 **14 条靠把检查器指向真实文件发现，3 条靠规则审计扫出，2 条靠把包真的装起来调一遍**——三种方法各自找到的那批，另外两种都找不到。后两条是这一轮最贵的发现：CLI 一直是绿的，坏的是 HTTP 端点，而 `route-parity` 当时用手写清单只覆盖了 20 个包。
 
 **规则双向审计**（`scripts/audit-rules.mjs`）。每条规则必须在测试里被观察到两个方向：一个坏文档让它报出来，一个好文档让它闭嘴。一个只被观察到会报的规则是半条规则——缺的那半决定了陌生人装完第一天会不会卸掉它。四个包就是因为只有前半条而全部误报：commit-msg 对 83% 的真实历史报错、onboarding 对 20/23 个真实 README 报错、release-notes 对 Keep a Changelog 的标准格式报错、pr-description 对 19/19 个真实已合并 PR 报错。这道闸跑出 168 条规则里的 168 条都有两个方向，并在过程中发现**三**条**永不触发**的死规则（本 kit 的 `subject-empty`、`sku-empty`，以及 verify-kit 的 `empty-heading`——标题正则要求非空文本，而「标题文字被删空」正是那条规则的理由），三条都已改成可达。
 

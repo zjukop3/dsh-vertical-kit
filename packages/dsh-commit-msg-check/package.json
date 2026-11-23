@@ -1,6 +1,6 @@
 {
   "name": "dsh-commit-msg-check",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Commit-message hygiene from a single message: a type prefix from a known set, a subject that fits a git log line, no trailing period, a blank line before the body, and breaking changes announced in a trailer.",
   "type": "module",
   "main": "./src/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "dsh-contributing-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CONTRIBUTING-guide hygiene from markdown: a working dev setup, a test command that actually runs, what a pull request is expected to look like, the style the code is held to, where to ask, how commits should read, and whether a CLA or DCO applies.",
   "type": "module",
   "main": "./src/index.js",

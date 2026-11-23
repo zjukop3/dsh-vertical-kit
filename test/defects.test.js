@@ -19,6 +19,11 @@ import { lintOutline } from '../../dsh-verify-kit/packages/dsh-outline-lint/src/
 import { lintLicense } from '../packages/dsh-license-check/src/index.js'
 import { lintHandover } from '../packages/dsh-handover-check/src/index.js'
 import { lintTables } from '../../dsh-verify-kit/packages/dsh-tablelint/src/index.js'
+import { lintPerfReport } from '../packages/dsh-perf-report-check/src/index.js'
+import { createServer } from 'node:http'
+import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const LINTERS = {
   'commit-msg-check': lintCommitMessage,
@@ -33,12 +38,13 @@ const LINTERS = {
   'license-check': lintLicense,
   'handover-check': lintHandover,
   'tablelint': lintTables,
+  'perf-report-check': lintPerfReport,
 }
 
 const ruleOf = name => name.split(' / ')[0]
 
 test('the ledger is well formed and every entry names a linter this test can run', () => {
-  assert.equal(LEDGER.total, 19)
+  assert.equal(LEDGER.total, 21)
   for (const defect of DEFECTS) {
     assert.ok(defect.n > 0, 'a defect has a number')
     assert.ok(defect.check, `${defect.n}: names a check`)
@@ -47,7 +53,7 @@ test('the ledger is well formed and every entry names a linter this test can run
     assert.ok(defect.fixedIn, `${defect.n}: names the version that fixed it`)
     assert.ok(defect.foundBy, `${defect.n}: names how it was found`)
     assert.ok(LINTERS[defect.check], `${defect.n}: ${defect.check} has a linter here`)
-    assert.ok(['silent', 'fires', 'line'].includes(defect.now.kind), `${defect.n}: known assertion kind`)
+    assert.ok(['silent', 'fires', 'line', 'route'].includes(defect.now.kind), `${defect.n}: known assertion kind`)
   }
 })
 
@@ -92,6 +98,37 @@ test('the sources are counted, not asserted from memory', () => {
   assert.equal(audit, 3, 'the rules audit found three')
   assert.equal(thirdParty, 8, 'eight came from files other people wrote')
   assert.equal(ownArtifact, 1, 'one came from writing an honest artifact about this project')
-  assert.equal(ownReal, 7, 'the rest came from this project own real work product')
+  assert.equal(ownReal, 9, '其余来自把包真的装起来、真的调一遍（2 条是 route 类）')
   assert.equal(audit + thirdParty + ownArtifact + ownReal, LEDGER.total)
+})
+// route 类缺陷的回放：把包装起来、按文档的第二种输入调一次。
+// 这是本轮唯一一类「静态读代码看不出来」的缺陷——CLI 一直是好的，坏的是端点。
+test('route 类缺陷的回放：path 分支给出与 text 分支相同的答复', async () => {
+  const routes = DEFECTS.filter(defect => defect.now.kind === 'route')
+  assert.equal(routes.length, 2, 'ledger 里有两条 route 类缺陷')
+  for (const defect of routes) {
+    const mod = await import(`../packages/dsh-${defect.check}/src/index.js`)
+    const state = { route: null }
+    mod.apply({ webServer: { register(spec) { state.route = spec } }, effect(fn) { fn() } }, {})
+    assert.ok(state.route, `${defect.check}: apply() 注册了路由`)
+    const dir = mkdtempSync(join(tmpdir(), 'dsh-defect-'))
+    const file = join(dir, 'doc.md')
+    writeFileSync(file, defect.now.input, 'utf8')
+    const server = createServer((req, res) => state.route.handler(req, res))
+    await new Promise(done => server.listen(0, '127.0.0.1', done))
+    try {
+      const { port } = server.address()
+      const response = await fetch(`http://127.0.0.1:${port}${defect.now.path}`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ path: file }),
+      })
+      const body = await response.json()
+      assert.equal(response.status, 200, `${defect.n} ${defect.check}: ${JSON.stringify(body).slice(0, 140)}`)
+      assert.deepEqual(body, LINTERS[defect.check](defect.now.input), `${defect.n} ${defect.check}: path 与 text 不一致`)
+    } finally {
+      await new Promise(done => server.close(done))
+      rmSync(dir, { recursive: true, force: true })
+    }
+  }
 })

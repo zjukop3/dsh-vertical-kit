@@ -1,6 +1,6 @@
 {
   "name": "dsh-release-notes-check",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Release-note hygiene from markdown: a version heading, a date, breaking changes paired with an upgrade path, and reverse-chronological ordering.",
   "type": "module",
   "main": "./src/index.js",

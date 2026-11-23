@@ -205,10 +205,10 @@ function defectsPage() {
   const sourceList = Object.entries(LEDGER.bySource).sort((a, b) => b[1] - a[1])
     .map(([source, count]) => `<li><code>${esc(source)}</code> — ${count}</li>`).join('\n')
   return `<!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>17 个检测器缺陷 · dsh-vertical-kit</title><meta name="description" content="这 22 个检查里，有 17 条规则曾经量的是拼写而不是性质。每一条的复现输入、当时的错误判定、现在的判定，以及把它找出来的方法。这些声称由 test/defects.test.js 对着当前代码验证。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/defects/`)}"><style>${styles}</style></head><body><main>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${LEDGER.total} 个检测器缺陷 · dsh-vertical-kit</title><meta name="description" content="这 ${CHECKS.length} 个检查里，有 ${LEDGER.ruleCount} 条规则曾经量的是拼写而不是性质，另外 ${LEDGER.total - LEDGER.ruleCount} 条是端点。每一条的复现输入、当时的错误判定、现在的判定，以及把它找出来的方法。这些声称由 test/defects.test.js 对着当前代码验证。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/defects/`)}"><style>${styles}</style></head><body><main>
 <p class="eyebrow">DSH VERTICAL KIT · DEFECT LEDGER</p>
 <h1>17 个检测器缺陷</h1>
-<p>这 22 个检查里，有 <strong>${LEDGER.total}</strong> 条规则曾经量的是<strong>拼写</strong>而不是<strong>性质</strong>：规则要求某一种写法，而真实文档用的是另一种同样合法的写法，于是对每一份真实文档都报错。或者反过来——规则写得永远触发不了，测试却绿着。</p>
+<p>这 ${CHECKS.length} 个检查里，有 <strong>${LEDGER.ruleCount}</strong> 条规则曾经量的是<strong>拼写</strong>而不是<strong>性质</strong>：规则要求某一种写法，而真实文档用的是另一种同样合法的写法，于是对每一份真实文档都报错。或者反过来——规则写得永远触发不了，测试却绿着。</p>
 <p>下面每一条都写了：复现输入、当时的判定、现在的判定、以及它是怎么被找出来的。<strong>这些声称不是自述</strong>——<code>test/defects.test.js</code> 会把每条复现输入喂给当前的代码，误报的那条必须不再出现，死规则的那条必须出现，行号必须落在标题上。页面里说的和代码里做的，只能是一件事。</p>
 <h2>按发现方式</h2>
 <ul>

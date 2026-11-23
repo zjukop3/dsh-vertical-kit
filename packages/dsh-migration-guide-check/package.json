@@ -1,6 +1,6 @@
 {
   "name": "dsh-migration-guide-check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Migration-guide hygiene from markdown: the version span the guide covers, the breaking changes as an enumerable list, numbered steps, how to verify the upgrade worked, and how to roll back.",
   "type": "module",
   "main": "./src/index.js",
