@@ -54,8 +54,8 @@
         }
       ],
       "usage": [
-        "npx agreement-check contract.md --json",
-        "npx agreement-check contract.md --warnings-fail"
+        "npx dsh-agreement-check contract.md --json",
+        "npx dsh-agreement-check contract.md --warnings-fail"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/agreement-check/",
       "route": "POST /agreement-check/api",
@@ -100,8 +100,8 @@
         }
       ],
       "usage": [
-        "npx invoice-check invoice.txt --json",
-        "npx invoice-check invoice.txt --tolerance 0.02"
+        "npx dsh-invoice-check invoice.txt --json",
+        "npx dsh-invoice-check invoice.txt --tolerance 0.02"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/invoice-check/",
       "route": "POST /invoice-check/api",
@@ -146,8 +146,8 @@
         }
       ],
       "usage": [
-        "npx listing-check listings.csv --json",
-        "npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999"
+        "npx dsh-listing-check listings.csv --json",
+        "npx dsh-listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/listing-check/",
       "route": "POST /listing-check/api",
@@ -192,8 +192,8 @@
         }
       ],
       "usage": [
-        "npx meeting-notes-check notes.md --json",
-        "npx meeting-notes-check notes.md --no-require-agenda"
+        "npx dsh-meeting-notes-check notes.md --json",
+        "npx dsh-meeting-notes-check notes.md --no-require-agenda"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/meeting-notes-check/",
       "route": "POST /meeting-notes-check/api",
@@ -238,8 +238,8 @@
         }
       ],
       "usage": [
-        "npx resume-check resume.md --json",
-        "npx resume-check resume.md --no-allow-gaps"
+        "npx dsh-resume-check resume.md --json",
+        "npx dsh-resume-check resume.md --no-allow-gaps"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/resume-check/",
       "route": "POST /resume-check/api",
@@ -276,8 +276,8 @@
         }
       ],
       "usage": [
-        "npx release-notes-check notes.md --json",
-        "npx release-notes-check notes.md --no-require-upgrade"
+        "npx dsh-release-notes-check notes.md --json",
+        "npx dsh-release-notes-check notes.md --no-require-upgrade"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/release-notes-check/",
       "route": "POST /release-notes-check/api",
@@ -310,8 +310,8 @@
         }
       ],
       "usage": [
-        "npx weekly-report-check report.md --json",
-        "npx weekly-report-check report.md --min-metrics 3"
+        "npx dsh-weekly-report-check report.md --json",
+        "npx dsh-weekly-report-check report.md --min-metrics 3"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/weekly-report-check/",
       "route": "POST /weekly-report-check/api",
@@ -352,8 +352,8 @@
         }
       ],
       "usage": [
-        "npx bug-report-check report.md --json",
-        "npx bug-report-check report.md --min-steps 5"
+        "npx dsh-bug-report-check report.md --json",
+        "npx dsh-bug-report-check report.md --min-steps 5"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/",
       "route": "POST /bug-report-check/api",
@@ -386,8 +386,8 @@
         }
       ],
       "usage": [
-        "npx api-doc-check api.md --json",
-        "npx api-doc-check api.md --min-endpoints 5"
+        "npx dsh-api-doc-check api.md --json",
+        "npx dsh-api-doc-check api.md --min-endpoints 5"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/api-doc-check/",
       "route": "POST /api-doc-check/api",
@@ -428,7 +428,7 @@
         }
       ],
       "usage": [
-        "npx test-report-check report.md --json"
+        "npx dsh-test-report-check report.md --json"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/test-report-check/",
       "route": "POST /test-report-check/api",
@@ -473,9 +473,9 @@
         }
       ],
       "usage": [
-        "npx commit-msg-check .git/COMMIT_EDITMSG --json",
-        "npx commit-msg-check msg.txt --max-subject 50",
-        "npx commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀"
+        "npx dsh-commit-msg-check .git/COMMIT_EDITMSG --json",
+        "npx dsh-commit-msg-check msg.txt --max-subject 50",
+        "npx dsh-commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/commit-msg-check/",
       "route": "POST /commit-msg-check/api",
@@ -524,8 +524,8 @@
         }
       ],
       "usage": [
-        "npx dockerfile-check Dockerfile --json",
-        "npx dockerfile-check Dockerfile --allow-latest --no-require-user"
+        "npx dsh-dockerfile-check Dockerfile --json",
+        "npx dsh-dockerfile-check Dockerfile --allow-latest --no-require-user"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/dockerfile-check/",
       "route": "POST /dockerfile-check/api",
@@ -566,8 +566,8 @@
         }
       ],
       "usage": [
-        "npx env-example-check .env.example --json",
-        "npx env-example-check .env.example --require-comment"
+        "npx dsh-env-example-check .env.example --json",
+        "npx dsh-env-example-check .env.example --require-comment"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/env-example-check/",
       "route": "POST /env-example-check/api",
@@ -620,8 +620,8 @@
         }
       ],
       "usage": [
-        "npx license-check LICENSE --json",
-        "npx license-check LICENSE --expected MIT"
+        "npx dsh-license-check LICENSE --json",
+        "npx dsh-license-check LICENSE --expected MIT"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/license-check/",
       "route": "POST /license-check/api",
@@ -662,8 +662,8 @@
         }
       ],
       "usage": [
-        "npx incident-report-check postmortem.md --json",
-        "npx incident-report-check postmortem.md --min-timeline 4"
+        "npx dsh-incident-report-check postmortem.md --json",
+        "npx dsh-incident-report-check postmortem.md --min-timeline 4"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/incident-report-check/",
       "route": "POST /incident-report-check/api",
@@ -704,8 +704,8 @@
         }
       ],
       "usage": [
-        "npx ops-runbook-check runbook.md --json",
-        "npx ops-runbook-check runbook.md --min-steps 5"
+        "npx dsh-ops-runbook-check runbook.md --json",
+        "npx dsh-ops-runbook-check runbook.md --min-steps 5"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/ops-runbook-check/",
       "route": "POST /ops-runbook-check/api",
@@ -750,8 +750,8 @@
         }
       ],
       "usage": [
-        "npx pr-description-check body.md --json",
-        "gh pr view 42 --json body --jq .body | npx pr-description-check -"
+        "npx dsh-pr-description-check body.md --json",
+        "gh pr view 42 --json body --jq .body | npx dsh-pr-description-check -"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/pr-description-check/",
       "route": "POST /pr-description-check/api",
@@ -796,8 +796,8 @@
         }
       ],
       "usage": [
-        "npx spec-doc-check spec.md --json",
-        "npx spec-doc-check spec.md --min-criteria 3"
+        "npx dsh-spec-doc-check spec.md --json",
+        "npx dsh-spec-doc-check spec.md --min-criteria 3"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/spec-doc-check/",
       "route": "POST /spec-doc-check/api",
@@ -850,8 +850,8 @@
         }
       ],
       "usage": [
-        "npx adr-check docs/adr/0007-postgres-sessions.md --json",
-        "npx adr-check - < adr.md"
+        "npx dsh-adr-check docs/adr/0007-postgres-sessions.md --json",
+        "npx dsh-adr-check - < adr.md"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/adr-check/",
       "route": "POST /adr-check/api",
@@ -892,8 +892,8 @@
         }
       ],
       "usage": [
-        "npx onboarding-check README.md --json",
-        "npx onboarding-check - < ONBOARDING.md"
+        "npx dsh-onboarding-check README.md --json",
+        "npx dsh-onboarding-check - < ONBOARDING.md"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/onboarding-check/",
       "route": "POST /onboarding-check/api",
@@ -954,8 +954,8 @@
         }
       ],
       "usage": [
-        "npx handover-check handover.md --json",
-        "npx handover-check - < handover.md"
+        "npx dsh-handover-check handover.md --json",
+        "npx dsh-handover-check - < handover.md"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/handover-check/",
       "route": "POST /handover-check/api",
@@ -1020,9 +1020,9 @@
         }
       ],
       "usage": [
-        "npx expense-claim-check claim.md --json",
-        "npx expense-claim-check claim.md --tolerance 0.02",
-        "npx expense-claim-check - < claim.md"
+        "npx dsh-expense-claim-check claim.md --json",
+        "npx dsh-expense-claim-check claim.md --tolerance 0.02",
+        "npx dsh-expense-claim-check - < claim.md"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/expense-claim-check/",
       "route": "POST /expense-claim-check/api",
@@ -1071,8 +1071,8 @@
         }
       ],
       "usage": [
-        "npx security-advisory-check advisory.md --json",
-        "npx security-advisory-check advisory.md --check-workaround --check-contact"
+        "npx dsh-security-advisory-check advisory.md --json",
+        "npx dsh-security-advisory-check advisory.md --check-workaround --check-contact"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/security-advisory-check/",
       "route": "POST /security-advisory-check/api",
@@ -1121,9 +1121,9 @@
         }
       ],
       "usage": [
-        "npx migration-guide-check guide.md --json",
-        "npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback",
-        "npx migration-guide-check guide.md --check-recovery"
+        "npx dsh-migration-guide-check guide.md --json",
+        "npx dsh-migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback",
+        "npx dsh-migration-guide-check guide.md --check-recovery"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/migration-guide-check/",
       "route": "POST /migration-guide-check/api",
@@ -1172,8 +1172,8 @@
         }
       ],
       "usage": [
-        "npx privacy-notice-check notice.md --json",
-        "npx privacy-notice-check notice.md --require-rights --warnings-fail"
+        "npx dsh-privacy-notice-check notice.md --json",
+        "npx dsh-privacy-notice-check notice.md --require-rights --warnings-fail"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/",
       "route": "POST /privacy-notice-check/api",
@@ -1230,8 +1230,8 @@
         }
       ],
       "usage": [
-        "npx contributing-check CONTRIBUTING.md --json",
-        "npx contributing-check CONTRIBUTING.md --strict --warnings-fail"
+        "npx dsh-contributing-check CONTRIBUTING.md --json",
+        "npx dsh-contributing-check CONTRIBUTING.md --strict --warnings-fail"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/contributing-check/",
       "route": "POST /contributing-check/api",
@@ -1276,8 +1276,8 @@
         }
       ],
       "usage": [
-        "npx perf-report-check report.md --json",
-        "npx perf-report-check report.md --strict --warnings-fail"
+        "npx dsh-perf-report-check report.md --json",
+        "npx dsh-perf-report-check report.md --strict --warnings-fail"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/perf-report-check/",
       "route": "POST /perf-report-check/api",

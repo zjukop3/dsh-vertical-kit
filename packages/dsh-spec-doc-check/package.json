@@ -1,6 +1,6 @@
 {
   "name": "dsh-spec-doc-check",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Spec-doc hygiene: the problem stated, acceptance criteria a reader could actually check, an explicit out-of-scope section, and no criterion written as a wish («体验良好» can be neither accepted nor rejected).",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "spec-doc-check": "./bin/cli.js"
+    "spec-doc-check": "./bin/cli.js",
+    "dsh-spec-doc-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

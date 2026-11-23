@@ -58,8 +58,8 @@ Identification matches **phrases from the license body**, not just the title —
 ## Use
 
 ```bash
-npx license-check LICENSE --json
-npx license-check LICENSE --expected MIT
+npx dsh-license-check LICENSE --json
+npx dsh-license-check LICENSE --expected MIT
 ```
 
 Same function over HTTP: `POST /license-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>没有任何 KEY=value 行 → error</td></tr><tr><td><code>literal-value</code></td><td>某键带了字面值（从 .env 复制过来的典型形态）→ error，报行号</td></tr><tr><td><code>duplicate-key</code></td><td>同一个键出现两次 → error，同时报两行</td></tr><tr><td><code>line-unparsed</code></td><td>既不是 KEY=value 也不是注释 → warn</td></tr><tr><td><code>key-case</code></td><td>键名不是全大写下划线 → warn（shell 里大小写是两个变量）</td></tr><tr><td><code>comment-missing / no-comment</code></td><td>没有任何注释行 → warn（--require-comment 时升级为 error）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx env-example-check .env.example --json</code></pre><pre><code>npx env-example-check .env.example --require-comment</code></pre>
+<pre><code>npx dsh-env-example-check .env.example --json</code></pre><pre><code>npx dsh-env-example-check .env.example --require-comment</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>DATABASE_URL=postgres://user:pass@prod-db:5432/app
 PORT=8080

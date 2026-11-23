@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>没有 `# 标题`，也没有 frontmatter 的 title: → error</td></tr><tr><td><code>data-missing</code></td><td>没有说明收集什么 → error；认得 information we collect、personal data that we process；「不收集任何数据」也是答案</td></tr><tr><td><code>purpose-missing</code></td><td>没有用途段或带标签的一行 → error</td></tr><tr><td><code>retention-missing</code></td><td>没有保留期限 → error；「不保留」也是答案</td></tr><tr><td><code>sharing-missing</code></td><td>没有共享段 → error；认得 共享、第三方、disclose、subprocessor；散文里提到「第三方」不算声明</td></tr><tr><td><code>contact-missing</code></td><td>没有联系段、标签行或邮箱 → error</td></tr><tr><td><code>effective-date-missing</code></td><td>没有生效或更新日期 → warn</td></tr><tr><td><code>rights-missing</code></td><td>没有权利说明（## 你的权利、你有权访问/删除…）→ warn（--require-rights 时 error）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx privacy-notice-check notice.md --json</code></pre><pre><code>npx privacy-notice-check notice.md --require-rights --warnings-fail</code></pre>
+<pre><code>npx dsh-privacy-notice-check notice.md --json</code></pre><pre><code>npx dsh-privacy-notice-check notice.md --require-rights --warnings-fail</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 隐私声明
 

@@ -58,8 +58,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx perf-report-check report.md --json
-npx perf-report-check report.md --strict --warnings-fail
+npx dsh-perf-report-check report.md --json
+npx dsh-perf-report-check report.md --strict --warnings-fail
 ```
 
 Same function over HTTP: `POST /perf-report-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

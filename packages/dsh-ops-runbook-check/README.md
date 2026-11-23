@@ -57,8 +57,8 @@ The warning check looks **on the same line** deliberately: a warning three parag
 ## Use
 
 ```bash
-npx ops-runbook-check runbook.md --json
-npx ops-runbook-check runbook.md --min-steps 5
+npx dsh-ops-runbook-check runbook.md --json
+npx dsh-ops-runbook-check runbook.md --min-steps 5
 ```
 
 Same function over HTTP: `POST /ops-runbook-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

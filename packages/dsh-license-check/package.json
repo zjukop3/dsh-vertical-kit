@@ -1,6 +1,6 @@
 {
   "name": "dsh-license-check",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "LICENSE hygiene: a recognized license body, a title that agrees with it, a copyright line with a holder and a plausible year, and no leftover template placeholders.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "license-check": "./bin/cli.js"
+    "license-check": "./bin/cli.js",
+    "dsh-license-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

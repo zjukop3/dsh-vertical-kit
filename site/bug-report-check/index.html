@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>第一行没有 `# 标题` → error</td></tr><tr><td><code>env-missing</code></td><td>没有环境信息（## 环境、版本：、OS：、Node：）→ error</td></tr><tr><td><code>repro-missing</code></td><td>没有复现步骤标题下的编号步骤 → error</td></tr><tr><td><code>expected-actual-missing</code></td><td>预期与实际都没写 → error</td></tr><tr><td><code>expected-missing / actual-missing</code></td><td>只写一边 → error，指出缺哪边</td></tr><tr><td><code>repro-thin</code></td><td>步骤少于下限（默认 3，可调）→ warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx bug-report-check report.md --json</code></pre><pre><code>npx bug-report-check report.md --min-steps 5</code></pre>
+<pre><code>npx dsh-bug-report-check report.md --json</code></pre><pre><code>npx dsh-bug-report-check report.md --min-steps 5</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 登录按钮在 Safari 下无响应
 

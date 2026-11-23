@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>记录为空 → error</td></tr><tr><td><code>status-missing</code></td><td>没有状态（状态：已接受 / Status: accepted，或「## Status」下面一行）→ error</td></tr><tr><td><code>context-missing</code></td><td>没有背景段 → error（没有约束，后人无法重新评估）</td></tr><tr><td><code>decision-missing</code></td><td>没有决定段 → error</td></tr><tr><td><code>consequences-missing</code></td><td>没有后果段 → error</td></tr><tr><td><code>consequences-one-sided</code></td><td>后果只有好处没有代价 → warn</td></tr><tr><td><code>consequences-unlabelled</code></td><td>后果不分好坏 → warn（读者分不清哪条是要接受的成本）</td></tr><tr><td><code>alternatives-missing</code></td><td>没有备选方案段 → warn，默认不查（--require-alternatives 打开）</td></tr><tr><td><code>status-unknown / date-missing</code></td><td>状态不在常见取值 / 没有日期 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx adr-check docs/adr/0007-postgres-sessions.md --json</code></pre><pre><code>npx adr-check - &lt; adr.md</code></pre>
+<pre><code>npx dsh-adr-check docs/adr/0007-postgres-sessions.md --json</code></pre><pre><code>npx dsh-adr-check - &lt; adr.md</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># ADR-0007 用 Postgres 存会话
 

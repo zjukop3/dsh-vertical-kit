@@ -1,6 +1,6 @@
 {
   "name": "dsh-ops-runbook-check",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Ops runbook hygiene: prerequisites you must have in hand, numbered steps followable under stress, a rollback path, and a way to verify it worked — plus a warning beside every destructive command.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "ops-runbook-check": "./bin/cli.js"
+    "ops-runbook-check": "./bin/cli.js",
+    "dsh-ops-runbook-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

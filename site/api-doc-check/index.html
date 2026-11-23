@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>endpoints-missing</code></td><td>没有「METHOD + 路径」形式的端点 → error</td></tr><tr><td><code>examples-missing</code></td><td>没有代码块示例 → error</td></tr><tr><td><code>auth-missing</code></td><td>全文没有鉴权说明 → error（明说无需鉴权、或只在本机/Unix socket 上监听，都算说清了）</td></tr><tr><td><code>error-shape-missing</code></td><td>没有错误响应说明（错误/失败/4xx/5xx）→ warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx api-doc-check api.md --json</code></pre><pre><code>npx api-doc-check api.md --min-endpoints 5</code></pre>
+<pre><code>npx dsh-api-doc-check api.md --json</code></pre><pre><code>npx dsh-api-doc-check api.md --min-endpoints 5</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 接口说明
 

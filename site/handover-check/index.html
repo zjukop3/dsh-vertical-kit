@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>handover-person-missing</code></td><td>没有交接人 → error</td></tr><tr><td><code>receiver-missing</code></td><td>没有接收人（人交接；会话交接会先判成 technical-handover） → error</td></tr><tr><td><code>receiver-unassigned</code></td><td>接收人写成「尚未指定/待定/TBD」等非人名 → error</td></tr><tr><td><code>date-missing</code></td><td>没有交接日期 → error</td></tr><tr><td><code>date-unlabelled</code></td><td>有日期但没有「交接日期/生效日期」字样 → warn</td></tr><tr><td><code>items-thin</code></td><td>交接事项少于三条 → error</td></tr><tr><td><code>no-owners</code></td><td>事项里没有一条写了负责/接手人 → warn</td></tr><tr><td><code>access-unlisted</code></td><td>没有账号/权限段 → error（写「无账号需交接」可豁免）</td></tr><tr><td><code>access-empty</code></td><td>有账号段但没点名任何具体账号 → warn</td></tr><tr><td><code>pending-missing</code></td><td>没有未完成/遗留事项段 → warn</td></tr><tr><td><code>signoff-missing</code></td><td>没有接收人签字/确认 → error</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx handover-check handover.md --json</code></pre><pre><code>npx handover-check - &lt; handover.md</code></pre>
+<pre><code>npx dsh-handover-check handover.md --json</code></pre><pre><code>npx dsh-handover-check - &lt; handover.md</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 交接单
 

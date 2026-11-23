@@ -56,8 +56,8 @@ Instruction parsing handles case-insensitivity and backslash continuations, so a
 ## Use
 
 ```bash
-npx dockerfile-check Dockerfile --json
-npx dockerfile-check Dockerfile --allow-latest --no-require-user
+npx dsh-dockerfile-check Dockerfile --json
+npx dsh-dockerfile-check Dockerfile --allow-latest --no-require-user
 ```
 
 Same function over HTTP: `POST /dockerfile-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

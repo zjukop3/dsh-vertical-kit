@@ -1,6 +1,6 @@
 {
   "name": "dsh-resume-check",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Resume hygiene from markdown: a reachable contact block, valid email and phone shapes, a work timeline that never overlaps itself, and an education section.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "resume-check": "./bin/cli.js"
+    "resume-check": "./bin/cli.js",
+    "dsh-resume-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

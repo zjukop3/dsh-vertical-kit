@@ -1,6 +1,6 @@
 {
   "name": "dsh-release-notes-check",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Release-note hygiene from markdown: a version heading, a date, breaking changes paired with an upgrade path, and reverse-chronological ordering.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "release-notes-check": "./bin/cli.js"
+    "release-notes-check": "./bin/cli.js",
+    "dsh-release-notes-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

@@ -66,9 +66,9 @@ Amounts are read to two decimals and must sit below ten million; invoice numbers
 ## Use
 
 ```bash
-npx expense-claim-check claim.md --json
-npx expense-claim-check - < claim.md
-npx expense-claim-check claim.md --tolerance 0.02
+npx dsh-expense-claim-check claim.md --json
+npx dsh-expense-claim-check - < claim.md
+npx dsh-expense-claim-check claim.md --tolerance 0.02
 ```
 
 Same function over HTTP: `POST /expense-claim-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

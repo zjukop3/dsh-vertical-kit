@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>claimant-missing</code></td><td>没有报销人 → error</td></tr><tr><td><code>date-missing</code></td><td>没有日期也没有期间 → error</td></tr><tr><td><code>period-unlabelled</code></td><td>只有一个日期且没写「报销期间」 → warn</td></tr><tr><td><code>items-missing</code></td><td>没有带金额的明细行 → error</td></tr><tr><td><code>total-missing</code></td><td>没有合计行 → error</td></tr><tr><td><code>total-mismatch</code></td><td>明细相加与合计不符 → error</td></tr><tr><td><code>invoice-duplicate</code></td><td>同一发票号出现两次 → error</td></tr><tr><td><code>invoice-missing</code></td><td>明细里没有任何发票号 → warn</td></tr><tr><td><code>purpose-missing</code></td><td>没有事由说明 → warn</td></tr><tr><td><code>category-missing</code></td><td>没有费用类别 → warn</td></tr><tr><td><code>approver-missing</code></td><td>没有审批人 → error</td></tr><tr><td><code>currency-mixed</code></td><td>多币种且没有汇率说明 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx expense-claim-check claim.md --json</code></pre><pre><code>npx expense-claim-check claim.md --tolerance 0.02</code></pre><pre><code>npx expense-claim-check - &lt; claim.md</code></pre>
+<pre><code>npx dsh-expense-claim-check claim.md --json</code></pre><pre><code>npx dsh-expense-claim-check claim.md --tolerance 0.02</code></pre><pre><code>npx dsh-expense-claim-check - &lt; claim.md</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>报销人：张三
 报销期间：2026-11-01 至 2026-11-15

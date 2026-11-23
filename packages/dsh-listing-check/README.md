@@ -39,8 +39,8 @@ fail: 4 rows, 4 errors, 1 warnings
 A listing is decidable from the export: title length bounds, repeated keywords, price validity, SKU completeness. This verifies exactly those, with configurable bounds, and says which row failed.
 
 ```bash
-npx listing-check listings.csv --json
-npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999
+npx dsh-listing-check listings.csv --json
+npx dsh-listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999
 ```
 
 Exit codes: `0` clean, `1` findings, `2` usage or read error. In DSH the same function is behind `POST /listing-check/api` with `{"text":"…"}` or `{"path":"…"}`, so the panel and CI agree by construction.

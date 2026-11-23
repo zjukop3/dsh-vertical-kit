@@ -51,9 +51,9 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx migration-guide-check guide.md --json
-npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback
-npx migration-guide-check guide.md --check-recovery   # 全指南都问验证/回滚/备份
+npx dsh-migration-guide-check guide.md --json
+npx dsh-migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback
+npx dsh-migration-guide-check guide.md --check-recovery   # 全指南都问验证/回滚/备份
 ```
 
 Same function over HTTP: `POST /migration-guide-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

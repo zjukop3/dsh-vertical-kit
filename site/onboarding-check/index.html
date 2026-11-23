@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>文档为空 → error</td></tr><tr><td><code>prereq-missing</code></td><td>没有前置要求段 → warn（--strict 时 error）——实测 37 份真实 README 里 23 份没有</td></tr><tr><td><code>command-missing</code></td><td>没有含安装命令的代码块 → error（只能读的文档不是上手文档）</td></tr><tr><td><code>success-missing</code></td><td>没有「你应该看到」段 → warn（--strict 时 error）——22/37 的真实 README 没有</td></tr><tr><td><code>help-missing</code></td><td>没有求助路径 → warn</td></tr><tr><td><code>time-estimate-missing</code></td><td>全文没有耗时 → warn（没写多久的文档会被收藏然后永不打开）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx onboarding-check README.md --json</code></pre><pre><code>npx onboarding-check - &lt; ONBOARDING.md</code></pre>
+<pre><code>npx dsh-onboarding-check README.md --json</code></pre><pre><code>npx dsh-onboarding-check - &lt; ONBOARDING.md</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 上手
 

@@ -1,6 +1,6 @@
 {
   "name": "dsh-meeting-notes-check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Meeting-note hygiene from markdown: a date, the people in the room, recorded decisions, and every action item carrying an owner and a deadline.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "meeting-notes-check": "./bin/cli.js"
+    "meeting-notes-check": "./bin/cli.js",
+    "dsh-meeting-notes-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

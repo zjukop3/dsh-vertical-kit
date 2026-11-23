@@ -49,8 +49,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx bug-report-check report.md --json
-npx bug-report-check report.md --min-steps 5
+npx dsh-bug-report-check report.md --json
+npx dsh-bug-report-check report.md --min-steps 5
 ```
 
 Same function over HTTP: `POST /bug-report-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

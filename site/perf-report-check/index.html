@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>前几行里没有 `# 标题` → error</td></tr><tr><td><code>load-missing</code></td><td>没有写清条件（并发、QPS、轮次、7-run、数据规模）→ error</td></tr><tr><td><code>latency-missing</code></td><td>没有可比较的度量（分位、吞吐、median of N reps、best 0.65ms）→ error</td></tr><tr><td><code>env-missing</code></td><td>没有环境（机器、CPU、线程数、平台、数据规模）→ error</td></tr><tr><td><code>baseline-missing</code></td><td>没有基线对照（基线、优化前、191.2ms → 2.2ms、87×）→ warn（--strict 时 error）</td></tr><tr><td><code>conclusion-missing</code></td><td>没有结论段（结论、Findings、Recommendation、结果分析）→ warn（--strict 时 error）</td></tr><tr><td><code>repro-missing</code></td><td>没有复现方式（locust/k6/wrk、脚本路径、harness）→ warn（--strict 时 error）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx perf-report-check report.md --json</code></pre><pre><code>npx perf-report-check report.md --strict --warnings-fail</code></pre>
+<pre><code>npx dsh-perf-report-check report.md --json</code></pre><pre><code>npx dsh-perf-report-check report.md --strict --warnings-fail</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 首页接口压测
 

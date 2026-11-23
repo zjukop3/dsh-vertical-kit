@@ -54,8 +54,8 @@ Blocks are inspected by content: a ```` ```text ```` block showing version outpu
 ## Use
 
 ```bash
-npx onboarding-check README.md --json
-npx onboarding-check - < ONBOARDING.md
+npx dsh-onboarding-check README.md --json
+npx dsh-onboarding-check - < ONBOARDING.md
 ```
 
 Same function over HTTP: `POST /onboarding-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

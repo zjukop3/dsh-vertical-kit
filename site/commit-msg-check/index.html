@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>type-missing</code></td><td>没有 type(scope): subject 前缀 → warn（团队约定；--require-type 才升为 error）</td></tr><tr><td><code>type-unknown</code></td><td>类型不在已知集合（feat/fix/docs/…）→ warn</td></tr><tr><td><code>subject-long</code></td><td>主题超过上限（默认 72）→ error</td></tr><tr><td><code>subject-empty</code></td><td>冒号后没有主题 → error</td></tr><tr><td><code>subject-period</code></td><td>主题以句号结尾 → warn</td></tr><tr><td><code>body-separator</code></td><td>标题后没有空行 → error</td></tr><tr><td><code>breaking-untrailed</code></td><td>用了 ! 但正文没有 BREAKING CHANGE: trailer → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx commit-msg-check .git/COMMIT_EDITMSG --json</code></pre><pre><code>npx commit-msg-check msg.txt --max-subject 50</code></pre><pre><code>npx commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀</code></pre>
+<pre><code>npx dsh-commit-msg-check .git/COMMIT_EDITMSG --json</code></pre><pre><code>npx dsh-commit-msg-check msg.txt --max-subject 50</code></pre><pre><code>npx dsh-commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>修复登录页在弱网环境下偶发超时却没有任何反馈的问题，补上错误文案、重试按钮与失败提示，并新增三条回归测试，覆盖该路径、重试次数上限以及超时之后的状态回收逻辑</code></pre></details>
 <pre><code>$ commit-msg-check commit-sample.txt

@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>credit-code</code></td><td>18 位统一社会信用代码字符集校验（数字 + A-HJ-NPQRTUWXY，排除 I/O/S/V/Z）→ error</td></tr><tr><td><code>invoice-number</code></td><td>发票号码 20 位（数电票）或 8 位（纸质票）之外 → warn</td></tr><tr><td><code>amount-sum</code></td><td>不含税 + 税额 ≠ 价税合计（超出容差）→ error，报三项的值</td></tr><tr><td><code>amount-partial</code></td><td>勾稽三项缺一 → warn，点名缺哪个</td></tr><tr><td><code>amount-uppercase</code></td><td>大写金额与价税合计不一致 → error</td></tr><tr><td><code>amount-ambiguous</code></td><td>出现多个大写金额 → warn</td></tr><tr><td><code>buyer / seller</code></td><td>没有购买方/销售方名称栏 → error</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx invoice-check invoice.txt --json</code></pre><pre><code>npx invoice-check invoice.txt --tolerance 0.02</code></pre>
+<pre><code>npx dsh-invoice-check invoice.txt --json</code></pre><pre><code>npx dsh-invoice-check invoice.txt --tolerance 0.02</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>发票号码：24512000000123456789
 统一社会信用代码：91330106MA27X8XXXX

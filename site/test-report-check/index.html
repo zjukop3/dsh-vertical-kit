@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>counts-missing</code></td><td>没有任何用例计数 → error</td></tr><tr><td><code>sum-mismatch</code></td><td>通过+失败+跳过 ≠ 总计 → error，报出算式与两边数字</td></tr><tr><td><code>env-missing</code></td><td>没有测试环境 → error</td></tr><tr><td><code>failure-detail-missing</code></td><td>报了失败但没有失败详情段 → error</td></tr><tr><td><code>total-missing</code></td><td>有分项没总数 → warn</td></tr><tr><td><code>counts-partial</code></td><td>有总数没分项 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx test-report-check report.md --json</code></pre>
+<pre><code>npx dsh-test-report-check report.md --json</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 测试报告
 

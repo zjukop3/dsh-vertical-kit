@@ -53,9 +53,9 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx security-advisory-check advisory.md --json
-npx security-advisory-check advisory.md --check-workaround --check-contact
-npx security-advisory-check advisory.md --warnings-fail
+npx dsh-security-advisory-check advisory.md --json
+npx dsh-security-advisory-check advisory.md --check-workaround --check-contact
+npx dsh-security-advisory-check advisory.md --warnings-fail
 ```
 
 Same function over HTTP: `POST /security-advisory-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

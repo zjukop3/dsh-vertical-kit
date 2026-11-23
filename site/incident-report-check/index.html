@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>timeline-missing / timeline-entry-untimed</code></td><td>没有时间线段（列表或表格都认），或条目既无日期也无时刻 → error，报行号</td></tr><tr><td><code>impact-missing</code></td><td>没有影响段 → error</td></tr><tr><td><code>root-cause-missing</code></td><td>没有根因段 → error</td></tr><tr><td><code>actions-missing / action-no-owner / actions-unlisted</code></td><td>没有后续段、条目没负责人（列表或 Owner 列都认）→ error；有段但列不出条目 → warn</td></tr><tr><td><code>timeline-thin</code></td><td>时间线条目少于下限（默认 2）→ warn</td></tr><tr><td><code>duration-missing</code></td><td>全文没有时长 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx incident-report-check postmortem.md --json</code></pre><pre><code>npx incident-report-check postmortem.md --min-timeline 4</code></pre>
+<pre><code>npx dsh-incident-report-check postmortem.md --json</code></pre><pre><code>npx dsh-incident-report-check postmortem.md --min-timeline 4</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 服务挂了
 

@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>party-a / party-b</code></td><td>没有「甲方：/乙方：」行，或名称为空 → error，报行号</td></tr><tr><td><code>date</code></td><td>全文无日期 → error；有日期但没有「签订/签署日期」字样 → warn</td></tr><tr><td><code>amount-uppercase</code></td><td>有数字金额但全文没有大写金额 → error</td></tr><tr><td><code>amount-mismatch</code></td><td>大写金额与所有数字金额都对不上 → error，报两边的值</td></tr><tr><td><code>amount-ambiguous</code></td><td>出现多个大写金额 → warn（自动比对仅在恰好一个时进行）</td></tr><tr><td><code>signature</code></td><td>没有「甲方（盖章）/乙方（盖章）」式签署栏 → error</td></tr><tr><td><code>dispute</code></td><td>没有争议解决条款（仲裁/诉讼/管辖）→ error</td></tr><tr><td><code>breach</code></td><td>没有违约责任条款 → error</td></tr><tr><td><code>term</code></td><td>没有期限条款 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx agreement-check contract.md --json</code></pre><pre><code>npx agreement-check contract.md --warnings-fail</code></pre>
+<pre><code>npx dsh-agreement-check contract.md --json</code></pre><pre><code>npx dsh-agreement-check contract.md --warnings-fail</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>甲方：甲科技有限公司
 乙方：乙网络工作室

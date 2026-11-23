@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>没有 `# 标题`，也没有 frontmatter 的 title: → error</td></tr><tr><td><code>from-to-missing</code></td><td>既没有版本跨度（从 0.1.0 到 0.2.0），标题里也没有迁移目标（Migrating to v5）→ error；只有版本号不算</td></tr><tr><td><code>breaking-missing</code></td><td>没有破坏性变更段、也没有至少三节讲变更的小节 → error</td></tr><tr><td><code>steps-missing</code></td><td>没有编号步骤 → warn（--require-steps 时 error）；散文与项目符号都不算</td></tr><tr><td><code>steps-thin</code></td><td>步骤少于下限（默认 3，可调）→ warn</td></tr><tr><td><code>verify-missing</code></td><td>没有验证方式 → warn，仅流程型指南（有编号步骤）</td></tr><tr><td><code>rollback-missing</code></td><td>没有回滚方案 → warn，仅流程型指南（--require-rollback 时 error）</td></tr><tr><td><code>backup-missing</code></td><td>没有备份提示 → warn，仅流程型指南</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx migration-guide-check guide.md --json</code></pre><pre><code>npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback</code></pre><pre><code>npx migration-guide-check guide.md --check-recovery</code></pre>
+<pre><code>npx dsh-migration-guide-check guide.md --json</code></pre><pre><code>npx dsh-migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback</code></pre><pre><code>npx dsh-migration-guide-check guide.md --check-recovery</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 升级说明
 

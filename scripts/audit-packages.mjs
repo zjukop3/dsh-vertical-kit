@@ -62,6 +62,13 @@ for (const name of names) {
     await access(resolve(dir, 'LICENSE'))
   } catch { problems.push('LICENSE missing') }
 
+  // bin 里必须有一个与包名同名的键：`npx <包名>` 只认得这个名字。
+  // 2026-11-23 实测：27 个包的 README 都写 `npx commit-msg-check …`，而 npx 会把
+  // 第一段当成**包名**去 registry 找，那个包不存在 → 404。首跑即失败，且所有包都中。
+  if (pkg.bin && !Object.prototype.hasOwnProperty.call(pkg.bin, pkg.name)) {
+    problems.push(`bin has no entry named "${pkg.name}" — ` + 'npx <package-name> cannot resolve it')
+  }
+
   // bin 目标必须是可执行文件。npm 在 publish 时会把不可执行的 bin 静默丢掉，
   // 只留一行 warn，结果 npx <cli> 直接找不到命令——2026-11-20 三个新包就是这么丢的。
   for (const [command, target] of Object.entries(pkg.bin || {})) {

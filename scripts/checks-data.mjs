@@ -23,8 +23,8 @@ export const CHECKS = [
       ['term', '没有期限条款 → warn'],
     ],
     usage: [
-      'npx agreement-check contract.md --json',
-      'npx agreement-check contract.md --warnings-fail',
+      'npx dsh-agreement-check contract.md --json',
+      'npx dsh-agreement-check contract.md --warnings-fail',
     ],
     example: {
       "command": "agreement-check contract-sample.md",
@@ -52,8 +52,8 @@ export const CHECKS = [
       ['buyer / seller', '没有购买方/销售方名称栏 → error'],
     ],
     usage: [
-      'npx invoice-check invoice.txt --json',
-      'npx invoice-check invoice.txt --tolerance 0.02',
+      'npx dsh-invoice-check invoice.txt --json',
+      'npx dsh-invoice-check invoice.txt --tolerance 0.02',
     ],
     example: {
       "command": "invoice-check invoice-sample.txt",
@@ -81,8 +81,8 @@ export const CHECKS = [
       ['sku-duplicate', 'SKU 与更早的行重复 → error，报两行行号'],
     ],
     usage: [
-      'npx listing-check listings.csv --json',
-      'npx listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999',
+      'npx dsh-listing-check listings.csv --json',
+      'npx dsh-listing-check listings.csv --min-title 10 --max-title 60 --max-price 9999',
     ],
     example: {
       "command": "listing-check listings.csv",
@@ -110,8 +110,8 @@ export const CHECKS = [
       ['no-action-items', '没有任何行动项 → warn（同样带出口）'],
     ],
     usage: [
-      'npx meeting-notes-check notes.md --json',
-      'npx meeting-notes-check notes.md --no-require-agenda',
+      'npx dsh-meeting-notes-check notes.md --json',
+      'npx dsh-meeting-notes-check notes.md --no-require-agenda',
     ],
     example: {
       "command": "meeting-notes-check meeting-sample.md",
@@ -139,8 +139,8 @@ export const CHECKS = [
       ['education-missing', '没有教育/学历段 → warn'],
     ],
     usage: [
-      'npx resume-check resume.md --json',
-      'npx resume-check resume.md --no-allow-gaps',
+      'npx dsh-resume-check resume.md --json',
+      'npx dsh-resume-check resume.md --no-allow-gaps',
     ],
     example: {
       "command": "resume-check resume-sample.md",
@@ -166,8 +166,8 @@ export const CHECKS = [
       ['upgrade-missing', '没有升级/迁移说明 → warn（信息里写明：没有破坏性变更就忽略）'],
     ],
     usage: [
-      'npx release-notes-check notes.md --json',
-      'npx release-notes-check notes.md --no-require-upgrade',
+      'npx dsh-release-notes-check notes.md --json',
+      'npx dsh-release-notes-check notes.md --no-require-upgrade',
     ],
     example: {
       "command": "release-notes-check release-sample.md",
@@ -192,8 +192,8 @@ export const CHECKS = [
       ['metrics-thin', '带量化数字的行数低于下限（默认 1，--min-metrics 可调）→ warn，指出不可检验与可检验的写法'],
     ],
     usage: [
-      'npx weekly-report-check report.md --json',
-      'npx weekly-report-check report.md --min-metrics 3',
+      'npx dsh-weekly-report-check report.md --json',
+      'npx dsh-weekly-report-check report.md --min-metrics 3',
     ],
     example: {
       "command": "weekly-report-check weekly-sample.md",
@@ -220,8 +220,8 @@ export const CHECKS = [
       ['repro-thin', '步骤少于下限（默认 3，可调）→ warn'],
     ],
     usage: [
-      'npx bug-report-check report.md --json',
-      'npx bug-report-check report.md --min-steps 5',
+      'npx dsh-bug-report-check report.md --json',
+      'npx dsh-bug-report-check report.md --min-steps 5',
     ],
     example: {
       "command": "bug-report-check bug-sample.md",
@@ -246,8 +246,8 @@ export const CHECKS = [
       ['error-shape-missing', '没有错误响应说明（错误/失败/4xx/5xx）→ warn'],
     ],
     usage: [
-      'npx api-doc-check api.md --json',
-      'npx api-doc-check api.md --min-endpoints 5',
+      'npx dsh-api-doc-check api.md --json',
+      'npx dsh-api-doc-check api.md --min-endpoints 5',
     ],
     example: {
       "command": "api-doc-check api-sample.md",
@@ -274,7 +274,7 @@ export const CHECKS = [
       ['counts-partial', '有总数没分项 → warn'],
     ],
     usage: [
-      'npx test-report-check report.md --json',
+      'npx dsh-test-report-check report.md --json',
     ],
     example: {
       "command": "test-report-check test-sample.md",
@@ -302,9 +302,9 @@ export const CHECKS = [
       ['breaking-untrailed', '用了 ! 但正文没有 BREAKING CHANGE: trailer → warn'],
     ],
     usage: [
-      'npx commit-msg-check .git/COMMIT_EDITMSG --json',
-      'npx commit-msg-check msg.txt --max-subject 50',
-      'npx commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀',
+      'npx dsh-commit-msg-check .git/COMMIT_EDITMSG --json',
+      'npx dsh-commit-msg-check msg.txt --max-subject 50',
+      'npx dsh-commit-msg-check msg.txt --require-type   # 团队用 Conventional Commits 时强制前缀',
     ],
     example: {
       "command": "commit-msg-check commit-sample.txt",
@@ -333,8 +333,8 @@ export const CHECKS = [
       ['workdir-missing', '没有 WORKDIR → warn'],
     ],
     usage: [
-      'npx dockerfile-check Dockerfile --json',
-      'npx dockerfile-check Dockerfile --allow-latest --no-require-user',
+      'npx dsh-dockerfile-check Dockerfile --json',
+      'npx dsh-dockerfile-check Dockerfile --allow-latest --no-require-user',
     ],
     example: {
       "command": "dockerfile-check Dockerfile.sample",
@@ -361,8 +361,8 @@ export const CHECKS = [
       ['comment-missing / no-comment', '没有任何注释行 → warn（--require-comment 时升级为 error）'],
     ],
     usage: [
-      'npx env-example-check .env.example --json',
-      'npx env-example-check .env.example --require-comment',
+      'npx dsh-env-example-check .env.example --json',
+      'npx dsh-env-example-check .env.example --require-comment',
     ],
     example: {
       "command": "env-example-check env-sample",
@@ -392,8 +392,8 @@ export const CHECKS = [
       ['placeholder-left', '<year>、[fullname]、{{…}} 没填 → error'],
     ],
     usage: [
-      'npx license-check LICENSE --json',
-      'npx license-check LICENSE --expected MIT',
+      'npx dsh-license-check LICENSE --json',
+      'npx dsh-license-check LICENSE --expected MIT',
     ],
     example: {
       "command": "license-check LICENSE.sample",
@@ -420,8 +420,8 @@ export const CHECKS = [
       ['duration-missing', '全文没有时长 → warn'],
     ],
     usage: [
-      'npx incident-report-check postmortem.md --json',
-      'npx incident-report-check postmortem.md --min-timeline 4',
+      'npx dsh-incident-report-check postmortem.md --json',
+      'npx dsh-incident-report-check postmortem.md --min-timeline 4',
     ],
     example: {
       "command": "incident-report-check incident-sample.md",
@@ -448,8 +448,8 @@ export const CHECKS = [
       ['steps-thin / shell-unspecified', '步骤数少于下限 / 没说用哪个 shell → warn'],
     ],
     usage: [
-      'npx ops-runbook-check runbook.md --json',
-      'npx ops-runbook-check runbook.md --min-steps 5',
+      'npx dsh-ops-runbook-check runbook.md --json',
+      'npx dsh-ops-runbook-check runbook.md --min-steps 5',
     ],
     example: {
       "command": "ops-runbook-check runbook-sample.md",
@@ -477,8 +477,8 @@ export const CHECKS = [
       ['checklist-unchecked', '检查项一个都没勾 → warn'],
     ],
     usage: [
-      'npx pr-description-check body.md --json',
-      'gh pr view 42 --json body --jq .body | npx pr-description-check -',
+      'npx dsh-pr-description-check body.md --json',
+      'gh pr view 42 --json body --jq .body | npx dsh-pr-description-check -',
     ],
     example: {
       "command": "pr-description-check pr-sample.md",
@@ -506,8 +506,8 @@ export const CHECKS = [
       ['open-questions-empty', '有「待定」标题但下面没条目 → warn'],
     ],
     usage: [
-      'npx spec-doc-check spec.md --json',
-      'npx spec-doc-check spec.md --min-criteria 3',
+      'npx dsh-spec-doc-check spec.md --json',
+      'npx dsh-spec-doc-check spec.md --min-criteria 3',
     ],
     example: {
       "command": "spec-doc-check spec-sample.md",
@@ -537,8 +537,8 @@ export const CHECKS = [
       ['status-unknown / date-missing', '状态不在常见取值 / 没有日期 → warn'],
     ],
     usage: [
-      'npx adr-check docs/adr/0007-postgres-sessions.md --json',
-      'npx adr-check - < adr.md',
+      'npx dsh-adr-check docs/adr/0007-postgres-sessions.md --json',
+      'npx dsh-adr-check - < adr.md',
     ],
     example: {
       "command": "adr-check adr-sample.md",
@@ -565,8 +565,8 @@ export const CHECKS = [
       ['time-estimate-missing', '全文没有耗时 → warn（没写多久的文档会被收藏然后永不打开）'],
     ],
     usage: [
-      'npx onboarding-check README.md --json',
-      'npx onboarding-check - < ONBOARDING.md',
+      'npx dsh-onboarding-check README.md --json',
+      'npx dsh-onboarding-check - < ONBOARDING.md',
     ],
     example: {
       "command": "onboarding-check onb-sample.md",
@@ -598,8 +598,8 @@ export const CHECKS = [
       ['signoff-missing', '没有接收人签字/确认 → error'],
     ],
     usage: [
-      'npx handover-check handover.md --json',
-      'npx handover-check - < handover.md',
+      'npx dsh-handover-check handover.md --json',
+      'npx dsh-handover-check - < handover.md',
     ],
     example: {
       command: 'handover-check handover-sample.md',
@@ -632,9 +632,9 @@ export const CHECKS = [
       ['currency-mixed', '多币种且没有汇率说明 → warn'],
     ],
     usage: [
-      'npx expense-claim-check claim.md --json',
-      'npx expense-claim-check claim.md --tolerance 0.02',
-      'npx expense-claim-check - < claim.md',
+      'npx dsh-expense-claim-check claim.md --json',
+      'npx dsh-expense-claim-check claim.md --tolerance 0.02',
+      'npx dsh-expense-claim-check - < claim.md',
     ],
     example: {
       command: 'expense-claim-check claim-sample.md',
@@ -655,7 +655,7 @@ export const CHECKS = [
     description: "安全公告发布前的检查：漏洞编号（CVE/GHSA）、写死的严重程度、受影响版本范围、修复版本、今天升不了级时的缓解办法，加上报告渠道与披露日期。散文里的「严重」不是等级，只有发布页链接的「已升级」不是修复版本。",
     decides: "这份安全公告能否让人判断「我会不会被影响、现在该做什么」",
     rules: [["title-missing", "没有 `# 标题`，也没有 frontmatter 的 title: → error"], ["id-missing", "没有 CVE / GHSA / 公告编号 → error"], ["severity-missing", "没有写死的严重程度（严重程度：high）→ error；散文里的「严重」不算"], ["affected-missing", "没有受影响版本范围，也没写「无」→ error"], ["fixed-missing", "既没有修复版本，也没写「暂无可用修复」→ error；「建议尽快升级」不算"], ["workaround-missing", "没有缓解措施或「暂无可用缓解」→ warn，默认不查（--check-workaround 打开）"], ["contact-missing", "没有报告渠道或致谢 → warn，默认不查（--check-contact 打开）"], ["disclosure-date-missing", "没有披露日期 → warn"]],
-    usage: ["npx security-advisory-check advisory.md --json", "npx security-advisory-check advisory.md --check-workaround --check-contact"],
+    usage: ["npx dsh-security-advisory-check advisory.md --json", "npx dsh-security-advisory-check advisory.md --check-workaround --check-contact"],
     example: { "command": "security-advisory-check advisory-sample.md", "fixture": "# 备份导出接口存在越权问题\n\n我们最近发现备份导出接口没有校验归属，任意登录用户可以导出他人的评审包。建议尽快升级。\n", "output": "$ security-advisory-check advisory-sample.md\nerror id-missing 第0行 没有漏洞编号（认得：CVE-2026-12345、GHSA-xxxx-xxxx-xxxx、公告编号：…）——没有编号的公告无法被检索、被交叉引用\nerror severity-missing 第0行 没有严重程度（认得：严重程度：high、危险等级：高危、severity: medium）——散文里的「严重」不是等级，无法据此排期\nerror affected-missing 第0行 没有受影响版本范围（认得：受影响版本 <= 0.1.10、affected < 2.3.0、受影响范围：无）——「早期版本」「修复前」都不算范围，读者无法对照自己的版本\nerror fixed-missing 第0行 既没有修复版本，也没写「暂无可用修复」（认得：修复版本：0.1.11、fixed in 2.3.1、暂无可用修复）——读者分不清「没修」和「漏写」\nwarn disclosure-date-missing 第0行 没有披露日期（认得：披露日期：2026-11-18、disclosure date）——没有日期的公告无法判断是新的还是陈年的\nfail: severity unstated, 4 errors, 1 warnings", "exit": "1" },
     note: "实测 20 条真实 GHSA 记录：7 条零发现、13 条只报 fixed-missing（那 20 条都没有 patched_versions，其中 13 条正文也没提修复）。缓解与联系渠道默认不查：真实公告里 18/20 与 15/20 都没有，默认报等于噪音。只管公告有没有回答读者的两个问题，不管漏洞是否真实、范围是否正确、等级是否诚实。范围写「<= 0.1.10」不代表这个范围对——那要靠复现和第二双眼睛。也不解析 CVSS 向量、不重算分数。",
   },
@@ -669,8 +669,8 @@ export const CHECKS = [
     description: "迁移指南的检查：覆盖哪一段版本跨度、破坏性变更是不是一张可逐条对照的清单、编号步骤、怎么确认迁移成功、怎么回滚、动手前有没有让人先备份。散文里的「不兼容」不是清单，项目符号列表也不是步骤。",
     decides: "这份迁移指南能否让人在没人可问的情况下把升级做完",
     rules: [["title-missing", "没有 `# 标题`，也没有 frontmatter 的 title: → error"], ["from-to-missing", "既没有版本跨度（从 0.1.0 到 0.2.0），标题里也没有迁移目标（Migrating to v5）→ error；只有版本号不算"], ["breaking-missing", "没有破坏性变更段、也没有至少三节讲变更的小节 → error"], ["steps-missing", "没有编号步骤 → warn（--require-steps 时 error）；散文与项目符号都不算"], ["steps-thin", "步骤少于下限（默认 3，可调）→ warn"], ["verify-missing", "没有验证方式 → warn，仅流程型指南（有编号步骤）"], ["rollback-missing", "没有回滚方案 → warn，仅流程型指南（--require-rollback 时 error）"], ["backup-missing", "没有备份提示 → warn，仅流程型指南"]],
-    usage: ["npx migration-guide-check guide.md --json", "npx migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback",
-      "npx migration-guide-check guide.md --check-recovery"],
+    usage: ["npx dsh-migration-guide-check guide.md --json", "npx dsh-migration-guide-check guide.md --min-steps 5 --require-steps --require-rollback",
+      "npx dsh-migration-guide-check guide.md --check-recovery"],
     example: { "command": "migration-guide-check migration-sample.md", "fixture": "# 升级说明\n\n我们改了参数名，升级后注意一下。\n", "output": "$ migration-guide-check migration-sample.md\nerror from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南\nerror breaking-missing 第0行 没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单\nwarn steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——有步骤的指南能照着做，没有的只能照着读\nfail: span unstated, 0 steps, 2 errors, 1 warnings", "exit": "1" },
     note: "实测两份真实指南（Vite docs/guide/migration.md 与 TanStack Query 的 Migrating to v5）：0 error、1 warn（steps-missing）。恢复类三问（验证/回滚/备份）只对流程型指南（有编号步骤）查——不加这个条件，三条在 100% 的真实指南上都会开火。只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。",
   },
@@ -684,7 +684,7 @@ export const CHECKS = [
     description: "隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。",
     decides: "这份声明能否回答读者「我的数据去哪、留多久、我能要求什么」",
     rules: [["title-missing", "没有 `# 标题`，也没有 frontmatter 的 title: → error"], ["data-missing", "没有说明收集什么 → error；认得 information we collect、personal data that we process；「不收集任何数据」也是答案"], ["purpose-missing", "没有用途段或带标签的一行 → error"], ["retention-missing", "没有保留期限 → error；「不保留」也是答案"], ["sharing-missing", "没有共享段 → error；认得 共享、第三方、disclose、subprocessor；散文里提到「第三方」不算声明"], ["contact-missing", "没有联系段、标签行或邮箱 → error"], ["effective-date-missing", "没有生效或更新日期 → warn"], ["rights-missing", "没有权利说明（## 你的权利、你有权访问/删除…）→ warn（--require-rights 时 error）"]],
-    usage: ["npx privacy-notice-check notice.md --json", "npx privacy-notice-check notice.md --require-rights --warnings-fail"],
+    usage: ["npx dsh-privacy-notice-check notice.md --json", "npx dsh-privacy-notice-check notice.md --require-rights --warnings-fail"],
     example: { "command": "privacy-notice-check privacy-sample.md", "fixture": "# 隐私声明\n\n我们很重视你的隐私，会尽力保护你的信息。\n", "output": "$ privacy-notice-check privacy-sample.md\nerror data-missing 第0行 没有说明收集什么（认得：## 我们收集的信息、收集的信息：…，或不收集）——这是读者第一个要问的\nerror purpose-missing 第0行 没有说明用途（认得：## 使用目的、用途：…、## How we use it）——「为了提供服务」和「什么都能干」是两种声明\nerror retention-missing 第0行 没有保留期限（认得：## 保留期限、保留时间：30 天，或不保留）——没有期限，「注销账号」就不等于数据会消失\nerror sharing-missing 第0行 没有第三方共享说明（认得：## 共享、## 第三方、共享：…）——散文里提到「第三方」不算声明，读者指不出哪一句是承诺\nerror contact-missing 第0行 没有联系方式（认得：## 联系我们、联系邮箱：…、privacy@example.com）——没有渠道，行使权利就是空话\nwarn effective-date-missing 第0行 没有生效或更新日期（认得：生效日期：2026-11-01、last updated）——不知道版本的声明，无法判断哪一版约束我\nwarn rights-missing 第0行 没有用户权利说明（认得：## 你的权利、你有权访问/删除…、Your rights）——只说收集不说权利，读者只能猜自己能要求什么\nfail: 5 errors, 2 warnings", "exit": "1" },
     note: "实测 GitHub 自己的两份政策（General Privacy Statement、Candidate Privacy Notice）零发现；cookies 政策报 5 条，那是正确的——它不是隐私声明。frontmatter 的 title: 也算标题。只验声明有没有回答问题，不判断它在哪个法域合法：不分 GDPR 与 PIPL，不核对声明的保留期和代码实际行为是否一致，也无法判断「我们不共享」是真是假。声明写「不收集」并且说清楚了，就按答案算——在否定式答案之上再要求一节，只会教作者写废话。",
   },
@@ -698,7 +698,7 @@ export const CHECKS = [
     description: "给第一次来贡献的人看的检查：能跑起来的开发环境、一条真能执行的测试命令、PR 该长什么样、代码风格要求、到哪提问、提交信息约定，以及 CLA/DCO。有测试一节却没给命令，是这份文档最常见的空话。",
     decides: "这份贡献指南能否让一个陌生人自己把第一个 PR 交上来",
     rules: [["title-missing", "没有 `# 标题`，也没有 RST 下划线标题 → error"], ["setup-missing", "没有开发环境段，也没有 git clone / pnpm install 这类命令 → error"], ["test-missing", "没有测试段，也没有可执行测试命令 → error"], ["test-command-missing", "有测试段但里面没有一条能跑的命令 → error（「请确保测试通过」不是指令）"], ["pr-missing", "没有提交 PR 的说明 → error"], ["style-missing", "没有风格段，也没写「提交时自动格式化」→ warn（--strict 时 error）"], ["questions-missing", "没有「到哪问」→ warn（--strict 时 error）"], ["commit-missing", "没有提交信息约定（Conventional Commits / DCO）→ warn（--strict 时 error）"], ["license-missing", "没有许可 / CLA / DCO 说明 → warn（--strict 时 error）"], ["pointer-guide", "文档是「指路型」：自己没有命令，但点了明确目标 → warn，并报出目标"]],
-    usage: ["npx contributing-check CONTRIBUTING.md --json", "npx contributing-check CONTRIBUTING.md --strict --warnings-fail"],
+    usage: ["npx dsh-contributing-check CONTRIBUTING.md --json", "npx dsh-contributing-check CONTRIBUTING.md --strict --warnings-fail"],
     example: { "command": "contributing-check contributing-sample.md", "fixture": "# Contributing\n\nThanks for your interest. Please be nice.\n", "output": "$ contributing-check contributing-sample.md\nerror setup-missing 第0行 没有开发环境段（认得：## 开发环境、## Getting started、git clone / npm ci 这类命令）——新人卡在第一步就走了\nerror test-missing 第0行 没有测试段（认得：## 测试、## Running tests）——不知道该跑什么测试的人，交上来的 PR 是红的\nerror pr-missing 第0行 没有提交 PR 的说明（认得：## Pull request、## 贡献流程、## Submitting changes）——不知道你期待什么，第一次 PR 就会踩到你的隐性规矩\nwarn style-missing 第0行 没有代码风格段（认得：## 代码风格、## Lint，或明说提交时自动格式化）——风格要求藏在评审里，等于每次评审重讲一遍\nwarn questions-missing 第0行 没有「到哪问」的说明（认得：## 提问、Discord、mailing list、good first issue）——卡住的人只有放弃和硬猜两条路\nwarn commit-missing 第0行 没有提交信息约定（认得：Conventional Commits、Signed-off-by、DCO）——评审时才发现格式不对，返工的是对方\nwarn license-missing 第0行 没有许可/CLA/DCO 说明（认得：CLA、DCO、License）——贡献者不知道自己交出去的代码按什么授权\nfail: 0 commands, 3 errors, 4 warnings", "exit": "1" },
     note: "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。",
   },
@@ -712,7 +712,7 @@ export const CHECKS = [
     description: "压测与基准报告的检查：在什么条件下测的（并发/轮次/数据规模）、结果是不是可比较的量（分位、吞吐、N 次中位数）、环境、基线对照、结论段，以及复现命令。单次跑出来的一个数字不算结果——平均值会藏住尾部，而尾部才是用户感受到的那一段。",
     decides: "这份性能报告能否被别人读懂并复跑",
     rules: [["title-missing", "前几行里没有 `# 标题` → error"], ["load-missing", "没有写清条件（并发、QPS、轮次、7-run、数据规模）→ error"], ["latency-missing", "没有可比较的度量（分位、吞吐、median of N reps、best 0.65ms）→ error"], ["env-missing", "没有环境（机器、CPU、线程数、平台、数据规模）→ error"], ["baseline-missing", "没有基线对照（基线、优化前、191.2ms → 2.2ms、87×）→ warn（--strict 时 error）"], ["conclusion-missing", "没有结论段（结论、Findings、Recommendation、结果分析）→ warn（--strict 时 error）"], ["repro-missing", "没有复现方式（locust/k6/wrk、脚本路径、harness）→ warn（--strict 时 error）"]],
-    usage: ["npx perf-report-check report.md --json", "npx perf-report-check report.md --strict --warnings-fail"],
+    usage: ["npx dsh-perf-report-check report.md --json", "npx dsh-perf-report-check report.md --strict --warnings-fail"],
     example: { "command": "perf-report-check perf-sample.md", "fixture": "# 首页接口压测\n\n## 测试环境\n\n机器：8 核 16G\n\n## 结果\n\n20 并发下很慢，平均 4.9 秒。\n", "output": "$ perf-report-check perf-sample.md\nerror latency-missing 第0行 没有可比较的度量（认得：p50 340ms、p95、中位数 191ms、33 906 files/s、7-run medians）——单次跑出来的一个数字说明不了分布\nwarn baseline-missing 第0行 没有基线对照（认得：基线、优化前、对照、baseline）——没有对照的数字，读者不知道这是好还是坏\nwarn repro-missing 第0行 没有复现方式（认得：## 复现、locust、k6、wrk 命令）——别人无法验证这组数字\nfail: 0 percentiles, 1 errors, 2 warnings", "exit": "1" },
     note: "实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。",
   },

@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>version-missing</code></td><td>没有版本号标题（## 1.2.0 / ## v1.2.0）或「版本：」行 → error</td></tr><tr><td><code>date-missing</code></td><td>全文没有完整日期 → error</td></tr><tr><td><code>order</code></td><td>更新的版本标题出现在更旧版本之后 → error，报两处</td></tr><tr><td><code>breaking-without-upgrade</code></td><td>声明了破坏性变更但没有升级/迁移段 → error（读者被留在原地）</td></tr><tr><td><code>upgrade-missing</code></td><td>没有升级/迁移说明 → warn（信息里写明：没有破坏性变更就忽略）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx release-notes-check notes.md --json</code></pre><pre><code>npx release-notes-check notes.md --no-require-upgrade</code></pre>
+<pre><code>npx dsh-release-notes-check notes.md --json</code></pre><pre><code>npx dsh-release-notes-check notes.md --no-require-upgrade</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># Changelog
 

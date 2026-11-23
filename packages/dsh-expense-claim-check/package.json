@@ -1,6 +1,6 @@
 {
   "name": "dsh-expense-claim-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Expense-claim hygiene: who is claiming, the period, the line items and whether they add up to the stated total, duplicate invoice numbers, what each expense was for, and who approved it.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "expense-claim-check": "./bin/cli.js"
+    "expense-claim-check": "./bin/cli.js",
+    "dsh-expense-claim-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

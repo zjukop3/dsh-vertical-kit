@@ -65,9 +65,9 @@ What makes a criterion checkable is a number, a threshold, or a named observable
 ## Use
 
 ```bash
-npx spec-doc-check spec.md --json
-npx spec-doc-check spec.md --min-criteria 3
-npx spec-doc-check - < spec.md
+npx dsh-spec-doc-check spec.md --json
+npx dsh-spec-doc-check spec.md --min-criteria 3
+npx dsh-spec-doc-check - < spec.md
 ```
 
 Same function over HTTP: `POST /spec-doc-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

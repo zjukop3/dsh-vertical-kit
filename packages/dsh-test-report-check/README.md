@@ -47,7 +47,7 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx test-report-check report.md --json
+npx dsh-test-report-check report.md --json
 ```
 
 Same function over HTTP: `POST /test-report-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

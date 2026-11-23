@@ -68,8 +68,8 @@ Benefit words: 好处 优点 优势 收益 / benefit advantage upside positive.
 ## Use
 
 ```bash
-npx adr-check docs/adr/0007-postgres-sessions.md --json
-npx adr-check - < adr.md
+npx dsh-adr-check docs/adr/0007-postgres-sessions.md --json
+npx dsh-adr-check - < adr.md
 ```
 
 Same function over HTTP: `POST /adr-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

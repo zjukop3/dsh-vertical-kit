@@ -51,8 +51,8 @@ Accepted placeholders: empty, `<angle-bracketed>`, `${VAR}` references, `your-�
 ## Use
 
 ```bash
-npx env-example-check .env.example --json
-npx env-example-check .env.example --require-comment
+npx dsh-env-example-check .env.example --json
+npx dsh-env-example-check .env.example --require-comment
 ```
 
 Same function over HTTP: `POST /env-example-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

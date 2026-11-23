@@ -49,9 +49,9 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx pr-description-check .github/pull_request_body.md --json
-gh pr view 42 --json body --jq .body | npx pr-description-check - 
-npx pr-description-check body.md --require-issue
+npx dsh-pr-description-check .github/pull_request_body.md --json
+gh pr view 42 --json body --jq .body | npx dsh-pr-description-check - 
+npx dsh-pr-description-check body.md --require-issue
 ```
 
 The CLI reads `-` from stdin, so it drops straight into a `gh` pipeline. Same function over HTTP: `POST /pr-description-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

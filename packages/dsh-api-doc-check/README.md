@@ -47,8 +47,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx api-doc-check api.md --json
-npx api-doc-check api.md --min-endpoints 5
+npx dsh-api-doc-check api.md --json
+npx dsh-api-doc-check api.md --min-endpoints 5
 ```
 
 Same function over HTTP: `POST /api-doc-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

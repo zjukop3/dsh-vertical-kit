@@ -54,8 +54,8 @@ Times recognized: `14:02`, `14:02:05`, `2026-11-18 14:02`, `2:32 PM`.
 ## Use
 
 ```bash
-npx incident-report-check postmortem.md --json
-npx incident-report-check postmortem.md --min-timeline 4
+npx dsh-incident-report-check postmortem.md --json
+npx dsh-incident-report-check postmortem.md --min-timeline 4
 ```
 
 Same function over HTTP: `POST /incident-report-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

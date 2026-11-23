@@ -54,8 +54,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx release-notes-check notes.md --json
-npx release-notes-check notes.md --no-require-upgrade
+npx dsh-release-notes-check notes.md --json
+npx dsh-release-notes-check notes.md --no-require-upgrade
 ```
 
 Same function over HTTP: `POST /release-notes-check/api` with `{"text": "…"}` or `{"path": "…"}`, optional `{"rules": {"requireUpgrade": false}}` — the CLI and the host route share one implementation, so they cannot disagree.

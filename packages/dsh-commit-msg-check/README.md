@@ -48,17 +48,17 @@ Known types: `feat fix docs style refactor perf test build ci chore revert`.
 ## Use
 
 ```bash
-npx commit-msg-check .git/COMMIT_EDITMSG --json
-npx commit-msg-check msg.txt --max-subject 50
-npx commit-msg-check msg.txt --require-type      # prefix becomes an error
-npx commit-msg-check msg.txt --no-require-type   # drop the finding entirely
+npx dsh-commit-msg-check .git/COMMIT_EDITMSG --json
+npx dsh-commit-msg-check msg.txt --max-subject 50
+npx dsh-commit-msg-check msg.txt --require-type      # prefix becomes an error
+npx dsh-commit-msg-check msg.txt --no-require-type   # drop the finding entirely
 ```
 
 As a git hook, `.git/hooks/commit-msg`:
 
 ```sh
 #!/bin/sh
-npx commit-msg-check "$1" || exit 1
+npx dsh-commit-msg-check "$1" || exit 1
 ```
 
 Same function over HTTP: `POST /commit-msg-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

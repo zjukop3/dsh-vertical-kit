@@ -59,8 +59,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx contributing-check CONTRIBUTING.md --json
-npx contributing-check CONTRIBUTING.md --strict --warnings-fail
+npx dsh-contributing-check CONTRIBUTING.md --json
+npx dsh-contributing-check CONTRIBUTING.md --strict --warnings-fail
 ```
 
 Same function over HTTP: `POST /contributing-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

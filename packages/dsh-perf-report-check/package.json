@@ -1,6 +1,6 @@
 {
   "name": "dsh-perf-report-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Performance-report hygiene from markdown: the conditions it ran under (concurrency, rate, iterations, dataset size), a metric you can compare (percentiles, throughput, or medians over N runs), the environment, a baseline, a conclusion, and the command that reproduces it.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "perf-report-check": "./bin/cli.js"
+    "perf-report-check": "./bin/cli.js",
+    "dsh-perf-report-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

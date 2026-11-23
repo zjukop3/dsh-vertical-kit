@@ -57,8 +57,8 @@ Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh
 ## Use
 
 ```bash
-npx privacy-notice-check notice.md --json
-npx privacy-notice-check notice.md --require-rights --warnings-fail
+npx dsh-privacy-notice-check notice.md --json
+npx dsh-privacy-notice-check notice.md --require-rights --warnings-fail
 ```
 
 Same function over HTTP: `POST /privacy-notice-check/api` with `{"text": "…"}` or `{"path": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

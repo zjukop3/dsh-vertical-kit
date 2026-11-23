@@ -61,8 +61,8 @@ Counts are taken inside the 交接事项 section when one exists, so a long acco
 ## Use
 
 ```bash
-npx handover-check handover.md --json
-npx handover-check - < handover.md
+npx dsh-handover-check handover.md --json
+npx dsh-handover-check - < handover.md
 ```
 
 Same function over HTTP: `POST /handover-check/api` with `{"text": "…"}` — the CLI and the host route share one implementation, so they cannot disagree.

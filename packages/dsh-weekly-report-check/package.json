@@ -1,6 +1,6 @@
 {
   "name": "dsh-weekly-report-check",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Weekly-report hygiene from markdown: what was done separated from what is planned, risks and blockers named, and at least one quantified item so progress is tellable from motion.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "weekly-report-check": "./bin/cli.js"
+    "weekly-report-check": "./bin/cli.js",
+    "dsh-weekly-report-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

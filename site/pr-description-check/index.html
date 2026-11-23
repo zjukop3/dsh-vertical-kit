@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>empty</code></td><td>描述为空 → error</td></tr><tr><td><code>what-missing</code></td><td>没有「做了什么」段 → error</td></tr><tr><td><code>why-missing</code></td><td>没有「为什么」段 → error（diff 说明改了什么，改不了理由）</td></tr><tr><td><code>test-missing</code></td><td>没有测试/验证说明 → error（等于让 reviewer 替你验）</td></tr><tr><td><code>issue-unlinked / issue-missing</code></td><td>没关联 issue → warn（--require-issue 时升级 error）</td></tr><tr><td><code>breaking-without-migration</code></td><td>提到破坏性变更但没有迁移说明 → error</td></tr><tr><td><code>checklist-unchecked</code></td><td>检查项一个都没勾 → warn</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx pr-description-check body.md --json</code></pre><pre><code>gh pr view 42 --json body --jq .body | npx pr-description-check -</code></pre>
+<pre><code>npx dsh-pr-description-check body.md --json</code></pre><pre><code>gh pr view 42 --json body --jq .body | npx dsh-pr-description-check -</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code>修了点东西</code></pre></details>
 <pre><code>$ pr-description-check pr-sample.md

@@ -48,8 +48,8 @@ Bullets under a section heading are its items; lines that self-identify (本周�
 ## Use
 
 ```bash
-npx weekly-report-check report.md --json
-npx weekly-report-check report.md --min-metrics 3
+npx dsh-weekly-report-check report.md --json
+npx dsh-weekly-report-check report.md --min-metrics 3
 ```
 
 Same function over HTTP: `POST /weekly-report-check/api` with `{"text": "…"}` or `{"path": "…"}`, optional `{"rules": {"minMetrics": 3}}` — the CLI and the host route share one implementation, so they cannot disagree.

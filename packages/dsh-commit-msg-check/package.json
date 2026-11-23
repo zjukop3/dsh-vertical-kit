@@ -1,6 +1,6 @@
 {
   "name": "dsh-commit-msg-check",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Commit-message hygiene from a single message: a type prefix from a known set, a subject that fits a git log line, no trailing period, a blank line before the body, and breaking changes announced in a trailer.",
   "type": "module",
   "main": "./src/index.js",
@@ -10,7 +10,8 @@
     "./locale/*.json": "./locale/*.json"
   },
   "bin": {
-    "commit-msg-check": "./bin/cli.js"
+    "commit-msg-check": "./bin/cli.js",
+    "dsh-commit-msg-check": "./bin/cli.js"
   },
   "dsh": {
     "bundle": {

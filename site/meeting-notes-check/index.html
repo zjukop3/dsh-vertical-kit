@@ -7,7 +7,7 @@
 <h2>检查规则</h2>
 <table><tr><th>规则</th><th>判定</th></tr><tr><td><code>date-missing</code></td><td>整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）</td></tr><tr><td><code>attendees-missing</code></td><td>没有与会人/参会人/出席/Attendees 行或标题 → error</td></tr><tr><td><code>action-no-owner</code></td><td>行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号</td></tr><tr><td><code>action-no-deadline</code></td><td>行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号</td></tr><tr><td><code>agenda-missing</code></td><td>没有议程/议题标题或编号讨论点 → warn</td></tr><tr><td><code>decisions-missing</code></td><td>没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）</td></tr><tr><td><code>no-action-items</code></td><td>没有任何行动项 → warn（同样带出口）</td></tr></table>
 <h2>用法</h2>
-<pre><code>npx meeting-notes-check notes.md --json</code></pre><pre><code>npx meeting-notes-check notes.md --no-require-agenda</code></pre>
+<pre><code>npx dsh-meeting-notes-check notes.md --json</code></pre><pre><code>npx dsh-meeting-notes-check notes.md --no-require-agenda</code></pre>
 <h2>真实输入输出</h2>
 <details><summary>输入</summary><pre><code># 项目周会
 
