@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>性能报告检查清单 · dsh-perf-report-check</title><meta name="description" content="压测与基准报告的检查：在什么条件下测的（并发/轮次/数据规模）、结果是不是可比较的量（分位、吞吐、N 次中位数）、环境、基线对照、结论段，以及复现命令。单次跑出来的一个数字不算结果——平均值会藏住尾部，而尾部才是用户感受到的那一段。"><meta name="robots" content="index,follow"><link rel="canonical" href="https://zjukop3.github.io/dsh-vertical-kit/perf-report-check/"><style>body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}</style></head><body><main>
+<p class="eyebrow">DSH VERTICAL KIT · 性能报告检查 / 压测与基准报告</p>
+<h1>性能报告检查清单</h1>
+<p><strong>它决定一件事：</strong>这份性能报告能否被别人读懂并复跑。</p>
+<nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="../expense-claim-check/">dsh-expense-claim-check</a><a href="../security-advisory-check/">dsh-security-advisory-check</a><a href="../migration-guide-check/">dsh-migration-guide-check</a><a href="../privacy-notice-check/">dsh-privacy-notice-check</a><a href="../contributing-check/">dsh-contributing-check</a><a href="../perf-report-check/">dsh-perf-report-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-perf-report-check">npm</a></nav>
+<h2>检查规则</h2>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>title-missing</code></td><td>前几行里没有 `# 标题` → error</td></tr><tr><td><code>load-missing</code></td><td>没有写清条件（并发、QPS、轮次、7-run、数据规模）→ error</td></tr><tr><td><code>latency-missing</code></td><td>没有可比较的度量（分位、吞吐、median of N reps、best 0.65ms）→ error</td></tr><tr><td><code>env-missing</code></td><td>没有环境（机器、CPU、线程数、平台、数据规模）→ error</td></tr><tr><td><code>baseline-missing</code></td><td>没有基线对照（基线、优化前、191.2ms → 2.2ms、87×）→ warn（--strict 时 error）</td></tr><tr><td><code>conclusion-missing</code></td><td>没有结论段（结论、Findings、Recommendation、结果分析）→ warn（--strict 时 error）</td></tr><tr><td><code>repro-missing</code></td><td>没有复现方式（locust/k6/wrk、脚本路径、harness）→ warn（--strict 时 error）</td></tr></table>
+<h2>用法</h2>
+<pre><code>npx perf-report-check report.md --json</code></pre><pre><code>npx perf-report-check report.md --strict --warnings-fail</code></pre>
+<h2>真实输入输出</h2>
+<details><summary>输入</summary><pre><code># 首页接口压测
+
+## 测试环境
+
+机器：8 核 16G
+
+## 结果
+
+20 并发下很慢，平均 4.9 秒。
+</code></pre></details>
+<pre><code>$ perf-report-check perf-sample.md
+error latency-missing 第0行 没有可比较的度量（认得：p50 340ms、p95、中位数 191ms、33 906 files/s、7-run medians）——单次跑出来的一个数字说明不了分布
+warn baseline-missing 第0行 没有基线对照（认得：基线、优化前、对照、baseline）——没有对照的数字，读者不知道这是好还是坏
+warn repro-missing 第0行 没有复现方式（认得：## 复现、locust、k6、wrk 命令）——别人无法验证这组数字
+fail: 0 percentiles, 1 errors, 2 warnings</code></pre>
+<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+<p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /perf-report-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
+<div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
+<small>实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>
+</main></body></html>

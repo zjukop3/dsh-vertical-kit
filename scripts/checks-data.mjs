@@ -702,5 +702,19 @@ export const CHECKS = [
     example: { "command": "contributing-check contributing-sample.md", "fixture": "# Contributing\n\nThanks for your interest. Please be nice.\n", "output": "$ contributing-check contributing-sample.md\nerror setup-missing 第0行 没有开发环境段（认得：## 开发环境、## Getting started、git clone / npm ci 这类命令）——新人卡在第一步就走了\nerror test-missing 第0行 没有测试段（认得：## 测试、## Running tests）——不知道该跑什么测试的人，交上来的 PR 是红的\nerror pr-missing 第0行 没有提交 PR 的说明（认得：## Pull request、## 贡献流程、## Submitting changes）——不知道你期待什么，第一次 PR 就会踩到你的隐性规矩\nwarn style-missing 第0行 没有代码风格段（认得：## 代码风格、## Lint，或明说提交时自动格式化）——风格要求藏在评审里，等于每次评审重讲一遍\nwarn questions-missing 第0行 没有「到哪问」的说明（认得：## 提问、Discord、mailing list、good first issue）——卡住的人只有放弃和硬猜两条路\nwarn commit-missing 第0行 没有提交信息约定（认得：Conventional Commits、Signed-off-by、DCO）——评审时才发现格式不对，返工的是对方\nwarn license-missing 第0行 没有许可/CLA/DCO 说明（认得：CLA、DCO、License）——贡献者不知道自己交出去的代码按什么授权\nfail: 0 commands, 3 errors, 4 warnings", "exit": "1" },
     note: "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。",
   },
+  // 性能报告检查 / 压测与基准报告
+  {
+    slug: "perf-report-check",
+    npm: "dsh-perf-report-check",
+    cli: "perf-report-check",
+    noun: "性能报告检查 / 压测与基准报告",
+    title: "性能报告检查清单",
+    description: "压测与基准报告的检查：在什么条件下测的（并发/轮次/数据规模）、结果是不是可比较的量（分位、吞吐、N 次中位数）、环境、基线对照、结论段，以及复现命令。单次跑出来的一个数字不算结果——平均值会藏住尾部，而尾部才是用户感受到的那一段。",
+    decides: "这份性能报告能否被别人读懂并复跑",
+    rules: [["title-missing", "前几行里没有 `# 标题` → error"], ["load-missing", "没有写清条件（并发、QPS、轮次、7-run、数据规模）→ error"], ["latency-missing", "没有可比较的度量（分位、吞吐、median of N reps、best 0.65ms）→ error"], ["env-missing", "没有环境（机器、CPU、线程数、平台、数据规模）→ error"], ["baseline-missing", "没有基线对照（基线、优化前、191.2ms → 2.2ms、87×）→ warn（--strict 时 error）"], ["conclusion-missing", "没有结论段（结论、Findings、Recommendation、结果分析）→ warn（--strict 时 error）"], ["repro-missing", "没有复现方式（locust/k6/wrk、脚本路径、harness）→ warn（--strict 时 error）"]],
+    usage: ["npx perf-report-check report.md --json", "npx perf-report-check report.md --strict --warnings-fail"],
+    example: { "command": "perf-report-check perf-sample.md", "fixture": "# 首页接口压测\n\n## 测试环境\n\n机器：8 核 16G\n\n## 结果\n\n20 并发下很慢，平均 4.9 秒。\n", "output": "$ perf-report-check perf-sample.md\nerror latency-missing 第0行 没有可比较的度量（认得：p50 340ms、p95、中位数 191ms、33 906 files/s、7-run medians）——单次跑出来的一个数字说明不了分布\nwarn baseline-missing 第0行 没有基线对照（认得：基线、优化前、对照、baseline）——没有对照的数字，读者不知道这是好还是坏\nwarn repro-missing 第0行 没有复现方式（认得：## 复现、locust、k6、wrk 命令）——别人无法验证这组数字\nfail: 0 percentiles, 1 errors, 2 warnings", "exit": "1" },
+    note: "实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。",
+  },
 ]
 

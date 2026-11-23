@@ -40,6 +40,8 @@
       name: 'dsh-onboarding-check'
     - id: check-ops-runbook
       name: 'dsh-ops-runbook-check'
+    - id: check-perf-report
+      name: 'dsh-perf-report-check'
     - id: check-pr-description
       name: 'dsh-pr-description-check'
     - id: check-privacy-notice

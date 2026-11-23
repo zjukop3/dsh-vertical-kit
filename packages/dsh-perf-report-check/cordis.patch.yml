@@ -1,0 +1,4 @@
+# One package adds a scenario route next to the Host API.
+- insert:
+    - id: perf-report-check
+      name: 'dsh-perf-report-check'

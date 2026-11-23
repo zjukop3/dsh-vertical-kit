@@ -25,10 +25,31 @@ export function readCounts(text) {
   return counts
 }
 
+// 文件名双关第三次：test-report.md / loadtest-report.md 也常被用来写**性能报告**——
+// 里面是 p50/p95、QPS、并发轮次，没有通过/失败计数。拿「测试报告」的规则判它，
+// 等于问一份压测报告「你过了几条用例」。识别出来，指向专门的那个检查。
+export const PERF_MARK = /(?:p\d{2,3}\b|百分位|分位|percentile|qps\b|rps\b|吞吐|throughput|并发|concurrency|latency|延迟)/i
+export const COUNT_MARK = /(?:通过\s*\d|失败\s*\d|passed[:：]?\s*\d|failed[:：]?\s*\d|\d+\s*(?:个)?(?:用例|tests?)\s*(?:通过|失败))/i
+
+export function isPerfReport(text) {
+  return PERF_MARK.test(String(text)) && !COUNT_MARK.test(String(text))
+}
+
 export function lintTestReport(text, rules = {}) {
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = text.split('\n')
+
+  // 性能报告：先判文体，指向专门的那个检查，别拿用例计数去判它。
+  if (isPerfReport(text)) {
+    findings.push({
+      level: 'warn',
+      rule: 'performance-report',
+      line: 0,
+      message: '这份文档是性能报告（延迟分位 / 吞吐 / 并发），不是测试报告：用例计数、勾稽、失败详情这些规则在这里不适用。用 dsh-perf-report-check 判它',
+    })
+    return { ok: true, checked: { performanceReport: true, counts: null }, errors: 0, warnings: 1, findings }
+  }
 
   const counts = readCounts(text)
 

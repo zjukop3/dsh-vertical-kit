@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Performance report check",
+    "description": "Performance-report hygiene from markdown: the conditions it ran under (concurrency, rate, iterations, dataset size), a metric you can compare (percentiles, throughput, or medians over N runs), the environment, a baseline, a conclusion, and the command that reproduces it."
+  }
+}

@@ -16,7 +16,10 @@ try {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
   } else {
     for (const finding of result.findings) process.stdout.write(`${finding.level} ${finding.rule} 第${finding.line}行 ${finding.message}\n`)
-    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${JSON.stringify(result.checked.counts)}, ${result.errors} errors, ${result.warnings} warnings` + '\n')
+    // 性能报告分支没有 counts 可印；印 null 和印 undefined 一样是丑。
+    // 该文体就明说文体，别把 JSON 的 null 漏到人眼前。
+    const summary = result.checked.performanceReport ? 'performance report' : JSON.stringify(result.checked.counts)
+    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${summary}, ${result.errors} errors, ${result.warnings} warnings` + '\n')
   }
   process.exit(result.ok ? 0 : 1)
 } catch (error) {

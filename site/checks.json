@@ -1236,6 +1236,52 @@
       "page": "https://zjukop3.github.io/dsh-vertical-kit/contributing-check/",
       "route": "POST /contributing-check/api",
       "scope": "实测 5 份真实指南：vite 那份零发现；k8s、django、rust、node 四份是「指路型」——正文只有「真正的指南在别处」，对这种文档逐节判它不公平，所以只给一条 pointer-guide 并点出目标。也不能验命令真跑得起来：那要照着做一遍。"
+    },
+    {
+      "name": "dsh-perf-report-check",
+      "cli": "perf-report-check",
+      "slug": "perf-report-check",
+      "noun": "性能报告检查 / 压测与基准报告",
+      "title": "性能报告检查清单",
+      "decides": "这份性能报告能否被别人读懂并复跑",
+      "description": "压测与基准报告的检查：在什么条件下测的（并发/轮次/数据规模）、结果是不是可比较的量（分位、吞吐、N 次中位数）、环境、基线对照、结论段，以及复现命令。单次跑出来的一个数字不算结果——平均值会藏住尾部，而尾部才是用户感受到的那一段。",
+      "rules": [
+        {
+          "rule": "title-missing",
+          "meaning": "前几行里没有 `# 标题` → error"
+        },
+        {
+          "rule": "load-missing",
+          "meaning": "没有写清条件（并发、QPS、轮次、7-run、数据规模）→ error"
+        },
+        {
+          "rule": "latency-missing",
+          "meaning": "没有可比较的度量（分位、吞吐、median of N reps、best 0.65ms）→ error"
+        },
+        {
+          "rule": "env-missing",
+          "meaning": "没有环境（机器、CPU、线程数、平台、数据规模）→ error"
+        },
+        {
+          "rule": "baseline-missing",
+          "meaning": "没有基线对照（基线、优化前、191.2ms → 2.2ms、87×）→ warn（--strict 时 error）"
+        },
+        {
+          "rule": "conclusion-missing",
+          "meaning": "没有结论段（结论、Findings、Recommendation、结果分析）→ warn（--strict 时 error）"
+        },
+        {
+          "rule": "repro-missing",
+          "meaning": "没有复现方式（locust/k6/wrk、脚本路径、harness）→ warn（--strict 时 error）"
+        }
+      ],
+      "usage": [
+        "npx perf-report-check report.md --json",
+        "npx perf-report-check report.md --strict --warnings-fail"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/perf-report-check/",
+      "route": "POST /perf-report-check/api",
+      "scope": "实测 6 份公开性能报告（1 份压测 + 5 份基准对照）：4 份零发现，1 份只余 conclusion-missing warn，最后一份是 906 字节的回测便条。四处校准都属同一族——标题不必在第一行、结论段叫 Findings/结果分析、median of 3 reps 与 best 0.65ms 都算度量、平台名与线程数是环境。不能验数字真假，也不能判断负载是否像生产：那要重跑 harness。"
     }
   ]
 }

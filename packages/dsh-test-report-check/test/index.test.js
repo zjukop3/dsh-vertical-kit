@@ -62,3 +62,17 @@ test('counts without a total is a warn, total without parts is a warn', () => {
   const onlyTotal = '# r\n\n环境：macOS\n\n总计 8\n'
   assert.ok(lintTestReport(onlyTotal).findings.some(finding => finding.rule === 'counts-partial' && finding.level === 'warn'))
 })
+
+// 文件名双关第三次：loadtest-report.md / perf-report.md 里写的是 p50/p95、QPS、并发，
+// 没有通过/失败计数。拿测试报告的规则判它，等于问压测报告「你过了几条用例」。
+test('性能报告只得到一条 performance-report warn，并指向专门的那个检查', () => {
+  const text = '# F036 压测报告\n\n20 并发 × 6 轮\n\n| 配置 | p50 | p95 |\n|---|---|---|\n| 优化后 | 0.338s | 0.587s |\n'
+  const result = lintTestReport(text)
+  assert.deepEqual(result.findings.map(f => f.rule), ['performance-report'])
+  assert.equal(result.ok, true)
+})
+
+test('真测试报告不会被误判成性能报告', () => {
+  const text = '# 测试报告\n\n通过 12，失败 3，跳过 1，总计 16。\n\n## 测试环境\n\nNode v22\n'
+  assert.ok(!lintTestReport(text).findings.some(f => f.rule === 'performance-report'))
+})
