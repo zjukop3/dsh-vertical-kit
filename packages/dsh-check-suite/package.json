@@ -56,7 +56,7 @@
     "dsh-onboarding-check": "^0.3.5",
     "dsh-ops-runbook-check": "^0.2.4",
     "dsh-perf-report-check": "^0.1.2",
-    "dsh-plugin-entry-check": "^0.1.0",
+    "dsh-plugin-entry-check": "^0.1.1",
     "dsh-pr-description-check": "^0.2.3",
     "dsh-privacy-notice-check": "^0.1.4",
     "dsh-release-notes-check": "^0.3.3",

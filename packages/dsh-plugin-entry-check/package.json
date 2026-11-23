@@ -1,13 +1,14 @@
 {
   "name": "dsh-plugin-entry-check",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Check an awesome-dsh-plugin catalog entry before submitting it: filename, name/url agreement, subpackage path, the 23 categories, a bilingual description, the icon, and the aggregation-bundle hint. Sixteen rules, no network.",
   "type": "module",
   "main": "./src/index.js",
   "exports": {
     ".": "./src/index.js",
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
   },
   "bin": {
     "plugin-entry-check": "./bin/cli.js",
@@ -26,6 +27,8 @@
     "src",
     "bin",
     "cordis.patch.yml",
+    "docs",
+    "icon.svg",
     "README.md",
     "LICENSE",
     "locale"
