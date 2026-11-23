@@ -130,7 +130,7 @@ export const CHECKS = [
     description: '简历投递或筛阅前的书记检查：联系方式可达、邮箱电话形态合法、工作经历时间线不自相重叠、教育段在场。时间线按月比较，教育段写在当前工作之后不误报。空窗默认只提示不判错。',
     decides: '这份简历在书记层面是否可读、可达、时间自洽',
     rules: [
-      ['contact-missing', '没有电话/手机/邮箱/微信/Email/Phone → error'],
+      ['contact-missing', '没有任何联系方式 → error（电话/邮箱/微信/Email；只写一个邮箱地址也算）'],
       ['email-invalid', '邮箱过不了严格形态（连续点、域缺尾）→ error，报行号；检测宽松、验证严格，坏地址必被检出'],
       ['phone-invalid', '电话位数不在 7-15 位 → error，报行号'],
       ['dates-overlap', '两段经历时间重叠 → error，报两段区间'],

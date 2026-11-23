@@ -210,7 +210,7 @@
       "rules": [
         {
           "rule": "contact-missing",
-          "meaning": "没有电话/手机/邮箱/微信/Email/Phone → error"
+          "meaning": "没有任何联系方式 → error（电话/邮箱/微信/Email；只写一个邮箱地址也算）"
         },
         {
           "rule": "email-invalid",

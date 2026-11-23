@@ -75,3 +75,34 @@ test('contact-missing is an error', () => {
   const result = lintResume(text)
   assert.ok(result.findings.some(finding => finding.rule === 'contact-missing'))
 })
+
+// 真实语料（6 份名字叫 resume.md / cv.md 的公开文档）：其中 4 份是简历、2 份是
+// 「工作续点」（session resume state / Resume Point）。第 5 批那个同款陷阱：
+// 文件名双关。另外两份真简历暴露了两处只认词形的问题。
+test('有邮箱地址就算有联系方式，不必出现「邮箱」二字', () => {
+  const text = '# 王广忠\n\n我的 gmail 账号是 peter1983@gmail.com，github 是 github.com/happypeter。\n\n## 经历\n\n2010 - 2014 在某公司做讲师\n'
+  const result = lintResume(text)
+  assert.ok(!result.findings.some(f => f.rule === 'contact-missing'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+test('中文自述里的学历（大学 / 研究生）也算教育信息', () => {
+  const text = '# 某人\n\n邮箱：a@b.co\n\n## 经历\n\n2016 至今 某公司\n\n后来上大学就到了石家庄，研究生在北京读的。\n'
+  assert.ok(!lintResume(text).findings.some(f => f.rule === 'education-missing'))
+})
+
+test('续点文档只得到一条 checkpoint-doc warn', () => {
+  const text = '# Session resume state — 2026-07-30, branch `codex/x`\n\n## 2026-08-18 checkpoint\n\n- 修了解析器\n'
+  const result = lintResume(text)
+  assert.deepEqual(result.findings.map(f => f.rule), ['checkpoint-doc'])
+  assert.equal(result.ok, true)
+})
+
+test('俄语的续点（Ветка / Статус）也认得', () => {
+  const text = '# Точка\n\n**Дата:** 2026-03-02\n**Ветка:** fix/x\n**Статус:** работает\n'
+  assert.deepEqual(lintResume(text).findings.map(f => f.rule), ['checkpoint-doc'])
+})
+
+test('简历正文里提到 checkpoint 这个词，不会被判成续点', () => {
+  const text = '# 张三\n\n邮箱：zhang@example.com\n\n## 经历\n\n2018 - 2021 某安全公司，做过 Checkpoint 防火墙的策略迁移。\n'
+  assert.ok(!lintResume(text).findings.some(f => f.rule === 'checkpoint-doc'))
+})

@@ -69,6 +69,12 @@ npx dsh-resume-check resume.md --no-allow-gaps
 
 Same function over HTTP: `POST /resume-check/api` with `{"text": "…"}` or `{"path": "…"}`, optional `{"rules": {"allowGaps": false}}` — the CLI and the host route share one implementation, so they cannot disagree.
 
+## Measured against real documents named like a resume
+
+Six public files named `resume.md` / `cv.md` were run through this check. Four are CVs and now pass clean; the other two are **work checkpoints** — "Session resume state — branch `codex/…`", "Resume Point", Russian `Дата / Ветка / Статус` — where contact details and education do not apply. They are now reported as a single `checkpoint-doc` warning instead of being judged as a CV with everything missing. The two CVs also produced two real fixes: an email address counts as contact without the words 邮箱/Email, and Chinese self-description education (「上大学就到了石家庄，研究生在北京读的」) counts as education.
+
+One near-miss is worth recording: scoping the checkpoint marker to the first lines and headings was not cosmetic. Before that, a 37 KB CV that mentions a Checkpoint firewall in its experience section was one word away from being classified as a checkpoint.
+
 ## Honest scope
 
 This checks the resume's **bookkeeping**, not its truth. It cannot tell whether the person actually worked at A公司 or whether the numbers in a bullet are real — it verifies the document is reachable, well-formed, and temporally coherent. Whether the content is honest is what an interview is for.

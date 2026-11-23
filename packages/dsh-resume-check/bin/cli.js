@@ -17,7 +17,7 @@ try {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
   } else {
     for (const finding of result.findings) process.stdout.write(`${finding.level} ${finding.rule} 第${finding.line}行 ${finding.message}\n`)
-    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${result.checked.ranges} stints, ${result.errors} errors, ${result.warnings} warnings\n`)
+    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${result.checked.ranges ?? 0} stints, ${result.errors} errors, ${result.warnings} warnings\n`)
   }
   process.exit(result.ok ? 0 : 1)
 } catch (error) {
