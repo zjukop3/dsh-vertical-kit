@@ -66,3 +66,22 @@ perf-report-check 200 {"ok":false,"checked":{"lines":6,"percentiles":0},"errors"
 - `scripts/audit-mirror.mjs` 对账 registry 与镜像的 `latest`，按 suite 依赖闭包清点 33 个包；
   `--sync` 触发镜像重新抓取。`stale-stage` 单独成一类：它不会自己好。
 - 缺陷台账第 20、21 条就是这两件事，回放方式是起一个真 socket 去 POST。
+
+## 做不到的那一步：让模型自己调用
+
+`dsh-document-check` 注册的是 agent 工具，所以最直接的验证是「让一个真实会话自己决定调用它」。
+这一条在这台机器上没做成，两次尝试都卡在同一处：
+
+1. 从 `headless` 模板新建 profile，装好包，`dsh --profile probe-hl "…"` →
+   `MISSING_CREDENTIAL: no API key for provider route "deepseek-official"`。
+2. 把该 profile 的模型改成桌面版正在用的 `zhanlu-cnh`（连同 154 行 provider 表一起抄过去）→
+   `MISSING_CREDENTIAL: no credential for provider route "zhanlu-cnh"; its profile resolves
+   ZHANLU_CNH_API_KEY, which is not set`。
+
+结论：凭证由 credentials service 按 profile 持有，换一个 profile 就解析不到。唯一的办法是往
+主人正在用的 profile 里装这个包——那是别人在用的东西，不为了自证去动它。
+
+已验到的三件事（都有产物）：`apply()` 用 stub ctx 断言注册了 `document_check`；装好的包里
+`execute({check:'adr-check', text})` 返回 `ok:false, 3 errors, 1 warning`；工具与 host 路由对
+同一份文档逐条相同（`test/tool-route-parity.test.js`，32 个检查）。差的那一步写在
+`packages/dsh-document-check/README.md` 的诚实边界里：现在是「没有反例」，不是「已验证」。

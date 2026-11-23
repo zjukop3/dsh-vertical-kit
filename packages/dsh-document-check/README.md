@@ -102,6 +102,12 @@ the ones worth fixing anyway.
 
 ## 诚实边界 / Honest scope
 
+- **没有一次真实模型调用被记录下来。** 我验证了三件事：`apply()` 确实注册了工具（stub ctx 断言）、
+  装好的包里 `execute()` 真的返回结论、工具与路由对同一份文档逐条相同（32 个检查）。
+  但「模型在会话里自己决定调用它」这一步，在我这台机器上做不到：CLI 启动的 profile 拿不到
+  桌面版那份凭证（`ZHANLU_CNH_API_KEY` 由 credentials service 持有，换 profile 就解析不到），
+  而我不打算为了验证去改主人正在用的 profile。所以这一条现在是「没有反例」，不是「已验证」。
+
 - Structural only. It says an ADR has a consequences section; it never says the
   consequence is acceptable.
 - Genre mismatch is not detected. Checking a résumé with `invoice-check` is allowed
