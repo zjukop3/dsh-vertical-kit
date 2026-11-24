@@ -84,7 +84,7 @@ git push                  # push:verified 会读远端默认分支，不看退�
 两个方向都验过——把 `classify` 改成恒返回 `ok`，或把版本比较退回字符串比较，
 `test/audit-mirror.test.js` 各有 3 条变红。
 
-这些不是推断。2026-11-23 的完整过程——装不上、装上之后 24 个端点读不了 `path`、修完重装 27/27 全通——记在 [`docs/e2e/install-and-call-2026-11-23.md`](docs/e2e/install-and-call-2026-11-23.md)。
+这些不是推断。2026-11-23 的完整过程——装不上、装上之后 24 个端点读不了 `path`、修完重装 27/27 全通——记在 [`docs/e2e/install-and-call-2026-11-23.md`](docs/e2e/install-and-call-2026-11-23.md)；2026-11-24 那次从镜像装 0.1.9、34 个端点逐个调、并解包确认修好的三条正则真的在发布出去的字节里，记在 [`docs/e2e/install-and-call-2026-11-24.md`](docs/e2e/install-and-call-2026-11-24.md)。
 
 ## 输出示例
 
