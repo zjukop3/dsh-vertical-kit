@@ -172,7 +172,7 @@
         },
         {
           "rule": "action-no-owner",
-          "meaning": "行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号"
+          "meaning": "行动项没有负责人（负责人：…、@名字、句子开头人名 + will/agreed、行尾 (Chris)、Chairs/team 这类角色）→ review 为 warn，strict 为 error，报行号"
         },
         {
           "rule": "action-no-deadline",

@@ -415,6 +415,18 @@ export const DEFECTS = [
       '第一处是自相矛盾的输出：「文件名应为 TryDing-T__dsh-Plugin--ChineseChess.yml（当前 TryDing-T__dsh-Plugin--ChineseChess.yml）」——同一个字符串被判不相等，因为反解把仓库名 dsh-Plugin--ChineseChess 从中间锯成了 dsh-Plugin 加子路径 ChineseChess。第二处更严重：它让本地检查说「可以提交」而 CI 拒掉，这种不一致比没有检查更坏，因为它消耗的是信任。整个包现在按上游 validateEntries 的判据逐条对齐（icon 主机白名单、tarball 必须 release 附件、多余语言键、空的 zh），全量 12960 份已合并条目上零 error。',
     now: { kind: 'silent', input: `url: https://github.com/TryDing-T/dsh-Plugin--ChineseChess\nname: TryDing-T/dsh-Plugin--ChineseChess\ncategory: fun\ndescription:\n  en: 'Chinese chess in the sidebar.'\n  zh: '侧边栏里的中国象棋。'\n`, rule: 'filename' },
   },
+  {
+    n: 36,
+    check: 'meeting-notes-check',
+    rule: 'decisions-missing / action-no-owner / action-no-deadline',
+    fixedIn: '0.1.6',
+    foundBy: 'third-party corpus',
+    wrong: '60 份真实会议纪要（bytecodealliance / w3c-cg / ietf / open-organization 等）里只有 35% 能过：94% 报「没记决定」、70% 报「行动项没有负责人」、72% 报「没有截止时间」',
+    right: '负责人认句首人名 + will/agreed、行尾 (Chris)、Chairs/team 这类角色；决定认 prose 里的 agreed/decided/approved/resolved；截止时间认 by Friday / before the next meeting / EOD；并分成 review（只有「没有日期」是 error）与 strict 两种模式',
+    lesson:
+      '三条都在量拼写，而且量的是「我们公司怎么写」：真实纪要里负责人是「* [ ] Dominik will take the whiteboard」，没有「负责人：」；决定是「as agreed in our charter」，不是「决定：」；期限写「by next meeting」，不写日期。最刺眼的是截止时间：39/45 份实质纪要一个期限都不写——那是行业惯例，把惯例判成 error 就是拿自己的偏好当标准。这一条的正确解法不是放宽阈值，而是承认两种用法（看别人的纪要 vs 发出去之前自查）并分开判。',
+    now: { kind: 'silent', input: `# June 25 SIG-Embedded Meeting\n\n## Attendees\n\n* Marcin Kolny\n* Dominik Tacke\n\n## Action Items\n\n* [ ] Dominik will take the whiteboard and start a document.\n* [ ] Youtube video upload (Emily)\n\nThe group agreed in the charter that this is one of the first items.\n`, rule: 'action-no-owner' },
+  },
 ]
 
 export const LEDGER = {

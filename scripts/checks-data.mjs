@@ -30,7 +30,7 @@ export const CHECKS = [
       "command": "agreement-check contract-sample.md",
       "fixture": "甲方：甲科技有限公司\n乙方：乙网络工作室\n\n本合同总金额为人民币壹万贰仟元整（¥13,000元）。\n\n甲方（盖章）\n乙方（盖章）",
       "output": "$ agreement-check contract-sample.md\nerror date 全文没有任何日期，合同无法锚定生效时间\nerror amount-mismatch 大写金额 12000（第 4 行）与所有数字金额（13000@4）都对不上\nerror dispute 没有争议解决条款（仲裁/诉讼/管辖）\nerror breach 没有违约责任条款\nwarn term 没有期限条款（合同期限/有效期/履行期限）\nfail: 4 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -60,7 +60,7 @@ export const CHECKS = [
       "command": "invoice-check invoice-sample.txt",
       "fixture": "发票号码：24512000000123456789\n统一社会信用代码：91330106MA27X8XXXX\n购买方名称：甲科技有限公司\n销售方名称：乙网络工作室\n不含税金额（小写）：¥11,320.75\n税额（小写）：¥679.25\n价税合计（小写）：¥12,001.00\n价税合计（大写）：壹万贰仟元整",
       "output": "$ invoice-check invoice-sample.txt\nerror amount-sum 第 5 行勾稽不平：不含税 11320.75 + 税额 679.25 = 12000，价税合计却是 12001（容差 0.02）\nerror amount-uppercase 大写金额 12000（第 8 行）与价税合计 12001（第 7 行）不一致\nfail: 2 errors, 0 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -90,7 +90,7 @@ export const CHECKS = [
       "command": "listing-check listings.csv",
       "fixture": "title,price,sku\n全自动懒人支架手机桌面通用, 29.9, SKU001\n手机支架手机支架手机支架通用, 9.9, SKU002\n超便宜, 0, SKU003\n便宜货, 39.9, SKU002",
       "output": "$ listing-check listings.csv\nerror title-short 第3行 第 3 行标题 3 字，少于下限 10：「超便宜…」\nerror price-invalid 第3行 第 3 行价格「0」不是 ≥ 0.01 的数字\nerror title-short 第4行 第 4 行标题 3 字，少于下限 10：「便宜货…」\nerror sku-duplicate 第4行 第 4 行 SKU「SKU002」与第 2 行重复\nwarn title-stuffing 第2行 第 2 行关键词「手机支架」重复 3 次（上限 3）\nfail: 4 rows, 4 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -106,7 +106,7 @@ export const CHECKS = [
     rules: [
       ['date-missing', '整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）'],
       ['attendees-missing', '没有与会人/参会人/出席/Attendees 行或标题 → error'],
-      ['action-no-owner', '行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号'],
+      ['action-no-owner', '行动项没有负责人（负责人：…、@名字、句子开头人名 + will/agreed、行尾 (Chris)、Chairs/team 这类角色）→ review 为 warn，strict 为 error，报行号'],
       ['action-no-deadline', '行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号'],
       ['agenda-missing', '没有议程/议题标题或编号讨论点 → warn'],
       ['decisions-missing', '没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）'],
@@ -119,11 +119,16 @@ export const CHECKS = [
     example: {
       "command": "meeting-notes-check meeting-sample.md",
       "fixture": "# 项目周会\n\n- 日期：2026-11-15\n- 与会人：张三、李四、王五\n\n## 议程\n\n1. 讨论登录页改版\n2. 评审导出性能\n\n## 行动项\n\n- [ ] 登录页模板替换\n- [ ] 导出性能基线测试 负责人：李四",
-      "output": "$ meeting-notes-check meeting-sample.md\nerror action-no-owner 第13行 第 13 行行动项没有负责人（认得：负责人：…、@名字、X 负责）：「- [ ] 登录页模板替换…」\nerror action-no-deadline 第13行 第 13 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）\nerror action-no-deadline 第14行 第 14 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）\nwarn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条\nfail: 2 action items, 3 errors, 1 warnings",
-      "exit": "1"
+      "output": "$ meeting-notes-check meeting-sample.md\nwarn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条\nwarn action-no-owner 第13行 行动项没有负责人（认得：负责人：…、@名字、X 负责、句首人名 + will/agreed、Chairs/team 这类角色）：「- [ ] 登录页模板替换…」\nwarn action-no-deadline 第13行 行动项没有截止时间（认得：11月20日前、2026-11-20、by Friday、next meeting、EOD）\nwarn action-no-deadline 第14行 行动项没有截止时间（认得：11月20日前、2026-11-20、by Friday、next meeting、EOD）\nok: 2 action items, 0 errors, 4 warnings",
+      "exit": "0",
 },
     note: '只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: {
+      layer: 'strangers',
+      source: 'GitHub 上别人写的 meeting-notes.md（60 份，其中 45 份正文 >1.5KB 用于校准：bytecodealliance/w3c-cg/ietf/open-organization/aimug 等）',
+      count: 60,
+      first: '旧判据只有 35% 能过。三条都在量拼写：负责人只认「负责人：/@名字/X 负责」，而真实写法是「* [ ] Dominik will take…」「Youtube video upload (Emily)」「Chairs to have…」；决定只认「决定：」这类标签，而真实写法是 prose「as agreed in our charter」；截止时间只认日期，「by Friday / before the next meeting / EOD」全看不见。另外 review 模式把「没写截止时间」判 error，而 39/45 份真实纪要不写期限——那是行业惯例，不是缺陷。',
+    },
   },
   {
     slug: 'resume-check',
@@ -150,7 +155,7 @@ export const CHECKS = [
       "command": "resume-check resume-sample.md",
       "fixture": "# 李四\n\n- 邮箱：lisi..wrong@site\n- 电话：12345\n\n## 工作经历\n\n**A公司** 工程师 2020.1 - 2022.6\n**B公司** 工程师 2021.5 - 2023.1\n**C公司** 工程师 2022.3 - 至今\n**D公司** 工程师 2023.2 - 2024.1",
       "output": "$ resume-check resume-sample.md\nerror email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）\nerror phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间\nerror dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与 2020.1 - 2022.6 重叠超过 3 个月\nerror dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与 2021.5 - 2023.1 重叠超过 3 个月\nerror dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期\nwarn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）\nfail: 4 stints, 5 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。',
     corpus: { layer: 'strangers', source: '三份真实中文简历（本机私有文件；只记结构与份数，内容不入仓）', count: 3, first: '三处误报：倒序时间线按文档顺序比较（一份正常简历 5 个 error）、项目经历被当成雇佣区间、以及 `项目经历` 后面的 \\b 让整节匹配不上' },
@@ -178,7 +183,7 @@ export const CHECKS = [
       "command": "release-notes-check release-sample.md",
       "fixture": "# Changelog\n\n## 2.1.0 — 2026-11-17\n\n### Breaking\n\n- 配置文件键「endpoint」改名「server」\n\n## 1.9.0 — 2026-10-01\n\n- 修了几个问题",
       "output": "$ release-notes-check release-sample.md\nerror breaking-without-upgrade 第0行 声明了破坏性变更但没有升级/迁移说明——读者被留在原地\nwarn upgrade-missing 第0行 没有升级/迁移说明（认得：## 升级、## 迁移、upgrade guide）——如果这次没有破坏性变更，忽略这条\nfail: 2 version headings, 1 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验书记层面，不验软件质量：它验证说明写了哪个版本、何时、什么会坏、怎么迁移；排序规则读标题顺序，「重点优先」式的故意乱序页不在规则域内。',
     corpus: { layer: 'strangers', source: '其他插件仓库的 CHANGELOG', count: 11, first: '折叠的 <details> 历史附录被当成主时间线；order 报的行号系统性偏上一行' },
@@ -205,7 +210,7 @@ export const CHECKS = [
       "command": "weekly-report-check weekly-sample.md",
       "fixture": "# 周报 2026-W46\n\n这周很忙，做了很多事情，下周继续努力。",
       "output": "$ weekly-report-check weekly-sample.md\nerror done-missing 第0行 没有「本周完成」段或自标识行（认得：## 本周完成、已完成：…、已上线…）——报告没有事实底座\nwarn risks-missing 第0行 没有风险/阻塞段（认得：## 风险、阻塞：…、卡在…）——如果本周真的没有风险，忽略这条\nwarn metrics-thin 第0行 全文只有 0 行带量化数字（% 、个、条、次、人、天、小时…，下限 1）——「优化了性能」不可检验，「p95 从 820ms 降到 460ms」可以\nfail: 0 done, 1 planned, 0 risks, 1 errors, 2 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -234,7 +239,7 @@ export const CHECKS = [
       command: 'bug-report-check bug-sample.md',
       fixture: '# 登录按钮在 Safari 下无响应\n\n今天有人反馈说登录不行。',
       "output": "$ bug-report-check bug-sample.md\nerror env-missing 第0行 没有环境证据（认得：版本号 1.92.0、## 环境、Platform: darwin、commit abc1234）——没有环境的 bug 无法归因\nerror repro-missing 第0行 没有可复现的证据（认得：编号步骤、能跑的命令、代码片段、最小复现链接、写了先后动作的散文）——没有这些东西的 bug 很难验证\nwarn expectation-unstated 第0行 没写「预期 vs 实际」两行（模板会要求）；正文里看起来描述的是坏结果，但对照能省掉读者的猜测\nfail: 0 steps, 2 errors, 1 warnings",
-      exit: '1',
+      "exit": "1",
     },
     note: '判据被 404 份真实 GitHub bug issue 校准过（vscode / kibana / pandas / TypeScript / deno / home-assistant）。旧判据只有 2% 通过：88% 报「没有环境」、86% 报「没有复现步骤」——那是判据在量拼写（只认 `#` 标题、只认行首「版本：」、只认段名下的编号行）。现在量性质：环境证据、可复现证据、坏掉的证据。两种模式分开，是因为「提交前给自己过一遍」和「看别人的报告」要的严格程度不同。',
     corpus: {
@@ -266,7 +271,7 @@ export const CHECKS = [
       "command": "api-doc-check api-sample.md",
       "fixture": "# 接口说明\n\n我们的接口在 /v1/items 上，可以用。",
       "output": "$ api-doc-check api-sample.md\nerror endpoints-missing 第0行 没有「METHOD + 路径」形式的端点（认得：GET /v1/items、POST /v1/orders），下限 1——只有路径没有动词的行不算，单独一行路径无法被调用\nerror examples-missing 第0行 代码块只有 0 个（下限 1）——接口文档至少要有一个请求或响应示例\nerror auth-missing 第0行 全文没有鉴权说明（认得：鉴权、认证、Authorization、API key、Bearer，或明说无需鉴权 / 只在本机与 Unix socket 上监听）——不知道怎么证明身份的接口文档不可用\nwarn error-shape-missing 第0行 没有错误响应的说明（认得：错误、失败、4xx、5xx）——只写成功的文档让读者猜失败长什么样\nfail: 0 endpoints, 0 examples, 3 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。',
     corpus: { layer: 'strangers', source: '本项目的接口参考 + DSH 自带的 8 份（6 份 cordis-api 库参考 + api-gateway 架构参考 + tool-catalog 目录表）', count: 9, first: '三种误报：库参考（一个类、成员、签名块）被要求写 METHOD 路径与鉴权；架构参考被要求写端点；目录表被逐条当成接口' },
@@ -294,7 +299,7 @@ export const CHECKS = [
       "command": "test-report-check test-sample.md",
       "fixture": "# 测试报告\n\n今天跑了测试，大部分都过了。",
       "output": "$ test-report-check test-sample.md\nerror counts-missing 第0行 全文没有任何用例计数（认得：通过 12、失败 3、跳过 1、总计 15）——测试报告没有计数就不是报告\nerror env-missing 第0行 没有测试环境（认得：## 测试环境、环境：…、OS：…、Node：v…）——不写环境的结果无法复跑\nfail: {}, 2 errors, 0 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -325,7 +330,7 @@ export const CHECKS = [
       "command": "commit-msg-check commit-sample.txt",
       "fixture": "修复登录页在弱网环境下偶发超时却没有任何反馈的问题，补上错误文案、重试按钮与失败提示，并新增三条回归测试，覆盖该路径、重试次数上限以及超时之后的状态回收逻辑",
       "output": "$ commit-msg-check commit-sample.txt\nerror subject-long 第1行 第 1 行主题 78 字，超过 72——git log 会折行，细节放正文\nwarn type-missing 第1行 第 1 行没有类型前缀（认得：feat/fix/docs/style/refactor/perf/test/build/ci/chore/revert）——「修复登录页在弱网环境下偶发超时却没有任何反馈的问题，补上错误」这条是团队约定，不是 git log 的硬要求——想强制就传 rules.requireType: \"error\"\nfail: type=- subject=78ch, 1 errors, 1 warnings (type policy: warn)",
-      "exit": "1"
+      "exit": "1",
 },
     note: '两类规则不是一回事。「与流派无关」的四条——主题超长、句尾句号、正文前缺空行、! 没有配 trailer——任何仓库、任何语言都是同样地错，所以是 error。「带流派」的一条——类型前缀是 Conventional Commits 的约定，用 `Verb 名词` 写的仓库和中文提交信息没有英文类型词可用，对它们报错不是在挑错，是把自己的规矩套在别人头上；这类默认 warn，要强制传 --require-type。只验信息形状，不验提交内容：diff 是否做了主题说的事，靠评审。',
     corpus: { layer: 'own', source: '三个仓库的提交历史', count: 120, first: '83% 报 type-missing——那是团队约定不是缺陷；56% 主题超 72 字，那是真问题' },
@@ -356,7 +361,7 @@ export const CHECKS = [
       "command": "dockerfile-check Dockerfile.sample",
       "fixture": "FROM node\nADD . /app\nENV API_KEY=sk-live-1234567890\nCMD [\"node\", \"index.js\"]",
       "output": "$ dockerfile-check Dockerfile.sample\nerror user-missing 第0行 没有任何 USER 指令——容器默认以 root 运行，镜像被拿下就是宿主 root\nerror base-unpinned 第1行 第 1 行基础镜像「node」没有固定标签或 digest——「node:latest」这类浮动标签让构建不可复现\nerror secret-in-layer 第3行 第 3 行把疑似密钥「API_KEY」写成了字面值——层历史永久保留，改用构建期 secret 或运行时注入\nwarn workdir-missing 第0行 没有 WORKDIR——相对路径会落在 /，后续 COPY 的位置容易看错\nwarn add-instead-of-copy 第2行 第 2 行用的是 ADD 但源不是 URL 也不是压缩包——COPY 语义更窄，读者不用猜\nfail: 4 instructions, 3 errors, 2 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验文件文本，不验构建出的镜像：它看不见基础镜像里有什么、最终 stage 是不是你要的那个、镜像里到底有没有那个 USER。它验证文件写下了这些决定；镜像行为对不对，靠扫描和实跑。',
     corpus: { layer: 'strangers', source: '第三方 Dockerfile', count: 2, first: '一份以 root 收尾（真缺陷），一份干净——检查不是见谁咬谁' },
@@ -385,7 +390,7 @@ export const CHECKS = [
       "command": "env-example-check env-sample",
       "fixture": "DATABASE_URL=postgres://user:pass@prod-db:5432/app\nPORT=8080\nAPI_KEY=sk-live-abc123",
       "output": "$ env-example-check env-sample\nerror literal-value 第1行 第 1 行 DATABASE_URL 带了字面值「postgres://user:pass」——示例文件只放占位符，真值进 .env（不提交）\nerror literal-value 第2行 第 2 行 PORT 带了字面值「8080」——示例文件只放占位符，真值进 .env（不提交）\nerror literal-value 第3行 第 3 行 API_KEY 带了字面值「sk-live-abc123」——示例文件只放占位符，真值进 .env（不提交）\nwarn comment-missing 第0行 没有任何注释行——说明每个键的用途，读者才知道该填什么\nfail: 3 keys, 3 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '认的占位符形态：空值、<尖括号>、${VAR} 引用、your-…、changeme、xxx、TODO、placeholder、example、dummy、test、none、null；其余都算「真值已提交」。只验示例文件的形状，看不见仓库历史与 CI 密钥。',
     corpus: { layer: 'strangers', source: '第三方 .env.example', count: 1, first: '把文档里的 https://remote.example.edu/... 判成提交了真值' },
@@ -417,7 +422,7 @@ export const CHECKS = [
       "command": "license-check LICENSE.sample",
       "fixture": "MIT License\n\nCopyright (c) 2026\n\nPermission is hereby granted, free of charge, to any person obtaining a copy.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.",
       "output": "$ license-check LICENSE.sample\nerror copyright-holder-missing 第3行 第 3 行 Copyright 没有版权人名称\nfail: detected=MIT, 1 errors, 0 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '认得 12 种许可证正文（MIT/Apache-2.0/BSD-2/BSD-3/ISC/GPL-2.0/GPL-3.0/LGPL-3.0/AGPL-3.0/MPL-2.0/Unlicense/CC0-1.0），按正文短语匹配而非标题——所以「标题 MIT 正文 GPL」会被抓。只验文件形态与身份，不验法律效力：许可是否合适、依赖是否兼容、版权人是否正确的法律主体，都不是机器能担保的部分。',
     corpus: { layer: 'strangers', source: '其他插件仓库的 LICENSE', count: 21, first: '把 Apache-2.0 定义段的 "the copyright owner" 当成版权声明行，4 份正确文件被报错' },
@@ -446,7 +451,7 @@ export const CHECKS = [
       "command": "incident-report-check incident-sample.md",
       "fixture": "# 服务挂了\n\n今天下午服务挂了，重启后恢复了。",
       "output": "$ incident-report-check incident-sample.md\nerror timeline-missing 第0行 没有时间线（认得：## 时间线 / ## 事件过程 + 带时间的条目）——没有时间的事故报告回答不了「挂了多久」\nerror impact-missing 第0行 没有影响段（认得：## 影响、影响：…、受影响…）——不知道影响谁的报告无法定级\nerror root-cause-missing 第0行 没有根因段（认得：## 根因、根本原因：…、root cause）——「重启后恢复」是处置，不是原因\nerror actions-missing 第0行 没有后续行动项（认得：## 行动项 / ## 后续 / ## Prevention / ## Action Items）——没有后续的复盘只写了一份文档\nwarn duration-missing 第0行 全文没有时长（认得：23 分钟、1 小时、45 秒）——读者要自己拿时间线相减才知道挂了多久\nfail: 0 timeline entries, 0 follow-ups, 4 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验结构，不验根因是否找对：报告可以写一个听起来合理但错误的根因，这个工具分辨不出。它验证文档给出了时间线、影响、原因与有人负责的后续——读者评估分析前需要的四件事。责任归属是人类实践，代码不编码它。',
     corpus: { layer: 'own', source: '本项目的复盘', count: 1, first: '无' },
@@ -475,7 +480,7 @@ export const CHECKS = [
       "command": "ops-runbook-check runbook-sample.md",
       "fixture": "# 发布手册\n\n1. 停服务\n2. rm -rf /data\n3. 起服务",
       "output": "$ ops-runbook-check runbook-sample.md\nerror prereq-missing 第0行 没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限\nerror rollback-missing 第0行 没有回滚段（认得：## 回滚、回滚：…、Rollback）——这份 runbook 会改变环境，出问题时读者没有退路\nerror verify-missing 第0行 没有验证段（认得：## 验证、确认：…、Verify）——没写怎么确认，读者不知道做完了没有\nerror destructive-unwarned 第4行 第 4 行起的步骤含 rm -rf 但没有写明注意/备份/不可逆——这条命令在压力下会被照抄\nwarn shell-unspecified 第0行 没有说明用什么 shell（认得：bash、zsh、PowerShell）——同一条命令在不同 shell 里行为不同\nfail: 3 steps, 4 errors, 1 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。',
     corpus: { layer: 'strangers', source: '本项目的 4 份 runbook + DSH 自带的 5 份 cookbook（2 份开发配方 + 3 份参考目录页）', count: 9, first: '两种误报：开发配方（往 monorepo 加包）被要求写前置与回滚——回滚就是 git checkout；参考目录页（按形态分节）被要求写编号步骤' },
@@ -505,7 +510,7 @@ export const CHECKS = [
       "command": "pr-description-check pr-sample.md",
       "fixture": "修了点东西",
       "output": "$ pr-description-check pr-sample.md\nerror what-missing 第0行 没有「做了什么」段（认得：## 概述、## 变更、这个 PR…、或一条列出改动的列表）——reviewer 只能从 diff 反推意图\nerror test-missing 第0行 没有测试/验证说明（认得：## 测试、验证：…、How tested、测试数/audit/CI 结果）——没有验证说明的 PR 让 reviewer 替你验证\nwarn why-missing 第0行 没有「为什么」段（认得：## 背景、## 动机、the reason is、动机是）——这条靠判断不靠关键词，想让它在 CI 里阻断就传 rules.requireWhy: \"error\"\nwarn issue-unlinked 第0行 没有关联 issue（认得：Fixes #12、#56）——小改动可以没有，但追溯性会差一些\nfail: 0 checkboxes, 2 errors, 2 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '只验描述的形状，不验内容真假：它看不出概述写的是另一个改动、测试声明是编的、issue 链接指向无关的东西。它验证文本以 reviewer 能动手的形式回答了 what/why/how-verified；答案是否诚实，是评审和 CI 的事——试图裁判诚实的工具只能靠猜。',
     corpus: { layer: 'own', source: '已合并的目录 PR 正文', count: 19, first: '19/19 报缺 what/why/test，其实三个问题都用散文答了' },
@@ -535,7 +540,7 @@ export const CHECKS = [
       "command": "spec-doc-check spec-sample.md",
       "fixture": "# 导出重做\n\n我觉得现在的导出体验不够好，想重做一下。\n\n## 验收标准\n\n- 体验良好\n- 速度合理",
       "output": "$ spec-doc-check spec-sample.md\nerror problem-missing 第0行 没有背景/问题/目标段——读者不知道这个方案在解决什么\nerror out-of-scope-missing 第0行 没有「不做/范围外」段（认得：## 不做、## 非目标、Out of scope）——没写边界的方案在评审时会被无限扩大\nerror criteria-vague 第7行 第 7 行验收标准含「良好」但没有数字或可观测对象——「体验良好」既无法通过也无法拒绝\nerror criteria-vague 第8行 第 8 行验收标准含「合理」但没有数字或可观测对象——「速度合理」既无法通过也无法拒绝\nfail: 2 criteria, 4 errors, 0 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '愿望词表：良好/优秀/合理/友好/快速/流畅/尽量/适当/完善/稳定/高效/简洁（含英文同级词）。只要同一条里出现数字、阈值或可观测对象（状态码、字段、命令、百分比）就放行——规则只在「只剩下愿望」时才响。只验文档形状，不验方案是否正确：标准是不是错的标准、问题陈述是不是事后合理化、范围外是不是回避了难点，这些评审才能说。',
     corpus: { layer: 'strangers', source: 'DSH 自带的 52 份设计文档（47 份 subsystems + architecture / agent-lifecycle / capability-seams / tool-catalog / persistence-catalog）', count: 52, first: '四种误报：参考文档被要求写验收标准（47 份）、生成的图页被当成提案、索引页被逐条判、以及「背景/目标」这类关键词让讲概念的文档被当成提案' },
@@ -567,7 +572,7 @@ export const CHECKS = [
       "command": "adr-check adr-sample.md",
       "fixture": "# ADR-0007 用 Postgres 存会话\n\n## 背景\n\n会话要跨实例共享。\n\n## 决定\n\n会话写入 Postgres。\n\n## 后果\n\n- 好处：多副本共享，重启不丢会话\n- 好处：不再需要粘性会话",
       "output": "$ adr-check adr-sample.md\nerror status-missing 第0行 没有状态（认得：状态：已接受、Status: accepted，或「## Status」下面一行）——不知道这条决策是否已生效。可取值：proposed/accepted/rejected/deprecated/superseded…\nwarn date-missing 第0行 没有日期（认得：2026-11-18）——决策的时间点决定了它的上下文\nwarn consequences-one-sided 第13行 后果段只有好处没有代价（缺：代价/缺点/风险/trade-off）——只写收益的 ADR 通常没真正权衡过\nfail: 2 consequences, 1 errors, 2 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '状态取值：proposed/accepted/rejected/deprecated/superseded（含中文同级词）。代价词：代价/缺点/劣势/风险/成本/trade-off/downside；好处词：好处/优点/优势/收益/benefit/upside。只验记录形状，不验决策对不对：背景是否漏了大家都知道的约束、备选是不是稻草人、代价是否被压低——这些只有后果本身会在后来揭晓。',
     corpus: { layer: 'own', source: '本项目的决策记录', count: 5, first: '只看项目符号，把写在段落行上的「好处：」「代价：」判成未标注' },
@@ -596,7 +601,7 @@ export const CHECKS = [
       "command": "onboarding-check onb-sample.md",
       "fixture": "# 上手\n\n这个项目挺好用的，大家可以看看。",
       "output": "$ onboarding-check onb-sample.md\nerror command-missing 第0行 没有可粘贴的命令代码块（认得：含 npm/pnpm/npx/pip/git clone/docker run 的 ``` 块）——没有命令的上手文档只能读，不能做\nwarn prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对\nwarn success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了\nwarn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项\nwarn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、37 秒、15 分钟、under 10 minutes、40 seconds）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做\nfail: 0/0 blocks runnable, 1 errors, 4 warnings",
-      "exit": "1"
+      "exit": "1",
 },
     note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',
     corpus: { layer: 'strangers', source: '其他插件仓库的 39 份 README + DSH 自带的 21 份 user 文档（任务指南、索引页、跳转存根）', count: 60, first: '四种误报：任务型指南被要求写前置/耗时/求助、索引页与跳转存根被当成上手文档、编号小节（## 1.）不算步骤、以及 dsh plugin --profile add 这种写法没被认成安装命令' },
@@ -630,7 +635,7 @@ export const CHECKS = [
       command: 'handover-check handover-sample.md',
       fixture: '# 交接单\n\n交接人：张三\n接收人：李四\n2026-11-19\n\n1. 事项一\n2. 事项二\n3. 事项三\n',
       "output": "$ handover-check handover-sample.md\nerror access-unlisted 第0行 没有账号/权限段（认得：## 账号与权限、账号：、Access）——交接单不列账号，等于留下一组没人管的活凭证\nerror signoff-missing 第0行 没有接收人签字/确认（认得：## 签字确认、已确认、Sign-off）——没签字就没有人核对过交接是否完整\nwarn date-unlabelled 第0行 全文有日期 2026-11-19，但没有「交接日期/生效日期」字样\nwarn no-owners 第0行 3 条事项里没有一条写了负责/接手人——接手人只能自己猜从哪开始\nwarn pending-missing 第0行 没有未完成/遗留事项段（认得：## 未完成事项、遗留：、Known issues）——只看已完成的部分，接手人会在第二周撞墙\nfail: 3 items, 2 errors, 3 warnings",
-      exit: '1',
+      "exit": "1",
     },
     note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -666,7 +671,7 @@ export const CHECKS = [
       command: 'expense-claim-check claim-sample.md',
       fixture: '报销人：张三\n报销期间：2026-11-01 至 2026-11-15\n\n- 高铁票 553.50 元\n- 住宿 960.00 元\n\n合计：1600.00 元\n',
       "output": "$ expense-claim-check claim-sample.md\nerror total-mismatch 第0行 明细相加是 1513.5，合计行写的是 1600，差 86.5（容差 0.01）——要么抄错，要么有一行没列出来\nerror approver-missing 第0行 没有审批人（认得：审批人：、批准人：、Approved by）——没有人批过的报销单不该进入付款\nwarn invoice-missing 第0行 一条发票号都没有（认得：发票号码：12345678）——没有发票号的明细无法在系统里核销\nwarn purpose-missing 第0行 没有事由说明（认得：事由、用途、Purpose）——只有金额的报销单，审批人无法判断该不该批\nfail: 2 items summing 1513.5, total 1600, 2 errors, 2 warnings",
-      exit: '1',
+      "exit": "1",
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
@@ -791,7 +796,7 @@ export const CHECKS = [
       command: 'plugin-entry-check bad-entry.yml',
       fixture: '',
       "output": "$ plugin-entry-check bad-entry.yml\nerror empty 第0行 条目是空的——没有 url、name、category 的 yaml 交上去只会被拒\nfail: 1 errors, 0 warnings",
-      exit: '1',
+      "exit": "1",
     },
     note: '判据来自上游 contributing.md 的正文，但**以已合并条目为准**：规则写得比实践严的地方按实践降级（`name` 大小写、`#sub` 与 url 的三种写法都是 warn）。校准用全量：目录里 12960 份已合并条目，现在 12960/12960 零 error，2.2% 有 warn。第一版是手写的 YAML 子集解析器，被真实条目打回四次（块标量、跨行引号标量、行内注释、整份 2 空格缩进、JSON 写成 .yml），最后换成 js-yaml——与上游同一个解析器，「我判他错」才可能是真的。',
     corpus: {
@@ -835,7 +840,7 @@ export const CHECKS = [
       command: 'plugin-package-check ./packages/dsh-adr-check',
       fixture: null,
       "output": "$ plugin-package-check ./packages/dsh-adr-check\nok: dsh-adr-check 0 errors, 0 warnings",
-      exit: '0',
+      "exit": "0",
     },
     corpus: { layer: 'strangers', source: '这台机器上装着的第三方插件（dsh-wechat、dsh-media-desk、dsh-bili-scroll、dsh-context、dsh-guizang-design、dsh-purge-community、@claude-mem/dsh）', count: 7, first: '第一版把聚合包判错：dsh-check-suite 的 patch 挂的是它的依赖而不是自己，那是合法的；同时在自己 27 个包上报出没有图标、README 没有安装命令——都是真的' },
     note: '校准语料是别人写的七个包加上本仓库自己的三十个。dsh-purge-community 的 bin 键里没有它自己的包名（所以 README 让人敲 npx dsh-purge-community 会 404），@claude-mem/dsh 是 private——这两条都是真的，不是规则挑刺。它不能判断插件好不好用，也看不见「tarball 里漏了目录里有的文件」这个反向问题（那要 npm pack --dry-run）。',

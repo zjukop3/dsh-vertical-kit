@@ -1,6 +1,6 @@
 {
   "name": "dsh-check-suite",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "One install for 34 document and delivery checks: commit messages, PR descriptions, release notes, ADRs, runbooks, handovers, invoices, expense claims, resumes, spec and test reports, plus table, outline, number, citation and hash checks. Each check contributes its own HTTP endpoint; every finding carries a line number.",
   "type": "module",
   "exports": {
@@ -51,7 +51,7 @@
     "dsh-invoice-check": "^0.1.4",
     "dsh-license-check": "^0.2.3",
     "dsh-listing-check": "^0.2.2",
-    "dsh-meeting-notes-check": "^0.1.5",
+    "dsh-meeting-notes-check": "^0.1.6",
     "dsh-migration-guide-check": "^0.1.5",
     "dsh-onboarding-check": "^0.3.7",
     "dsh-ops-runbook-check": "^0.2.5",

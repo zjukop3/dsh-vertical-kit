@@ -109,3 +109,51 @@ test('一份没有日期的纪要仍然报 date-missing', () => {
   const text = '# m\n\nAttendees:\n\n- A\n\nAgenda:\n\n讨论。\n'
   assert.ok(lintMeetingNotes(text).findings.some(f => f.rule === 'date-missing'))
 })
+
+// 这一组判据被 60 份真实会议纪要（GitHub 上别人写的 meeting-notes.md，其中 45 份
+// 正文 >1.5KB）校准过。旧判据下只有 35% 能过：真实纪要的负责人写成
+// 「* [ ] Dominik will take…」「(Chris)」、决定写成 prose「as agreed in our charter」、
+// 截止时间普遍缺席。下面每条都对应一个被打回来的假设。
+test('真实写法：负责人可以是句首人名、行尾括号人名、角色', () => {
+  const note = `# 2024-06-25 SIG meeting
+
+## Attendees
+
+* Marcin Kolny
+* Dominik Tacke
+
+## Action Items
+
+* [ ] Dominik will take the whiteboard and start a document.
+* [ ] Youtube video upload (Emily)
+* [ ] Chairs to have an internal sync.
+`
+  const result = lintMeetingNotes(note, { strict: true })
+  assert.ok(!result.findings.some(finding => finding.rule === 'action-no-owner'), JSON.stringify(result.findings))
+})
+
+test('决定写成一整句也算记了决定', () => {
+  const prose = `# 2024-06-25 SIG meeting\n\n## Attendees\n\n* Marcin Kolny\n\nThe group agreed in the charter that this is one of the first items.\n`
+  assert.ok(!lintMeetingNotes(prose).findings.some(finding => finding.rule === 'decisions-missing'))
+  const delegated = `# 2024-06-25\n\n## Attendees\n\n* Marcin\n\nWe will look into it next time.\n`
+  assert.ok(lintMeetingNotes(delegated).findings.some(finding => finding.rule === 'decisions-missing'))
+})
+
+test('review 模式只对「没有日期」判 error，其余是建议；strict 全部升级', () => {
+  const thin = `# SIG meeting\n\n## Agenda\n\n1. Opening\n\nSome discussion happened.\n`
+  const review = lintMeetingNotes(thin)
+  assert.equal(review.mode, 'review')
+  assert.deepEqual(review.findings.filter(finding => finding.level === 'error').map(finding => finding.rule), ['date-missing'])
+  const strict = lintMeetingNotes(thin, { strict: true })
+  assert.equal(strict.mode, 'strict')
+  assert.equal(strict.ok, false)
+  // strict 下「与会人」也升级为 error；「决策」与「行动项」保持 warn——一次真的什么都没
+  // 决定的会存在，把它们判成 error 是替会议内容下判决。
+  assert.deepEqual(strict.findings.filter(finding => finding.level === 'error').map(finding => finding.rule), ['date-missing', 'attendees-missing'])
+})
+
+test('截止时间认得 by Friday / next meeting / EOD 这类写法', () => {
+  const note = `# 2024-06-25\n\n## Attendees\n\n* Chris\n\n## Action Items\n\n* [ ] Chris will post notes by Friday.\n* [ ] Chris will upload the video before the next meeting.\n`
+  const result = lintMeetingNotes(note, { strict: true })
+  assert.ok(!result.findings.some(finding => finding.rule === 'action-no-deadline'), JSON.stringify(result.findings))
+})

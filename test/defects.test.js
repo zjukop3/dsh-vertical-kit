@@ -27,6 +27,7 @@ import { lintResume } from '../packages/dsh-resume-check/src/index.js'
 import { lintPrivacyNotice } from '../packages/dsh-privacy-notice-check/src/index.js'
 import { lintBugReport } from '../packages/dsh-bug-report-check/src/index.js'
 import { lintPluginEntry } from '../packages/dsh-plugin-entry-check/src/index.js'
+import { lintMeetingNotes } from '../packages/dsh-meeting-notes-check/src/index.js'
 import { createServer } from 'node:http'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -53,6 +54,7 @@ const LINTERS = {
   'privacy-notice-check': lintPrivacyNotice,
   'bug-report-check': lintBugReport,
   'plugin-entry-check': lintPluginEntry,
+  'meeting-notes-check': lintMeetingNotes,
 }
 
 const ruleOf = name => name.split(' / ')[0]

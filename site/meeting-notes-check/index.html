@@ -5,7 +5,7 @@
 <p><strong>它决定一件事：</strong>这份纪要是否交代了谁在何时 carries 什么。</p>
 <nav class="nav"><a href="../agreement-check/">dsh-agreement-check</a><a href="../invoice-check/">dsh-invoice-check</a><a href="../listing-check/">dsh-listing-check</a><a href="../meeting-notes-check/">dsh-meeting-notes-check</a><a href="../resume-check/">dsh-resume-check</a><a href="../release-notes-check/">dsh-release-notes-check</a><a href="../weekly-report-check/">dsh-weekly-report-check</a><a href="../bug-report-check/">dsh-bug-report-check</a><a href="../api-doc-check/">dsh-api-doc-check</a><a href="../test-report-check/">dsh-test-report-check</a><a href="../commit-msg-check/">dsh-commit-msg-check</a><a href="../dockerfile-check/">dsh-dockerfile-check</a><a href="../env-example-check/">dsh-env-example-check</a><a href="../license-check/">dsh-license-check</a><a href="../incident-report-check/">dsh-incident-report-check</a><a href="../ops-runbook-check/">dsh-ops-runbook-check</a><a href="../pr-description-check/">dsh-pr-description-check</a><a href="../spec-doc-check/">dsh-spec-doc-check</a><a href="../adr-check/">dsh-adr-check</a><a href="../onboarding-check/">dsh-onboarding-check</a><a href="../handover-check/">dsh-handover-check</a><a href="../expense-claim-check/">dsh-expense-claim-check</a><a href="../security-advisory-check/">dsh-security-advisory-check</a><a href="../migration-guide-check/">dsh-migration-guide-check</a><a href="../privacy-notice-check/">dsh-privacy-notice-check</a><a href="../contributing-check/">dsh-contributing-check</a><a href="../perf-report-check/">dsh-perf-report-check</a><a href="../plugin-entry-check/">dsh-plugin-entry-check</a><a href="../plugin-package-check/">dsh-plugin-package-check</a><a href="https://zjukop3.github.io/dsh-review-outbox/ecosystem/">生态月报</a><a href="https://github.com/zjukop3/dsh-vertical-kit">GitHub 源码</a><a href="https://www.npmjs.com/package/dsh-meeting-notes-check">npm</a></nav>
 <h2>检查规则</h2>
-<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>date-missing</code></td><td>整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）</td></tr><tr><td><code>attendees-missing</code></td><td>没有与会人/参会人/出席/Attendees 行或标题 → error</td></tr><tr><td><code>action-no-owner</code></td><td>行动项没有负责人（负责人：…、@名字、X 负责）→ error，报行号</td></tr><tr><td><code>action-no-deadline</code></td><td>行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号</td></tr><tr><td><code>agenda-missing</code></td><td>没有议程/议题标题或编号讨论点 → warn</td></tr><tr><td><code>decisions-missing</code></td><td>没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）</td></tr><tr><td><code>no-action-items</code></td><td>没有任何行动项 → warn（同样带出口）</td></tr></table>
+<table><tr><th>规则</th><th>判定</th></tr><tr><td><code>date-missing</code></td><td>整份纪要没有任何日期 → error（认得：2026-11-16、11月16日、11/16、下周三，以及 Tuesday, July 31, 2018 这类英文日期）</td></tr><tr><td><code>attendees-missing</code></td><td>没有与会人/参会人/出席/Attendees 行或标题 → error</td></tr><tr><td><code>action-no-owner</code></td><td>行动项没有负责人（负责人：…、@名字、句子开头人名 + will/agreed、行尾 (Chris)、Chairs/team 这类角色）→ review 为 warn，strict 为 error，报行号</td></tr><tr><td><code>action-no-deadline</code></td><td>行动项没有截止时间（11月20日前、2026-11-20、下周三）→ error，报行号</td></tr><tr><td><code>agenda-missing</code></td><td>没有议程/议题标题或编号讨论点 → warn</td></tr><tr><td><code>decisions-missing</code></td><td>没有决定/决议/结论 → warn（信息里写明：会议真的没有决定就忽略）</td></tr><tr><td><code>no-action-items</code></td><td>没有任何行动项 → warn（同样带出口）</td></tr></table>
 <h2>用法</h2>
 <pre><code>npx dsh-meeting-notes-check notes.md --json</code></pre><pre><code>npx dsh-meeting-notes-check notes.md --no-require-agenda</code></pre>
 <h2>真实输入输出</h2>
@@ -24,12 +24,12 @@
 - [ ] 登录页模板替换
 - [ ] 导出性能基线测试 负责人：李四</code></pre></details>
 <pre><code>$ meeting-notes-check meeting-sample.md
-error action-no-owner 第13行 第 13 行行动项没有负责人（认得：负责人：…、@名字、X 负责）：「- [ ] 登录页模板替换…」
-error action-no-deadline 第13行 第 13 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
-error action-no-deadline 第14行 第 14 行行动项没有截止时间（认得：11月20日前、2026-11-20、下周三）
 warn decisions-missing 第0行 没有记录任何决定/决议/结论——如果这次会议真的没有决定，忽略这条
-fail: 2 action items, 3 errors, 1 warnings</code></pre>
-<p>出口码：1。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
+warn action-no-owner 第13行 行动项没有负责人（认得：负责人：…、@名字、X 负责、句首人名 + will/agreed、Chairs/team 这类角色）：「- [ ] 登录页模板替换…」
+warn action-no-deadline 第13行 行动项没有截止时间（认得：11月20日前、2026-11-20、by Friday、next meeting、EOD）
+warn action-no-deadline 第14行 行动项没有截止时间（认得：11月20日前、2026-11-20、by Friday、next meeting、EOD）
+ok: 2 action items, 0 errors, 4 warnings</code></pre>
+<p>出口码：0。输出为真实 CLI 运行的逐字结果，由测试与工具保持同步。</p>
 <p>出口码：<code>0</code> 干净、<code>1</code> 有发现、<code>2</code> 用法或读文件错误。<code>--json</code> 输出机器可读结果。DSH 内同样的函数在 <code>POST /meeting-notes-check/api</code>（<code>{"text":"…"}</code> 或 <code>{"path":"…"}</code>），面板与 CI 调同一实现。</p>
 <div class="limit"><strong>这是清单，不是专业人士。</strong>合同检查不是法律意见，发票检查不判税务合规，listing 检查不判商业价值。每条发现都是文本里可判定的结构缺陷，带行号。</div>
 <small>只验记录格式，不判断会议质量：它验证纪要写清了谁在何时 carries 什么，不能验证张三真的接了任务。编号行是整份纪要的组织方式，只有勾选框和行动标题下的编号项算任务。 · <a href="https://github.com/zjukop3/dsh-vertical-kit#readme">dsh-vertical-kit</a> · 通用检查（哈希/引用/结构/表格/数字）在 <a href="https://zjukop3.github.io/dsh-verify-kit/">dsh-verify-kit</a></small>

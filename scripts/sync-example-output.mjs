@@ -19,18 +19,27 @@ import { CHECKS } from './checks-data.mjs'
 const root = resolve(import.meta.dirname, '..')
 const dataPath = resolve(root, 'scripts/checks-data.mjs')
 
-/** 跑一次 CLI，返回它真实打印的东西（不含 `$ …` 那行）。 */
+// `exit` 也是从运行结果推出来的：只刷 output 不刷 exit，等于让「示例输出」和
+// 「示例出口码」各说各话。meeting-notes 的 review 模式把多数判据降成 warn 之后，
+// 示例的出口码还是 1，而真实运行是 0——这类手写数字与本脚本旁边的推导值不一致，
+// 已经出现过太多次。
+/** 跑一次 CLI，返回 { stdout, code }。 */
 export function runExample(check) {
   // 输入是目录的检查（plugin-package-check）：照命令里的路径直接跑，不往临时目录写文件。
   if (check.example.fixture === null || check.example.fixture === undefined) {
     const target = (check.example.command.match(/(\.\/\S+|\/\S+)/) || [])[1]
     if (!target) throw new Error(`${check.npm}: fixture 为 null 时命令里必须带一个路径`)
-    const stdout = execFileSync(process.execPath, [resolve(root, 'packages', check.npm, 'bin', 'cli.js'), target], {
-      encoding: 'utf8',
-      cwd: root,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-    return stdout.trimEnd()
+    try {
+      const stdout = execFileSync(process.execPath, [resolve(root, 'packages', check.npm, 'bin', 'cli.js'), target], {
+        encoding: 'utf8',
+        cwd: root,
+        stdio: ['ignore', 'pipe', 'pipe'],
+      })
+      return { stdout: stdout.trimEnd(), code: 0 }
+    } catch (error) {
+      if (typeof error.stdout === 'string' && error.stdout.trim()) return { stdout: error.stdout.trimEnd(), code: error.status ?? 1 }
+      throw new Error(`${check.npm}: CLI failed — ${String(error.stderr || error.message).split('\n')[0]}`)
+    }
   }
   const dir = mkdtempSync(join(tmpdir(), 'dsh-example-'))
   const fileName = (check.example.command.match(/(\S+\.(?:md|txt|json|yml))/) || [])[1] || 'sample.md'
@@ -42,10 +51,10 @@ export function runExample(check) {
       [resolve(root, 'packages', check.npm, 'bin', 'cli.js'), file],
       { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
     )
-    return stdout.trimEnd()
+    return { stdout: stdout.trimEnd(), code: 0 }
   } catch (error) {
     // 出口码 1 是「有发现」，CLI 仍然打印了结果，stdout 就在 error.stdout 里。
-    if (typeof error.stdout === 'string' && error.stdout.trim()) return error.stdout.trimEnd()
+    if (typeof error.stdout === 'string' && error.stdout.trim()) return { stdout: error.stdout.trimEnd(), code: error.status ?? 1 }
     throw new Error(`${check.npm}: CLI failed — ${String(error.stderr || error.message).split('\n')[0]}`)
   } finally {
     rmSync(dir, { recursive: true, force: true })
@@ -54,7 +63,7 @@ export function runExample(check) {
 
 /** 期望的输出行：`$ <command>` 加真实 stdout。 */
 export function expectedOutput(check) {
-  return `$ ${check.example.command}\n${runExample(check)}`
+  return `$ ${check.example.command}\n${runExample(check).stdout}`
 }
 
 /** 逐行替换每条目的 output 行；返回新文本。 */
@@ -68,7 +77,11 @@ export function rewrite(text, checks = CHECKS) {
     })
     if (anchor === -1) throw new Error(`${check.npm}: npm 行没找到`)
     // 两种形状都要认：output 单独一行，或整个 example 挤在一行里。
-    const body = JSON.stringify(expectedOutput(check))
+    const run = runExample(check)
+    const body = JSON.stringify(`$ ${check.example.command}\n${run.stdout}`)
+    // 同一个锚点后面紧跟的 `exit:` 也一起写回，两个值来自同一次运行。
+    const exitAt = lines.findIndex((line, index) => index > anchor && /^\s*["']?exit["']?:/.test(line))
+    if (exitAt !== -1) lines[exitAt] = `      "exit": ${JSON.stringify(String(run.code))},`
     const onOwnLine = lines.findIndex((line, index) => index > anchor && /^\s*["']?output["']?:/.test(line))
     if (onOwnLine !== -1) {
       lines[onOwnLine] = `      "output": ${body},`
