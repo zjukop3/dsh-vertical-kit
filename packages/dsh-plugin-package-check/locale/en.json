@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Plugin package check",
+    "description": "Check that a DSH plugin package is installable and findable before you publish it: dsh.bundle.patch declared and present, the patch mounts this package, files does not drop the patch, engines.dsh, a bin key equal to the package name, README install line, locale and icon."
+  }
+}

@@ -23,6 +23,10 @@ const SIBLING = resolve(root, '../dsh-verify-kit/packages')
 // lintNumbers / lintOutline / lintTables），按前缀猜会猜错：第一版写成 checkNumbering，
 // 而那个函数收的是「引文定义数组」不是文本，工具一调就崩。写死的那部分由 test 断言存在，
 // 且每个都要真的跑一次。
+// 不是文档检查的包不进这条工具：它读的是一个**包目录**，喂它一份文本没有意义。
+// 工具的名字是 document_check，登记它会让「32 个检查」这句话变成假话。
+const NOT_DOCUMENT_CHECKS = new Set(['dsh-plugin-package-check'])
+
 const VERIFY_KIT = [
   { slug: 'citelint', pkg: 'dsh-citelint', exportName: 'lintCitations' },
   { slug: 'numberlint', pkg: 'dsh-numberlint', exportName: 'lintNumbers' },
@@ -42,6 +46,7 @@ async function members() {
   const { CHECKS } = await import(resolve(root, 'scripts', 'checks-data.mjs'))
   const out = []
   for (const check of CHECKS) {
+    if (NOT_DOCUMENT_CHECKS.has(check.npm)) continue
     const dir = resolve(root, 'packages', check.npm)
     const manifest = JSON.parse(await readFile(resolve(dir, 'package.json'), 'utf8'))
     out.push({ slug: check.slug, pkg: manifest.name, version: manifest.version, exportName: await lintExportOf(dir), local: `../../${check.npm}/src/index.js`, genre: check.noun ?? check.title })

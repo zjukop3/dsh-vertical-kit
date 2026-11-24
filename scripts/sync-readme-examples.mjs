@@ -15,11 +15,9 @@ for (const check of CHECKS) {
     `${MARK}`,
     '## 真实输入输出',
     '',
-    '输入：',
-    '',
-    '```markdown',
-    check.example.fixture,
-    '```',
+    ...(check.example.fixture === null || check.example.fixture === undefined
+      ? ['输入：命令里那个包目录（目录型输入，不是一份文档）']
+      : ['输入：', '', '```markdown', check.example.fixture, '```']),
     '',
     '真实运行（逐字输出，由测试与工具保持同步）：',
     '',

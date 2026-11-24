@@ -85,7 +85,11 @@ for (const dir of readdirSync(PACKAGES).sort()) {
   ENTRIES.push({ pkg: dir, lint, path: null, sample: GENERIC_SAMPLE })
 }
 
-for (const entry of ENTRIES) {
+// 输入形状不是文本的包：dsh-plugin-package-check 读的是一个包目录，路由收 {path}。
+// 它不进「text/path 必须一致」这条矩阵（同一份文本对它没有意义），改由
+// test/route-contract-nontext.test.js 覆盖它自己的契约。
+const NON_TEXT_ROUTES = new Set(['dsh-plugin-package-check'])
+for (const entry of ENTRIES.filter(entry => !NON_TEXT_ROUTES.has(entry.pkg))) {
   test(`${entry.pkg}: the route returns exactly what the direct call returns`, async () => {
     const mod = await import(`../packages/${entry.pkg}/src/index.js`)
     assert.equal(typeof mod.apply, 'function', `${entry.pkg} must export apply`)

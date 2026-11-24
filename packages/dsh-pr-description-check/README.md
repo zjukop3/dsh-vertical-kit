@@ -2,6 +2,16 @@
 
 Pull-request description hygiene from the body text. A PR description answers the reviewer's first three questions, and that makes it decidable: **what changed**, **why**, and **how the author knows it works** — plus the issue it closes, any breaking change paired with a migration note, and whether the checklist was actually read.
 
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-pr-description-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
+
 ## 前置要求
 
 Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。

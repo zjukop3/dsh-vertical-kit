@@ -782,5 +782,44 @@ export const CHECKS = [
     note: "语料是五份真实条目：四份已合并进 awesome-dsh-plugin，一份是我自己在评审中的 PR #18109。它们必须零发现——第一版在它们身上报出四种误报（嵌套 description 被读成缺失、#sub 拿整条路径去比、正文里合法的 <name> 被当成占位符、汉字数比英文字符数判译文像占位），四条同一个毛病：量的是我以为的写法。另有两处按上游正文纠正：分类是 23 个不是 24 个；#sub 写的是包目录名，不是路径。它读不到仓库，所以 dsh.bundle 声明、仓库年龄、代码是否真的有内容，仍由评审判定；第 7 条也只能给提示。",
     corpus: { layer: 'own', source: '真实目录条目（四份已合并 + 一份在评审）', count: 5, first: '四种误报：嵌套 description 被判缺失、#sub 拿整条路径比、正文 <name> 被判占位、汉字比英文字符' },
   },
+  {
+    slug: 'plugin-package-check',
+    npm: 'dsh-plugin-package-check',
+    cli: 'plugin-package-check',
+    noun: '插件打包检查 / 发布前自检',
+    title: '插件包可安装性检查清单',
+    description: '发布前确认这个插件包「装得上、找得到」：dsh.bundle.patch 声明了且在、patch 挂的是自己或自己的依赖、files 没把 patch 或 DETAIL 漏掉、engines.dsh、bin 里有一个键等于包名、README 里有安装命令、locale 与图标齐。十条规则，只看包目录。',
+    decides: '这个包发出去之后，别人能不能装上、插件页会不会是空白的',
+    rules: [
+      ['manifest-missing', '目录里没有 package.json → error'],
+      ['manifest-unparsable', 'package.json 不是合法 JSON → error'],
+      ['private', '标了 private，发不到 npm → error'],
+      ['bundle-missing', '没声明 dsh.bundle.patch，装不上 → error'],
+      ['patch-missing', '声明的 patch 文件不在 → error'],
+      ['patch-empty', 'patch 里没有任何 insert 行 → error'],
+      ['patch-name-mismatch', 'patch 挂的既不是自己也不是依赖 → error'],
+      ['files-omits-patch', 'files 没把 patch 打进 tarball → warn'],
+      ['files-omits-detail', 'files 没把 docs/DETAIL.md 打进去 → warn'],
+      ['engines-missing', '没有 engines.dsh → warn'],
+      ['bin-name-mismatch', 'bin 里没有等于包名的键，npx <包名> 会 404 → warn'],
+      ['readme-missing / readme-install-missing', '没有 README，或里面没有 dsh plugin add → warn'],
+      ['locale-missing', '没有 locale/，插件页只剩包名 → warn'],
+      ['icon-missing', '没有图标，卡片是空白的 → warn'],
+    ],
+    usage: [
+      'npx dsh-plugin-package-check ./packages/my-plugin',
+      'npx dsh-plugin-package-check ./packages/my-plugin --json',
+    ],
+    // 输入是一个**目录**，不是一份文档：fixture 为 null 表示「照命令里那个路径直接跑」，
+    // 两台闸（sync-example-output、site-examples）都认这个分支，不再往临时目录写文件。
+    example: {
+      command: 'plugin-package-check ./packages/dsh-adr-check',
+      fixture: null,
+      "output": "$ plugin-package-check ./packages/dsh-adr-check\nok: dsh-adr-check 0 errors, 0 warnings",
+      exit: '0',
+    },
+    corpus: { layer: 'strangers', source: '这台机器上装着的第三方插件（dsh-wechat、dsh-media-desk、dsh-bili-scroll、dsh-context、dsh-guizang-design、dsh-purge-community、@claude-mem/dsh）', count: 7, first: '第一版把聚合包判错：dsh-check-suite 的 patch 挂的是它的依赖而不是自己，那是合法的；同时在自己 27 个包上报出没有图标、README 没有安装命令——都是真的' },
+    note: '校准语料是别人写的七个包加上本仓库自己的三十个。dsh-purge-community 的 bin 键里没有它自己的包名（所以 README 让人敲 npx dsh-purge-community 会 404），@claude-mem/dsh 是 private——这两条都是真的，不是规则挑刺。它不能判断插件好不好用，也看不见「tarball 里漏了目录里有的文件」这个反向问题（那要 npm pack --dry-run）。',
+  },
 ]
 

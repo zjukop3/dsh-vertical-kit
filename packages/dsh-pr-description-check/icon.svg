@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="pr-description-check">
+  <rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#1f6feb"/>
+  <path d="M9.8 4.8h4.4v4.2h-4.4zM4.8 15.4h4.4v4.2H4.8zM14.8 15.4h4.4v4.2h-4.4z" fill="#fff" opacity=".92"/><path d="M12 9v3.2M7 15.4v-2.2h10v2.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" opacity=".92"/>
+</svg>

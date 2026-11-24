@@ -1,0 +1,53 @@
+{
+  "name": "dsh-plugin-package-check",
+  "version": "0.1.0",
+  "description": "Check that a DSH plugin package is installable and findable before you publish it: dsh.bundle.patch declared and present, the patch mounts this package, files does not drop the patch, engines.dsh, a bin key equal to the package name, README install line, locale and icon.",
+  "type": "module",
+  "main": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "bin": {
+    "plugin-package-check": "./bin/cli.js",
+    "dsh-plugin-package-check": "./bin/cli.js"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "files": [
+    "src",
+    "bin",
+    "cordis.patch.yml",
+    "docs",
+    "icon.svg",
+    "README.md",
+    "LICENSE",
+    "locale"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "package",
+    "lint",
+    "publish",
+    "插件打包",
+    "发布前检查"
+  ],
+  "license": "MIT",
+  "author": "zjukop3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
+  },
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-plugin-package-check"
+}

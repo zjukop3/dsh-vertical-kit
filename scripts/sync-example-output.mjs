@@ -21,6 +21,17 @@ const dataPath = resolve(root, 'scripts/checks-data.mjs')
 
 /** 跑一次 CLI，返回它真实打印的东西（不含 `$ …` 那行）。 */
 export function runExample(check) {
+  // 输入是目录的检查（plugin-package-check）：照命令里的路径直接跑，不往临时目录写文件。
+  if (check.example.fixture === null || check.example.fixture === undefined) {
+    const target = (check.example.command.match(/(\.\/\S+|\/\S+)/) || [])[1]
+    if (!target) throw new Error(`${check.npm}: fixture 为 null 时命令里必须带一个路径`)
+    const stdout = execFileSync(process.execPath, [resolve(root, 'packages', check.npm, 'bin', 'cli.js'), target], {
+      encoding: 'utf8',
+      cwd: root,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    })
+    return stdout.trimEnd()
+  }
   const dir = mkdtempSync(join(tmpdir(), 'dsh-example-'))
   const fileName = (check.example.command.match(/(\S+\.(?:md|txt|json|yml))/) || [])[1] || 'sample.md'
   const file = join(dir, fileName)

@@ -16,6 +16,17 @@ test('every embedded scenario example matches a fresh CLI run', async t => {
   for (const check of CHECKS) {
     assert.ok(check.example, `${check.slug} has an example`)
     const cli = resolve(root, 'packages', check.npm, 'bin', 'cli.js')
+    if (check.example.fixture === null || check.example.fixture === undefined) {
+      // 目录型输入：照命令里的路径直接跑（见 checks-data 里那条 example 的注释）。
+      const target = (check.example.command.match(/(\.\/\S+|\/\S+)/) || [])[1]
+      const run = spawnSync(process.execPath, [cli, target], { encoding: 'utf8', cwd: root })
+      const actual = `${run.stdout}${run.stderr}`.trim().split('\n').map(line => line.trim())
+      const embedded = check.example.output.split('\n').filter(line => line && !line.startsWith('$') && !line.startsWith('# '))
+      for (const line of embedded) {
+        assert.ok(actual.includes(line.trim()), `${check.slug}: embedded line not produced by the CLI\n  embedded: ${line}\n  actual: ${actual.join(' | ')}`)
+      }
+      continue
+    }
     // 文件名必须与示例里那条命令写的一致：有些检查看文件扩展名（plugin-entry-check 只对
     // .yml 说文件名的事），用自己拼的 `<slug>-input.md` 会得到与 sync-example-output 不同的
     // 结果——两条闸各自绿着，而它们测的不是同一件事。

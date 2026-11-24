@@ -3,6 +3,17 @@
 Handover-document hygiene from a single file. A handover is decidable: **who** is leaving, **who** takes over, **when** it is effective, **what** is listed, **which accounts and permissions** move, **what is unfinished**, and whether the receiver **signed for it**. This verifies exactly those — one file, no model call, no access to the systems being handed over.
 
 <!-- example:start -->
+
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-handover-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
+
 ## 真实输入输出
 
 输入：

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Plugin package check">
+  <rect x="1.5" y="1.5" width="21" height="21" rx="4.5" fill="#1f6feb"/>
+  <path d="M12 4.6 19 8.3v7.4L12 19.4 5 15.7V8.3z" fill="#fff" opacity=".92"/>
+  <path d="M12 4.6 19 8.3 12 12 5 8.3z" fill="#9ec5ff"/>
+  <path d="m9.4 15 1.6 1.5 3.4-3.4" fill="none" stroke="#16a34a" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

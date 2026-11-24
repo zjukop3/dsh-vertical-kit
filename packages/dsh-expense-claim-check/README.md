@@ -3,6 +3,17 @@
 Expense-claim hygiene from a single file. A claim is decidable: **who** is claiming, the **period**, the **line items and whether they add up to the stated total**, duplicate **invoice numbers**, what each expense was **for**, and who **approved** it. This verifies exactly those — one file, no model call, no access to the accounting system.
 
 <!-- example:start -->
+
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-expense-claim-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
+
 ## 真实输入输出
 
 输入：

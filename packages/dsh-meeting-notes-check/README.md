@@ -2,6 +2,16 @@
 
 Meeting-note hygiene from markdown. A note is decidable: it must say **when** the meeting happened, **who** was in the room, **what was decided**, and every action item must carry **an owner and a deadline**. This verifies exactly those and names the line that is missing whom.
 
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-meeting-notes-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
+
 ## 前置要求
 
 Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。

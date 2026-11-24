@@ -2,6 +2,16 @@
 
 Onboarding-doc hygiene from markdown. An onboarding doc is decidable: what must be **installed first**, a **pasteable command**, **what success looks like**, **where to ask when it fails** — and **how long it takes**, because a doc with no time estimate does not get started.
 
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-onboarding-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
+
 ## 前置要求
 
 Node.js ≥ 22.19，就是 `package.json` 里 `engines.node` 写的那一条；CLI 只依赖 Node，别的不装也能跑。想在对话里用同一个检查，需要 DSH `>=0.2.2-rc.1 <0.3.0-0`。装之前 `node -v` 看一眼，比装完再猜为什么报错快。
@@ -27,7 +37,7 @@ error command-missing 第0行 没有可粘贴的命令代码块（认得：含 n
 warn prereq-missing 第0行 没有前置要求段（认得：## 前置要求、需要先装…、Prerequisites）——新人会卡在第 3 步才发现版本不对
 warn success-missing 第0行 没有「成功长什么样」段（认得：## 你应该看到、## 输出示例、You should see）——没有预期输出的新人不知道自己是成功了还是静默失败了
 warn help-missing 第0行 没有求助路径（认得：## 遇到问题、提 issue、ask in…）——失败时读者只有放弃这一个选项
-warn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、15 分钟、under 10 minutes）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做
+warn time-estimate-missing 第0行 没有耗时估计（认得：约 5 分钟、37 秒、15 分钟、under 10 minutes、40 seconds）——没写要花多久的文档不会被开始，读者无法判断值不值得现在做
 fail: 0/0 blocks runnable, 1 errors, 4 warnings
 ```
 

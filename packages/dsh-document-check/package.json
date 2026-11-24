@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.js",
     "./package.json": "./package.json",
-    "./locale/*.json": "./locale/*.json"
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
   },
   "bin": {
     "dsh-document-check": "./bin/cli.js"
@@ -25,6 +26,8 @@
     "src",
     "bin",
     "cordis.patch.yml",
+    "docs",
+    "icon.svg",
     "README.md",
     "LICENSE",
     "locale"

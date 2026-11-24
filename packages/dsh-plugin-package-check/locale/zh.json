@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "插件包可安装性检查清单",
+    "description": "发布前确认这个插件包「装得上、找得到」：dsh.bundle.patch 声明了且在、patch 挂的是自己或自己的依赖、files 没把 patch 或 DETAIL 漏掉、engines.dsh、bin 里有一个键等于包名、README 里有安装命令、locale 与图标齐。十条规则，只看包目录。"
+  }
+}

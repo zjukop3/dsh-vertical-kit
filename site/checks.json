@@ -1364,6 +1364,80 @@
       "page": "https://zjukop3.github.io/dsh-vertical-kit/plugin-entry-check/",
       "route": "POST /plugin-entry-check/api",
       "scope": "语料是五份真实条目：四份已合并进 awesome-dsh-plugin，一份是我自己在评审中的 PR #18109。它们必须零发现——第一版在它们身上报出四种误报（嵌套 description 被读成缺失、#sub 拿整条路径去比、正文里合法的 <name> 被当成占位符、汉字数比英文字符数判译文像占位），四条同一个毛病：量的是我以为的写法。另有两处按上游正文纠正：分类是 23 个不是 24 个；#sub 写的是包目录名，不是路径。它读不到仓库，所以 dsh.bundle 声明、仓库年龄、代码是否真的有内容，仍由评审判定；第 7 条也只能给提示。"
+    },
+    {
+      "name": "dsh-plugin-package-check",
+      "cli": "plugin-package-check",
+      "slug": "plugin-package-check",
+      "noun": "插件打包检查 / 发布前自检",
+      "title": "插件包可安装性检查清单",
+      "decides": "这个包发出去之后，别人能不能装上、插件页会不会是空白的",
+      "description": "发布前确认这个插件包「装得上、找得到」：dsh.bundle.patch 声明了且在、patch 挂的是自己或自己的依赖、files 没把 patch 或 DETAIL 漏掉、engines.dsh、bin 里有一个键等于包名、README 里有安装命令、locale 与图标齐。十条规则，只看包目录。",
+      "rules": [
+        {
+          "rule": "manifest-missing",
+          "meaning": "目录里没有 package.json → error"
+        },
+        {
+          "rule": "manifest-unparsable",
+          "meaning": "package.json 不是合法 JSON → error"
+        },
+        {
+          "rule": "private",
+          "meaning": "标了 private，发不到 npm → error"
+        },
+        {
+          "rule": "bundle-missing",
+          "meaning": "没声明 dsh.bundle.patch，装不上 → error"
+        },
+        {
+          "rule": "patch-missing",
+          "meaning": "声明的 patch 文件不在 → error"
+        },
+        {
+          "rule": "patch-empty",
+          "meaning": "patch 里没有任何 insert 行 → error"
+        },
+        {
+          "rule": "patch-name-mismatch",
+          "meaning": "patch 挂的既不是自己也不是依赖 → error"
+        },
+        {
+          "rule": "files-omits-patch",
+          "meaning": "files 没把 patch 打进 tarball → warn"
+        },
+        {
+          "rule": "files-omits-detail",
+          "meaning": "files 没把 docs/DETAIL.md 打进去 → warn"
+        },
+        {
+          "rule": "engines-missing",
+          "meaning": "没有 engines.dsh → warn"
+        },
+        {
+          "rule": "bin-name-mismatch",
+          "meaning": "bin 里没有等于包名的键，npx <包名> 会 404 → warn"
+        },
+        {
+          "rule": "readme-missing / readme-install-missing",
+          "meaning": "没有 README，或里面没有 dsh plugin add → warn"
+        },
+        {
+          "rule": "locale-missing",
+          "meaning": "没有 locale/，插件页只剩包名 → warn"
+        },
+        {
+          "rule": "icon-missing",
+          "meaning": "没有图标，卡片是空白的 → warn"
+        }
+      ],
+      "usage": [
+        "npx dsh-plugin-package-check ./packages/my-plugin",
+        "npx dsh-plugin-package-check ./packages/my-plugin --json"
+      ],
+      "page": "https://zjukop3.github.io/dsh-vertical-kit/plugin-package-check/",
+      "route": "POST /plugin-package-check/api",
+      "scope": "校准语料是别人写的七个包加上本仓库自己的三十个。dsh-purge-community 的 bin 键里没有它自己的包名（所以 README 让人敲 npx dsh-purge-community 会 404），@claude-mem/dsh 是 private——这两条都是真的，不是规则挑刺。它不能判断插件好不好用，也看不见「tarball 里漏了目录里有的文件」这个反向问题（那要 npm pack --dry-run）。"
     }
   ]
 }

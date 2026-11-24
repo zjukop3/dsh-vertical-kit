@@ -4,9 +4,51 @@ Check an [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-
 entry before you submit it. Every rule here comes from the catalog's own
 `contributing.md`, and every rule is one round trip you don't have to spend.
 
+<!-- example:start -->
+## 真实输入输出
+
+输入：
+
+```markdown
+url: 'https://github.com/owner/repo/tree/main/packages/my-plugin'
+name: 'someone/else#my-plugin'
+category: 'documents'
+description:
+  en: 'Checks things.'
+  zh: '检查东西。'
+icon: './icon.png'
+
+```
+
+真实运行（逐字输出，由测试与工具保持同步）：
+
+```text
+$ plugin-entry-check bad-entry.yml
+error name-shape 第0行 name 指向 someone/else，url 指向 owner/repo——评审会看这两个是不是同一个仓库
+error category 第0行 category「documents」不在上游的 23 个取值里：agi ui usage theme model identity session memory tools wsl browser vision voice docs skill workflow git notify dev security remote market fun
+error filename 第0行 文件名 bad-entry.yml 不符合 owner__repo.yml 或 owner__repo--path.yml
+warn description-thin 第0行 description.en 只有 14 字符——一条说不清「它做什么」的条目，读者会跳过
+warn description-thin 第0行 description.zh 只有 4 个汉字——中文读者读到的信息量太少
+warn icon-shape 第0行 icon 用绝对 https 地址——相对路径在目录页里解析不了
+fail: 3 errors, 3 warnings
+```
+
+出口码：1。
+<!-- example:start -->
+
 Submitting an entry means getting a filename, a `name`, a `url`, a subpackage path and a
 category all pointing at the same thing. The catalog's CI says "the shape is wrong";
 this says which line.
+
+<!-- install:start -->
+## 装进 DSH
+
+```bash
+dsh plugin --profile <profile> add dsh-plugin-entry-check
+```
+
+`--profile` 是 `dsh plugin` 的必填项（Desktop 用 `desktop`，Web 用 `web`）。装完在「插件」里启用，对话中就有这条检查的 host 路由；不装 DSH 也能用上面的 `npx`。
+<!-- install:end -->
 
 ## 它判定什么 / What it decides
 

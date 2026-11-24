@@ -44,6 +44,8 @@
       name: 'dsh-perf-report-check'
     - id: check-plugin-entry
       name: 'dsh-plugin-entry-check'
+    - id: check-plugin-package
+      name: 'dsh-plugin-package-check'
     - id: check-pr-description
       name: 'dsh-pr-description-check'
     - id: check-privacy-notice
