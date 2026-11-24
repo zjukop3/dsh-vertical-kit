@@ -4,7 +4,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
-import { lintPluginEntry, parseEntry, expectedName, CATEGORIES } from '../src/index.js'
+import { lintPluginEntry, parseEntry, expectedName, slugFor, CATEGORIES } from '../src/index.js'
 
 const HERE = resolve(import.meta.dirname, '..')
 const FIXTURES = resolve(HERE, 'fixtures')
@@ -184,12 +184,23 @@ test('bundle-hint：描述自己说「一次装一组」时提示上游第 7 条
   assert.ok(!rules(lintPluginEntry(GOOD)).includes('bundle-hint'))
 })
 
-test('filename：文件名与 url/name 推出的一致（--as 或路径给定时才查）', () => {
+test('filename：必须与 url 推出的 slug 一致（上游 CI 是 error）', () => {
   const wrong = lintPluginEntry(GOOD, { filename: 'owner__repo.yml' })
-  assert.ok(rules(wrong).includes('filename'), JSON.stringify(wrong.findings))
-  assert.equal(wrong.ok, true, '文件名问题不该判成不可提交')
+  const finding = wrong.findings.find(f => f.rule === 'filename')
+  assert.ok(finding, JSON.stringify(wrong.findings))
+  assert.equal(finding.level, 'error', '上游 validateEntries 对文件名不一致是打回')
   const right = lintPluginEntry(GOOD, { filename: 'owner__repo--packages-my-plugin.yml' })
   assert.ok(!rules(right).includes('filename'))
+})
+
+// 仓库名自己可能含 `--`：从文件名反推会把仓库名锯开，于是报出「文件名应为 X（当前 X）」
+// 这种自相矛盾的错。真实条目里有 2 份（TryDing-T/dsh-Plugin--ChineseChess、
+// sunzhentao/dsh--prompt--enhance），判据改成从 url 推 slug。
+test('仓库名含 `--` 时文件名不再被误判', () => {
+  const text = `url: https://github.com/TryDing-T/dsh-Plugin--ChineseChess\nname: TryDing-T/dsh-Plugin--ChineseChess\ncategory: fun\ndescription:\n  en: 'Chinese chess in the sidebar.'\n  zh: '侧边栏里的中国象棋。'\n`
+  const result = lintPluginEntry(text, { filename: 'TryDing-T__dsh-Plugin--ChineseChess.yml' })
+  assert.ok(!rules(result).includes('filename'), JSON.stringify(result.findings))
+  assert.equal(slugFor('https://github.com/o/r/tree/main/packages/x'), 'o__r--packages-x')
 })
 
 test('expectedName：owner__repo--path-with-dashes.yml 的反解', () => {
@@ -303,4 +314,31 @@ test('新规则会报：句号缺失、tarball 形状、package.json 读不出�
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }
+})
+
+// 与上游 validateEntries 对齐的五条：多行描述、多余语言键、空 zh、icon 主机、
+// tarball 主机。这些是「本地说 OK、CI 拒掉」最容易出问题的地方，所以每条都要有
+// 「会报」的那一半；同时整套规则在 12960 份已合并条目上零 error（见语料页）。
+test('上游会拒的形状，本地也要拒', () => {
+  const base = (extra) => `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\n${extra}description:\n  en: 'A thing that does one thing.'\n`
+
+  const multiline = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: |\n    first line\n    second line\n`
+  const m = lintPluginEntry(multiline)
+  assert.ok(m.findings.some(f => f.rule === 'description-multiline' && f.level === 'error'), JSON.stringify(m.findings))
+
+  const extraLocale = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'A thing that does one thing.'\n  ja: 'これは物です。'\n`
+  assert.ok(lintPluginEntry(extraLocale).findings.some(f => f.rule === 'description-locale'))
+
+  const emptyZh = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'A thing that does one thing.'\n  zh: '   '\n`
+  assert.ok(lintPluginEntry(emptyZh).findings.some(f => f.rule === 'description-keys' && f.level === 'error'))
+
+  const foreignIcon = base("icon: https://example.com/icon.png\n")
+  assert.ok(lintPluginEntry(foreignIcon).findings.some(f => f.rule === 'icon-shape' && f.level === 'error'))
+  const svgIcon = base('icon: https://raw.githubusercontent.com/acme/repo/main/icon.svg\n')
+  assert.ok(lintPluginEntry(svgIcon).findings.some(f => f.rule === 'icon-shape'), '上游只收位图，svg 要报')
+
+  const badTarball = base('tarball: https://example.com/repo.tgz\n')
+  assert.ok(lintPluginEntry(badTarball).findings.some(f => f.rule === 'tarball-shape' && f.level === 'error'))
+  const goodTarball = base('tarball: https://github.com/acme/repo/releases/download/v1.0.0/repo-1.0.0.tgz\n')
+  assert.ok(!lintPluginEntry(goodTarball).findings.some(f => f.rule === 'tarball-shape'))
 })

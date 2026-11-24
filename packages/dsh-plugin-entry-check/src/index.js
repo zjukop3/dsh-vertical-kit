@@ -98,6 +98,19 @@ export function parseEntry(text) {
   return { fields, description, problems }
 }
 
+/** 与上游同义的 slug：`o/r` → `o__r`；`o/r/tree/main/packages/x` → `o__r--packages-x`。
+ *
+ * 文件名必须从 **url** 推，不能从文件名反推：仓库名自己可能含 `--`
+ * （`TryDing-T/dsh-Plugin--ChineseChess`），反推会把仓库名从中间锯开，
+ * 于是「文件名应为 X（当前 X）」这种自相矛盾的错误就出现了——真实条目里有 2 份。
+ */
+export function slugFor(url) {
+  const match = String(url ?? '').match(/^https:\/\/github\.com\/([^/\s#]+)\/([^/\s#]+?)(?:\/tree\/[^/\s]+\/(.+?))?\/?$/)
+  if (!match) return null
+  const [, owner, repo, subPath] = match
+  return subPath ? `${owner}__${repo}--${subPath.replace(/\//g, '-')}` : `${owner}__${repo}`
+}
+
 /** 从文件名推出应有的 owner / repo / 子路径。`owner__repo--path-with-dashes.yml`。 */
 export function expectedName(filename) {
   const base = String(filename).split('/').pop().replace(/\.ya?ml$/i, '')
@@ -105,6 +118,45 @@ export function expectedName(filename) {
   const [owner, repo] = left.split('__')
   if (!owner || !repo) return null
   return { owner, repo, path: rest.length > 0 ? rest.join('--') : null }
+}
+
+// --- 与上游 scripts/lib/entries.mjs 同义的判据 ---------------------------------
+// 这些是「本地说 OK、CI 拒掉」最容易出问题的地方，所以逐字对齐它们的边界：
+// tarball 必须在 GitHub 的 release 主机上、后缀 .tgz/.tar.gz；icon 必须在 GitHub
+// 图床上、后缀是位图（png/jpg/jpeg/webp）。svg 不行——上游不收矢量图。
+export const TARBALL_HOSTS = new Set(['github.com', 'objects.githubusercontent.com', 'release-assets.githubusercontent.com'])
+export const ICON_HOSTS = new Set(['raw.githubusercontent.com', 'user-images.githubusercontent.com', 'camo.githubusercontent.com', 'github.com'])
+export const ICON_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp']
+
+export function tarballProblem(value) {
+  if (typeof value !== 'string' || !value.trim()) return '必须是一个 URL 字符串'
+  let url
+  try {
+    url = new URL(value)
+  } catch {
+    return `不是合法 URL：${value}`
+  }
+  if (url.protocol !== 'https:') return '必须是 https'
+  if (!TARBALL_HOSTS.has(url.hostname)) return `必须托管在 GitHub releases（当前 ${url.hostname}）`
+  if (url.hostname === 'github.com' && !url.pathname.includes('/releases/')) return '必须指向 GitHub release 附件'
+  if (!url.pathname.endsWith('.tgz') && !url.pathname.endsWith('.tar.gz')) return '必须以 .tgz / .tar.gz 结尾'
+  return null
+}
+
+export function iconProblem(value) {
+  if (typeof value !== 'string' || !value.trim()) return '必须是一个 URL 字符串'
+  let url
+  try {
+    url = new URL(value)
+  } catch {
+    return `不是合法 URL：${value}`
+  }
+  if (url.protocol !== 'https:') return '必须是 https'
+  if (!ICON_HOSTS.has(url.hostname)) return `必须托管在 GitHub（当前 ${url.hostname}）`
+  if (!ICON_EXTENSIONS.some(extension => url.pathname.toLowerCase().endsWith(extension))) {
+    return `必须指向位图（${ICON_EXTENSIONS.join(' / ')}）`
+  }
+  return null
 }
 
 const cjk = text => (String(text).match(/[\u4e00-\u9fff]/g) ?? []).length
@@ -196,6 +248,18 @@ export function lintPluginEntry(text, options = {}) {
   }
   for (const [lang, value] of description) {
     if (PLACEHOLDER.test(value)) add('error', 'description-placeholder', 0, `description.${lang} 里有占位符（TODO / <…> / lorem）`)
+    // 上游 validateEntries：`must be a single line` —— 块标量写出来的多行描述在本地
+    // 看起来没问题，交上去会被 CI 打回。这条是我和上游最大的分歧：判据必须一致。
+    if (value.includes('\n')) {
+      add('error', 'description-multiline', 0, `description.${lang} 是多行——上游只收单行（写成一行，用空格连接）`)
+    }
+  }
+  // 站点只渲染 en / zh：`ja` 这种键写进去没人读得到，上游明确要求删。
+  for (const lang of description.keys()) {
+    if (!['en', 'zh'].includes(lang)) add('error', 'description-locale', 0, `description.${lang} 这个语言键站点不渲染（只认 en / zh）——删掉它`)
+  }
+  if (description.has('zh') && String(description.get('zh')).trim() === '') {
+    add('error', 'description-keys', 0, 'description.zh 存在但是空的——不翻译就把这个键整个删掉')
   }
   const en = description.get('en') ?? ''
   const zh = description.get('zh') ?? ''
@@ -214,17 +278,18 @@ export function lintPluginEntry(text, options = {}) {
     add('warn', 'description-period', 0, 'description.en 没有以句号结尾——上游的写法要求是一句完整的话')
   }
 
-  // tarball 是 documented 的可选字段：不发 npm 时指向 GitHub Release 的预构建包。
+  // tarball 与 icon 的判据照抄上游 validateEntries：主机白名单 + 后缀。本地说「没问题」
+  // 而 CI 拒掉，是最坏的一种不一致。
   const tarball = fields.get('tarball')
   if (tarball !== undefined) {
-    if (!/^https:\/\//.test(tarball)) add('warn', 'tarball-shape', 0, 'tarball 要用绝对 https 地址（GitHub Release 附件）')
-    else if (!/\.(tgz|tar\.gz)$/i.test(tarball)) add('warn', 'tarball-shape', 0, 'tarball 的扩展名不像打包文件（.tgz / .tar.gz）')
+    const problem = tarballProblem(tarball)
+    if (problem) add('error', 'tarball-shape', 0, `tarball ${problem}`)
   }
 
   const icon = fields.get('icon')
-  if (icon) {
-    if (!/^https:\/\//.test(icon)) add('warn', 'icon-shape', 0, 'icon 用绝对 https 地址——相对路径在目录页里解析不了')
-    else if (!IMAGE.test(icon)) add('warn', 'icon-shape', 0, 'icon 的扩展名不是图片（png/svg/jpg/webp）')
+  if (icon !== undefined) {
+    const problem = iconProblem(icon)
+    if (problem) add('error', 'icon-shape', 0, `icon ${problem}`)
   }
 
   // 规则 #7：纯聚合包不收录。yaml 里看不出来，但描述自己说了就算线索。
@@ -238,18 +303,15 @@ export function lintPluginEntry(text, options = {}) {
   // 于是嵌入的输出里带着一个随机临时目录，谁也复现不了）。
   const filename = options.filename && /\.ya?ml$/i.test(String(options.filename)) ? options.filename : undefined
   if (filename) {
-    const expected = expectedName(filename)
-    if (!expected) {
-      add('error', 'filename', 0, `文件名 ${String(filename).split('/').pop()} 不符合 owner__repo.yml 或 owner__repo--path.yml`)
-    } else if (urlMatch) {
-      const [, urlOwner, urlRepo, , urlPath] = urlMatch
-      const wantOwner = expected.owner
-      const wantRepo = expected.repo.replace(/-/g, '-')
-      const pathAsDashes = urlPath ? urlPath.replace(/\//g, '-') : null
-      if (wantOwner !== urlOwner || wantRepo !== urlRepo || (pathAsDashes ?? null) !== (expected.path ?? null)) {
-        const want = `${urlOwner}__${urlRepo}${pathAsDashes ? `--${pathAsDashes}` : ''}.yml`
-        add('warn', 'filename', 0, `文件名应为 ${want}（当前 ${filename.split('/').pop()}）`)
+    const base = String(filename).split('/').pop()
+    const want = urlMatch ? slugFor(url) : null
+    if (want) {
+      // 上游 validateEntries：`filename must match the url — expected <slug>.yml`，error。
+      if (base !== `${want}.yml`) {
+        add('error', 'filename', 0, `文件名应为 ${want}.yml（当前 ${base}）——上游 CI 会拒`)
       }
+    } else if (!expectedName(filename)) {
+      add('error', 'filename', 0, `文件名 ${base} 不符合 owner__repo.yml 或 owner__repo--path.yml`)
     }
   }
 

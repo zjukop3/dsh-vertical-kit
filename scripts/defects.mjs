@@ -403,6 +403,18 @@ export const DEFECTS = [
       '手写解析器的账要算清：为了不引一个依赖，我写了 60 行「YAML 子集」，代价是四轮校准、四次把合法条目判成格式错误。全量那一轮暴露的三类尤其说明问题——行内注释（13 份直接从 contributing.md 示例抄下来的 `category: usage   # 见下方`，整串被当成分类值）、整份 2 空格缩进的文档、JSON 写成 .yml 的 3 份（JSON 是 YAML 的子集，js-yaml 照样读）。「不引依赖」不是免费的：它把标准实现的责任转移给了我的正则。同名教训已经出现过一次（早先手写 market-index 解析），这次是第二次。',
     now: { kind: 'silent', input: `url: https://github.com/acme/repo        # 注释\nname: acme/repo\ncategory: usage        # 见下方分类\ndescription:\n  en: 'A thing that does one thing.'\n  zh: '一个只做一件事的东西。'\n`, rule: 'category' },
   },
+  {
+    n: 35,
+    check: 'plugin-entry-check',
+    rule: 'filename / description-multiline',
+    fixedIn: '0.1.4',
+    foundBy: 'third-party corpus',
+    wrong: '与上游自己的校验器（scripts/lib/entries.mjs 的 validateEntries）对齐时暴露两处：文件名从文件名反推导致含 `--` 的仓库名被锯开；块标量写的多行描述本地放行、上游 CI 打回',
+    right: '文件名一律从 url 推 slug（与上游 slugFor 同义）；description 含换行即 error（上游 `must be a single line`）',
+    lesson:
+      '第一处是自相矛盾的输出：「文件名应为 TryDing-T__dsh-Plugin--ChineseChess.yml（当前 TryDing-T__dsh-Plugin--ChineseChess.yml）」——同一个字符串被判不相等，因为反解把仓库名 dsh-Plugin--ChineseChess 从中间锯成了 dsh-Plugin 加子路径 ChineseChess。第二处更严重：它让本地检查说「可以提交」而 CI 拒掉，这种不一致比没有检查更坏，因为它消耗的是信任。整个包现在按上游 validateEntries 的判据逐条对齐（icon 主机白名单、tarball 必须 release 附件、多余语言键、空的 zh），全量 12960 份已合并条目上零 error。',
+    now: { kind: 'silent', input: `url: https://github.com/TryDing-T/dsh-Plugin--ChineseChess\nname: TryDing-T/dsh-Plugin--ChineseChess\ncategory: fun\ndescription:\n  en: 'Chinese chess in the sidebar.'\n  zh: '侧边栏里的中国象棋。'\n`, rule: 'filename' },
+  },
 ]
 
 export const LEDGER = {
