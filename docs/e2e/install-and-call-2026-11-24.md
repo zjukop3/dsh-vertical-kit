@@ -145,3 +145,35 @@ POST /bug-report-check/api {"path":"/tmp/b3.md"}   # 真实形状：加粗段名
 
 `checked` 里写清楚判据看到了什么（`repro`/`env`/`expectedActual`/`emptySubmission`），
 不是一个笼统的 `ok`——这样一条误报可以直接看出是哪一路判据认错了。
+
+## 傍晚补记：镜像的 lazy fetch（第三次踩同一个坑，这次记清楚）
+
+`dsh-plugin-entry-check@0.1.2` 发布之后，npmjs 上 metadata 和 tarball 都在，但镜像的
+`dist-tags.latest` 连续 15 分钟停在 `0.1.1`，两次 `PUT /sync` 也没用：
+
+```
+mirror latest=0.1.1   versions: 0.0.0-stage,0.1.0,0.1.1
+```
+
+原因是这份包首发时 `dist.tarball` 404 了近 8 分钟，镜像那次抓取失败了。有效的办法不是
+再 sync，而是**显式请求那个版本**，让镜像去懒加载：
+
+```
+GET https://registry.npmmirror.com/dsh-plugin-entry-check/0.1.2   # 200
+GET https://registry.npmmirror.com/dsh-plugin-entry-check/-/dsh-plugin-entry-check-0.1.2.tgz  # 200，14407 字节
+# 30 秒后 dist-tags.latest 变成 0.1.2
+```
+
+之后 `dsh plugin --profile … add dsh-plugin-entry-check@0.1.2` 一次成功（+ 1.0s），
+直接打已发布的端点（`POST /plugin-entry-check/api`，带 `repo`）：
+
+```
+{"path":"/tmp/entry-handover.yml","repo":"…/dsh-vertical-kit"}
+→ ok=true errors=0 warnings=0 {"keys":5,"languages":2,"repoChecked":"./packages/dsh-handover-check"}
+
+{"path":"/tmp/entry-handover.yml","repo":"…/dsh-review-outbox"}
+→ ok=false error:repo-package-missing
+```
+
+一个结论写进下次的检查单：**`PUT /sync` 只保证「我请了」，不保证「他抓到了」；
+首发 tarball 404 过的包，要显式 GET 那个版本的 metadata 或 tarball。**
