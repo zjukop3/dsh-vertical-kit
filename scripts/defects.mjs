@@ -391,6 +391,18 @@ export const DEFECTS = [
       '四条全是「我在猜上游要什么」：`tarball` 是 contributing.md 里写着的可选字段，我照印象列键名单时漏了；块标量与跨行引号标量是合法 YAML，我为了不引依赖手写解析器，就把不支持的形状判成错——那是把自己的实现限制说成别人的错误；CRLF 那份更纯粹，`.` 不匹配 `\r`、`$` 落不到行尾，一行都读不出来却报了一排「不是键: 值」；zh 那条是把维护者的客气（「缺翻译我们的活」）当成了投稿者的义务。校准之后 160/160 零 error，剩下的 4 条 warn 都是真话。',
     now: { kind: 'silent', input: `url: https://github.com/acme/tools/tree/main/packages/thing\nname: acme/tools#thing\ncategory: tools\ntarball: https://github.com/acme/tools/releases/download/v1.0.0/thing-1.0.0.tgz\ndescription:\n  en: >-\n    A thing that does the thing, vendored from upstream\n    only: no binaries are bundled\n  zh: '一个做那件事的东西。'\n`, rule: 'unknown-key' },
   },
+  {
+    n: 34,
+    check: 'plugin-entry-check',
+    rule: 'yaml-shape / missing-key / category',
+    fixedIn: '0.1.3',
+    foundBy: 'third-party corpus',
+    wrong: '把校准从 160 份抽样扩到**全量 12960 份**已合并条目，又冒出三类误报：行内注释、整份缩进的文档、JSON 写成 .yml',
+    right: '换掉手写的 YAML 子集解析器，改用 js-yaml——与上游 CI 同一个解析器',
+    lesson:
+      '手写解析器的账要算清：为了不引一个依赖，我写了 60 行「YAML 子集」，代价是四轮校准、四次把合法条目判成格式错误。全量那一轮暴露的三类尤其说明问题——行内注释（13 份直接从 contributing.md 示例抄下来的 `category: usage   # 见下方`，整串被当成分类值）、整份 2 空格缩进的文档、JSON 写成 .yml 的 3 份（JSON 是 YAML 的子集，js-yaml 照样读）。「不引依赖」不是免费的：它把标准实现的责任转移给了我的正则。同名教训已经出现过一次（早先手写 market-index 解析），这次是第二次。',
+    now: { kind: 'silent', input: `url: https://github.com/acme/repo        # 注释\nname: acme/repo\ncategory: usage        # 见下方分类\ndescription:\n  en: 'A thing that does one thing.'\n  zh: '一个只做一件事的东西。'\n`, rule: 'category' },
+  },
 ]
 
 export const LEDGER = {

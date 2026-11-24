@@ -130,13 +130,23 @@ export function apply(ctx, config = {}) {
       const chunks = []
       for await (const chunk of req) chunks.push(chunk)
       const body = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}')
+      // 三件事，都是被自己咬出来的：
+      //  ① 键名是 `directory`，而另外 30 个检查收 `path`——一个客户端要写例外；
+      //     两个都收，`path` 优先。
+      //  ② 以前缺省是 `.`，也就是「静默地去扫服务进程的当前目录」。我拿 path 调它、
+      //     它不认这个键，于是把整个仓库 37687 个文件连 .git 一起哈希了回来。
+      //     会把 cwd 里的 .env 一起吐出去的默认值不该存在：没有目录就 400。
+      const directory = typeof body.path === 'string' && body.path ? body.path : body.directory
+      if (typeof directory !== 'string' || !directory) {
+        return send(400, { error: 'directory (or path) is required — this check does not scan its own cwd' })
+      }
       if (body.action === 'build') {
-        const manifest = await buildManifest(String(body.directory || '.'), { ignore: body.ignore || [] })
+        const manifest = await buildManifest(directory, { ignore: body.ignore || [] })
         return send(200, { manifest, serialized: serializeManifest(manifest) })
       }
       if (body.action === 'verify') {
         if (!body.manifest || typeof body.manifest !== 'object') return send(400, { error: 'manifest is required' })
-        return send(200, await verifyManifest(body.manifest, String(body.directory || '.')))
+        return send(200, await verifyManifest(body.manifest, directory))
       }
       return send(400, { error: 'action must be build or verify' })
     } catch (error) {

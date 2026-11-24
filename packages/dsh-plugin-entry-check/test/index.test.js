@@ -65,7 +65,7 @@ test('真实条目的四种写法都要读对：块标量、跨行引号、CRLF�
   assert.equal(lintPluginEntry(folded).ok, true)
 
   const literal = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: |\n    one\n    two\n  zh: '一句话。'\n`
-  assert.equal(parseEntry(literal).description.get('en'), 'one\ntwo')
+  assert.equal(parseEntry(literal).description.get('en').trim(), 'one\ntwo')
 
   const quotedAcrossLines = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'Provides 14 tools through a local server. Requires the\n    separately installed runtime.'\n  zh: '一句话。'\n`
   assert.deepEqual(parseEntry(quotedAcrossLines).problems, [], JSON.stringify(parseEntry(quotedAcrossLines).problems))

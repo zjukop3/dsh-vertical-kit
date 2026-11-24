@@ -8,6 +8,7 @@
 // 判据全部来自上游 contributing.md 的正文，不来自印象。上游改规则时这里要跟着改——所以
 // CATEGORIES 与文件名规则在测试里各有两条断言（该收的收、该拒的拒）。
 
+import { load } from 'js-yaml'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -26,7 +27,11 @@ const URL_SHAPE = /^https:\/\/github\.com\/([^/\s#]+)\/([^/\s#]+?)(?:\/tree\/([^
 const NAME_SHAPE = /^([^/\s#]+)\/([^/\s#]+)(?:#(\S+))?$/
 // 占位符只认「整段还没写」的痕迹。第一版还匹配 `<…>` 与 `xxx`，把 license 条目里正常
 // 提到「Copyright [yyyy] [name]」这种被检查对象的描述也判成了占位符——误报。
-const PLACEHOLDER = /^\s*(TODO|TBD|FIXME)\b|lorem ipsum|^\s*待填|^\s*占位/i
+// `TODO` 只在**全大写**时才算占位符：`Todo plugin that records…` 是插件主题词，
+// 大小写不敏感的匹配把三份正常条目判成了「描述还是 TODO」。`lorem ipsum` 与中文
+// 那几种写法继续不区分大小写。
+// `TODO` 只在全大写时是占位符：`Todo plugin …` 是主题词（三份真实条目被这条误伤）。
+const PLACEHOLDER = /^\s*(?:TODO|TBD|FIXME)\b|lorem ipsum|^\s*(?:待填|占位|待补充|待完善)/
 const IMAGE = /\.(png|svg|jpe?g|webp|gif)$/i
 
 /**
@@ -39,129 +44,57 @@ export function parseEntry(text) {
   const fields = new Map()
   const description = new Map()
   const problems = []
-  let inDescription = false
-  let target = null // { map, key, indent, block: null | '|' | '>', parts: [] }
+  const source = String(text ?? '')
+  if (source.trim() === '') return { fields, description, problems }
 
-  const unquote = value => {
-    if (/^'.*'$/s.test(value)) return value.slice(1, -1).replace(/''/g, "'")
-    if (/^".*"$/s.test(value)) return value.slice(1, -1).replace(/\\"/g, '"')
-    return value
-  }
-  // 引号没在本行闭合 = 跨行标量。
-  const openQuote = value => {
-    const first = value.trim()[0]
-    if (first !== "'" && first !== '"') return false
-    const trimmed = value.trim()
-    const closes = trimmed.length > 1 && trimmed.endsWith(first)
-    return !closes
-  }
-  const flush = () => {
-    if (!target) return
-    const separator = target.block === '|' ? '\n' : ' '
-    // 块标量按实际换行保留（`|`），折叠标量按 YAML 的规则折成空格（`>`），
-    // 纯文本续行也用空格——合起来才是「描述里那个字符串」。
-    const joined = target.parts.map(part => part.trim()).filter(part => part !== '').join(separator)
-    // 跨行引号标量落盘时要摘掉引号，否则值里带着 `'`，后面的句号/占位符判据全部跟着错。
-    const value = target.quoted ? unquote(joined) : joined
-    setValue(target.map, target.key, value, target.line)
-    target = null
-  }
-  const setValue = (map, key, value, line) => {
-    if (map.has(key)) problems.push({ kind: 'duplicate-key', line, message: `${key} 出现了两次——YAML 会静默取后一个` })
-    map.set(key, value)
+  // 用 js-yaml 而不是手写子集解析：上游自己也是 js-yaml，两边的解析结果必须一致，
+  // 否则「我判他错」其实是「我的解析器不认」。手写那版已经被真实条目打回来四次——
+  // 块标量、跨行引号标量、行内注释、整份 2 空格缩进的文档、JSON 写成 .yml——
+  // 每一次都是我把实现限制说成了投稿者的错误。
+  let document
+  try {
+    document = load(source)
+  } catch (error) {
+    const line = Number(error.mark?.line ?? 0) + 1
+    const reason = String(error.reason ?? error.message).split('\n')[0].slice(0, 100)
+    // 重复键是它自己的一类：YAML 不报错、静默取后一个，只有开了 strict 才抛——
+    // js-yaml 抛的是 duplicated mapping key，规则名保持 duplicate-key。
+    const kind = /duplicated mapping key/i.test(reason) ? 'duplicate-key' : 'yaml-shape'
+    problems.push({ kind, line, message: kind === 'duplicate-key' ? `${reason}——YAML 会静默取后一个` : `YAML 解析失败：${reason}` })
+    return { fields, description, problems }
   }
 
-  let line = 0
-  // Windows 提交的条目是 CRLF：`.` 不匹配 `\r`，`$` 也就永远落不到行尾，
-  // 结果是整份条目每一行都被判「不是键: 值」。160 份真实条目里就有这么一份。
-  for (const raw of String(text).split(/\r?\n/)) {
-    line += 1
-    if (/\t/.test(raw)) {
-      problems.push({ kind: 'yaml-shape', line, message: '缩进里不能用制表符' })
-      continue
-    }
-    if (raw.trim() === '') {
-      // 块标量里的空行是内容的一部分，其余位置的空行只是分隔。
-      if (target?.block) target.parts.push('')
-      continue
-    }
-    if (/^\s*#/.test(raw)) continue
-    const indent = raw.match(/^\s*/)[0].length
-    const body = raw.slice(indent)
+  if (document === null || typeof document !== 'object' || Array.isArray(document)) {
+    problems.push({ kind: 'yaml-shape', line: 1, message: '顶层的 YAML 不是映射（键: 值）——条目就是一组标量' })
+    return { fields, description, problems }
+  }
 
-    if (/^\s*-/.test(raw)) {
-      flush()
-      problems.push({ kind: 'yaml-shape', line, message: '不支持列表（`- `）——条目是扁平键值' })
-      continue
-    }
-
-    // 块标量（`|` / `>`）的内容行里完全可能出现 `only: no CLI …` 这种一行——
-    // 先判断「这是不是上一个块的内容」，再判断它是不是一个键。
-    if (target && target.block && indent > target.indent) {
-      target.parts.push(body)
-      continue
-    }
-    // 跨行的引号标量：`en: 'Provides …` 换行再闭引号是合法 YAML。
-    if (target && target.quoted && indent > target.indent) {
-      target.parts.push(body)
-      const joined = target.parts.join(' ')
-      if (/(?:'|")\s*$/.test(joined) && (joined.match(/'/g) ?? []).length % 2 === 0) flush()
-      continue
-    }
-
-    const match = body.match(/^([A-Za-z_][\w-]*):\s*(.*)$/)
-    if (!match) {
-      // 不是 `键: 值` 的一行，只可能是上一个值的续行（描述换行是最常见的写法）。
-      if (target && indent > target.indent) {
-        target.parts.push(body)
+  for (const [key, value] of Object.entries(document)) {
+    if (key === 'description') {
+      if (value === null || value === undefined) {
+        fields.set(key, '')
         continue
       }
-      problems.push({ kind: 'yaml-shape', line, message: `这一行不是「键: 值」，也不是上一行的续行：${body.slice(0, 40)}` })
-      continue
-    }
-
-    flush()
-    const [, key, restRaw] = match
-    const rest = restRaw.trim()
-    if (indent === 0) {
-      inDescription = key === 'description' && rest === ''
-      if (rest === '') {
-        if (key !== 'description') problems.push({ kind: 'yaml-shape', line, message: `${key} 没有值` })
-        else fields.set(key, '')
+      if (typeof value !== 'object' || Array.isArray(value)) {
+        problems.push({ kind: 'yaml-shape', line: 0, message: 'description 必须是 en/zh 这样的一层映射' })
         continue
       }
-      if (/^[|>][-+]?$/.test(rest)) {
-        target = { map: fields, key, indent, block: rest[0], parts: [], line }
-        continue
+      for (const [lang, langValue] of Object.entries(value)) {
+        if (langValue !== null && typeof langValue === 'object') {
+          problems.push({ kind: 'yaml-shape', line: 0, message: `description.${lang} 还是嵌套结构——这一层只有字符串` })
+          continue
+        }
+        description.set(lang, langValue === null || langValue === undefined ? '' : String(langValue))
       }
-      if (openQuote(rest)) {
-        target = { map: fields, key, indent, block: null, quoted: true, parts: [rest], line }
-        continue
-      }
-      setValue(fields, key, unquote(rest), line)
       continue
     }
-    if (!inDescription || indent !== 2) {
-      problems.push({ kind: 'yaml-shape', line, message: '只支持 description: 下面一层缩进；其它嵌套请摊平' })
+    // 列表、嵌套映射这些形状不是条目：明确报出来，而不是把一个对象 String 成 [object Object]。
+    if (value !== null && typeof value === 'object') {
+      problems.push({ kind: 'yaml-shape', line: 0, message: `${key} 的值是${Array.isArray(value) ? '列表' : '嵌套映射'}——条目这一层只有标量` })
       continue
     }
-    if (rest === '') {
-      problems.push({ kind: 'yaml-shape', line, message: `description.${key} 没有值` })
-      continue
-    }
-    if (/^[|>][-+]?$/.test(rest)) {
-      target = { map: description, key, indent, block: rest[0], parts: [], line }
-      continue
-    }
-    if (openQuote(rest)) {
-      target = { map: description, key, indent, block: null, quoted: true, parts: [rest], line }
-      continue
-    }
-    target = { map: description, key, indent, block: null, parts: [unquote(rest)], line }
-    // 单行值立即落盘；等下一行看是不是续行，续行会往 parts 里追加后重新 flush。
-    flush()
+    fields.set(key, value === null || value === undefined ? '' : String(value))
   }
-  flush()
   return { fields, description, problems }
 }
 
@@ -223,9 +156,18 @@ export function lintPluginEntry(text, options = {}) {
     const [, urlOwner, urlRepo, , urlPath] = urlMatch
     const [, owner, repo, sub] = nameMatch
     if (owner !== urlOwner || repo !== urlRepo) {
-      add('error', 'name-shape', 0, `name 指向 ${owner}/${repo}，url 指向 ${urlOwner}/${urlRepo}——评审会看这两个是不是同一个仓库`)
+      // GitHub 的 owner/repo 不区分大小写：12960 份真实条目里有 2 份 name 写小写、
+      // url 写原名，照样被合并。只有真正不同的仓库才是 error。
+      const sameRepo = owner.toLowerCase() === urlOwner.toLowerCase() && repo.toLowerCase() === urlRepo.toLowerCase()
+      if (sameRepo) {
+        add('warn', 'name-shape', 0, `name 与 url 的大小写不一致（${owner}/${repo} vs ${urlOwner}/${urlRepo}）——GitHub 不区分，但列表里显示的链接文字会跟仓库页不一样`)
+      } else {
+        add('error', 'name-shape', 0, `name 指向 ${owner}/${repo}，url 指向 ${urlOwner}/${urlRepo}——评审会看这两个是不是同一个仓库`)
+      }
     }
-    if (urlPath && !sub) add('error', 'sub-path', 0, 'url 指到子目录时必须用 name: owner/repo#子包名')
+    // 上游实际合并过 8 份「url 指到 /tree/main/packages/bundle、name 不带 #sub」的条目，
+    // 所以文档这么写、执行没那么严：提示，不判错。
+    if (urlPath && !sub) add('warn', 'sub-path', 0, 'url 指到子目录，name 却没有 #子包名（文档要求写，上游偶尔也收）')
     // #sub 写的是包目录名，不是整条路径：真实条目是
     //   url: …/tree/main/packages/dsh-adr-check + name: …#dsh-adr-check
     // 第一版拿整条 packages/dsh-adr-check 去比，把四份已合并的条目全判成不一致。
@@ -235,7 +177,8 @@ export function lintPluginEntry(text, options = {}) {
     if (sub && lastSegment && sub !== lastSegment && !sub.endsWith(`/${lastSegment}`) && !sub.endsWith(lastSegment)) {
       add('warn', 'sub-path', 0, `name 里的 #${sub} 与 url 最后一段子目录 ${lastSegment} 不一致——上游通常写最后一段`)
     }
-    if (sub && !urlPath) add('error', 'sub-path', 0, 'name 里有 #子包，url 却没有 /tree/<ref>/<path>——评审点不进那个目录')
+    // 上游合并过 2 份「name 带 #子包、url 只指到仓库根」的条目，所以是提示不是错。
+    if (sub && !urlPath) add('warn', 'sub-path', 0, 'name 里有 #子包，url 却没有 /tree/<ref>/<path>——读者点进去落在仓库根，找不到那个子包')
   }
 
   const category = fields.get('category')

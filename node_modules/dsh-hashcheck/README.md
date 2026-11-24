@@ -37,7 +37,7 @@ npx dsh-hashcheck build ./delivery --out delivery/hashcheck.json --ignore node_m
 npx dsh-hashcheck verify delivery/hashcheck.json --dir ./delivery
 ```
 
-Exit codes: `0` clean, `1` findings, `2` usage or read error. In CI, gate on the exit code; in DSH, the same two functions are behind `POST /hashcheck/api` with `{"action":"build"|"verify"}` so the panel and the pipeline cannot disagree.
+Exit codes: `0` clean, `1` findings, `2` usage or read error. In CI, gate on the exit code; in DSH, the same two functions are behind `POST /hashcheck/api` with `{"action":"build"|"verify","directory":"<dir>"}` — `path` is accepted as an alias so one client works against every check in this kit. There is no default directory: a request without one is a `400`, because the alternative is hashing whatever directory the server happens to be running in.
 
 Deterministic by construction: paths are sorted and normalized to forward slashes, no timestamps or mtimes enter the digest, so the same tree produces the same manifest on macOS, Linux and Windows.
 

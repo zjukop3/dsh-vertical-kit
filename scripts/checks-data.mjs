@@ -754,7 +754,7 @@ export const CHECKS = [
     cli: 'plugin-entry-check',
     noun: '目录条目检查 / 收录条目检查',
     title: '插件目录条目检查清单',
-    description: '提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾、带 `: ` 要加引号）、tarball 与图标。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。',
+    description: '提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。',
     decides: '这份目录条目会不会被目录的 CI 打回，以及打回在哪一条；给了仓库还能答「那个包真的装得上吗」',
     rules: [
       ['empty', '条目是空的 → error'],
@@ -791,12 +791,12 @@ export const CHECKS = [
       "output": "$ plugin-entry-check bad-entry.yml\nerror empty 第0行 条目是空的——没有 url、name、category 的 yaml 交上去只会被拒\nfail: 1 errors, 0 warnings",
       exit: '1',
     },
-    note: '判据全部来自上游 contributing.md 的正文，不来自印象。拿 160 份**已合并**的真实条目校准：第一版 24% 被判错——`tarball` 不在我的键名单里（35 份）、块标量与跨行引号标量不支持（23 份）、CRLF 提交整份读不出（1 份）、zh 被当成必填（上游明说可选）。现在 160/160 零 error。',
+    note: '判据来自上游 contributing.md 的正文，但**以已合并条目为准**：规则写得比实践严的地方按实践降级（`name` 大小写、`#sub` 与 url 的三种写法都是 warn）。校准用全量：目录里 12960 份已合并条目，现在 12960/12960 零 error，2.2% 有 warn。第一版是手写的 YAML 子集解析器，被真实条目打回四次（块标量、跨行引号标量、行内注释、整份 2 空格缩进、JSON 写成 .yml），最后换成 js-yaml——与上游同一个解析器，「我判他错」才可能是真的。',
     corpus: {
       layer: 'strangers',
-      source: 'awesome-dsh-plugin 里已合并的真实条目（随机抽 160 份，覆盖 6 个分类与 monorepo 子包写法）',
-      count: 160,
-      first: '第一版把 24% 的已合并条目判错：`tarball` 是上游 documented 的可选字段，我的键名单里没有它，35 份条目被判「不认识的键」；块标量 `>-` 与跨行引号标量是合法 YAML，我手写的解析器不认，23 份被判「格式不对」；一份 CRLF 的条目整份读不出（`.` 不匹配 `\r`，`$` 落不到行尾）；`description.zh` 我判成必填，而上游原文是「只有 en 是必填的」。',
+      source: 'awesome-dsh-plugin 里**全部**已合并的真实条目（12960 份，data/plugins 全量）',
+      count: 12960,
+      first: '抽 160 份时 24% 被判错（`tarball` 不在键名单里 35 份、块标量 23 份、CRLF 1 份、zh 被当必填 2 份）；扩到全量 12960 份又暴露三类：行内注释（从 contributing.md 示例直接抄的 13 份，`category: usage   # 见下方` 整串被当成分类值）、整份 2 空格缩进的文档、JSON 写成 .yml 的 3 份。全部修完后 12960/12960 零 error。',
     },
   },
   {

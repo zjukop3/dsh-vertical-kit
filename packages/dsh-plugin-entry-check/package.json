@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-entry-check",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Check an awesome-dsh-plugin catalog entry before submitting it: filename, name/url agreement, subpackage path, the 23 categories, a bilingual description, the icon, and the aggregation-bundle hint. Sixteen rules, no network.",
   "type": "module",
   "main": "./src/index.js",
@@ -49,5 +49,8 @@
     "type": "git",
     "url": "git+https://github.com/zjukop3/dsh-vertical-kit.git"
   },
-  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-plugin-entry-check"
+  "homepage": "https://github.com/zjukop3/dsh-vertical-kit/tree/main/packages/dsh-plugin-entry-check",
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  }
 }

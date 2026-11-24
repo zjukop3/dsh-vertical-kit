@@ -1,6 +1,6 @@
 {
   "name": "dsh-hashcheck",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "SHA-256 manifests for delivered files: build once, verify anywhere, and say exactly which bytes moved instead of 'looks fine'.",
   "type": "module",
   "main": "./src/index.js",

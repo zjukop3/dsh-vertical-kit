@@ -31,7 +31,7 @@
 - https://zjukop3.github.io/dsh-vertical-kit/privacy-notice-check/: 隐私声明检查清单 — 隐私声明的检查：收集什么、用来干什么、保留多久、还给谁看、找谁问，加上生效日期与读者能行使的权利。保留期限是重点——绝大多数声明写了收集与用途，然后在这一格上留白，而「注销账号」到底意味着什么，就看这一格。
 - https://zjukop3.github.io/dsh-vertical-kit/contributing-check/: 开源贡献指南检查清单 — 给第一次来贡献的人看的检查：能跑起来的开发环境、一条真能执行的测试命令、PR 该长什么样、代码风格要求、到哪提问、提交信息约定，以及 CLA/DCO。有测试一节却没给命令，是这份文档最常见的空话。
 - https://zjukop3.github.io/dsh-vertical-kit/perf-report-check/: 性能报告检查清单 — 压测与基准报告的检查：在什么条件下测的（并发/轮次/数据规模）、结果是不是可比较的量（分位、吞吐、N 次中位数）、环境、基线对照、结论段，以及复现命令。单次跑出来的一个数字不算结果——平均值会藏住尾部，而尾部才是用户感受到的那一段。
-- https://zjukop3.github.io/dsh-vertical-kit/plugin-entry-check/: 插件目录条目检查清单 — 提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾、带 `: ` 要加引号）、tarball 与图标。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。
+- https://zjukop3.github.io/dsh-vertical-kit/plugin-entry-check/: 插件目录条目检查清单 — 提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。
 - https://zjukop3.github.io/dsh-vertical-kit/plugin-package-check/: 插件包可安装性检查清单 — 发布前确认这个插件包「装得上、找得到」：dsh.bundle.patch 声明了且在、patch 挂的是自己或自己的依赖、files 没把 patch 或 DETAIL 漏掉、engines.dsh、bin 里有一个键等于包名、README 里有安装命令、locale 与图标齐。十条规则，只看包目录。
 
 - https://github.com/zjukop3/dsh-vertical-kit: Public source code, 29 packages, one implementation per check shared by the CLI and the host route.
