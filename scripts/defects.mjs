@@ -282,6 +282,18 @@ export const DEFECTS = [
       '「上手文档」也被我当成了一种体裁。DSH 的 user/guide 是**任务型指南**：假设读者已经装好，只教把一件事做完——对它要求「前置要求/多久跑完/去哪儿求助」，等于要求一篇《怎么换轮胎》先讲「汽车是什么」。另外两条更细的：编号小节 `## 1.` 不算步骤（只认列表项）；`dsh plugin --profile x add y` 这种真实写法不算安装命令。',
     now: { kind: 'silent', input: '# Run DSH behind a network proxy\n\nUse this guide when the machine reaches the internet through a proxy.\n\n## 1. Export the variables\n\nSet `HTTPS_PROXY` in your shell.\n\n## 2. Check that it worked\n\nRun a fetch and confirm the proxy appears in the log.\n', rule: 'time-estimate-missing' },
   },
+  {
+    n: 25,
+    check: 'ops-runbook-check',
+    rule: 'prereq-missing / rollback-missing / steps-missing',
+    fixedIn: '0.2.5',
+    foundBy: 'third-party corpus',
+    wrong: 'DSH 自带的 cookbook 5 份：2 份开发配方被判「没有前置条件」、3 份参考目录页被判「没有编号步骤」',
+    right: '三种体裁：运维手册（照做）、开发配方（改仓库）、参考目录页（查契约）',
+    lesson:
+      '同一个跟头第四次：把「写给人照着做的东西」当成一种。cookbook 里往 monorepo 加一个包，回滚就是 git checkout，没有生产可炸；而 adding-a-tool.md 是契约参考，按形态分节，不按步骤分节。前两种判据我用「有没有 monorepo 路径 + 编号步骤」与「四个以上小节 + 零步骤」区分，都是结构，不是关键词。',
+    now: { kind: 'silent', input: `# Cookbook: adding a workspace package\n\n## 1. Create the package\n\nAdd \`packages/my-package/package.json\`.\n\n## 2. Register it\n\nEdit \`pnpm-workspace.yaml\`.\n\n## 3. Write the README\n\nDescribe what it owns.\n`, rule: 'prereq-missing' },
+  },
 ]
 
 export const LEDGER = {

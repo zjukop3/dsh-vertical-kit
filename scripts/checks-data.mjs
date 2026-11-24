@@ -473,7 +473,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '认的九类危险命令：rm -rf、DROP、TRUNCATE、DELETE FROM、kubectl delete、terraform apply/destroy、git push --force、docker rm/prune、mkfs/dd。只验手册形状，不验步骤是否正确：第 3 步是不是错命令、回滚路径本身是不是早坏了、验证是不是因为错误原因通过——这些要 game day 才知道。',
-    corpus: { layer: 'own', source: '本项目的 runbook', count: 4, first: '两份用 ## 3. 编号标题的 runbook 被报「完全没有编号步骤」' },
+    corpus: { layer: 'strangers', source: '本项目的 4 份 runbook + DSH 自带的 5 份 cookbook（2 份开发配方 + 3 份参考目录页）', count: 9, first: '两种误报：开发配方（往 monorepo 加包）被要求写前置与回滚——回滚就是 git checkout；参考目录页（按形态分节）被要求写编号步骤' },
   },
   {
     slug: 'pr-description-check',

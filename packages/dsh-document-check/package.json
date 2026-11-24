@@ -68,7 +68,7 @@
     "dsh-migration-guide-check": "^0.1.5",
     "dsh-numberlint": "^0.1.4",
     "dsh-onboarding-check": "^0.3.6",
-    "dsh-ops-runbook-check": "^0.2.4",
+    "dsh-ops-runbook-check": "^0.2.5",
     "dsh-outline-lint": "^0.1.6",
     "dsh-perf-report-check": "^0.1.2",
     "dsh-plugin-entry-check": "^0.1.1",

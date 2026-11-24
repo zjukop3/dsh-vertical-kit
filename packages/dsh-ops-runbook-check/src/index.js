@@ -9,6 +9,25 @@ export const inject = ['webServer']
 // 真实 runbook 把这一段叫 Pre-flight（mulch）、Safety rules（devlovers）、
 // Before you start、Preconditions。只认「前置/准备/prerequisites」会把两份真实
 // runbook 全部判成「没有前置」——2026-11-20 实测 2/2 误报。
+// 第二体裁：**开发配方**（DSH 的 cookbook：往 monorepo 里加一个包、加一个设置卡片）。
+// 它假设读者已经在这份仓库里——「前置条件」是隐含的，回滚是 `git checkout`，
+// 也没有生产环境可炸。对它要求「前置/回滚」，等于要求「改代码之前先备份仓库」。
+// 判据：标题写 cookbook/recipe/how to add，或者正文里出现 monorepo 路径 + 编号步骤。
+// 第三体裁：**参考/目录页**（DSH 的 adding-a-tool.md「Tool authoring reference」、
+// extension-cookbook.md「各种插件形态的目录」）。它们按「形态」分节，不按「步骤」分节——
+// 对它们问「第 3 步是什么」等于问一本字典「第 3 步是什么」。
+// 判据：四个以上二级小节、零编号步骤、两个以上代码块。
+export function isReferenceCatalog(text) {
+  const source = String(text)
+  const sections = (source.match(/^##\s+\S/gm) ?? []).length
+  const fences = (source.match(/^```/gm) ?? []).length / 2
+  const steps = (source.match(/^(?:\s*\d+[.、)）]\s+\S|#{1,6}\s*\d+[.、)）]\s+\S)/gm) ?? []).length
+  return sections >= 4 && steps === 0 && fences >= 1
+}
+
+const RECIPE_TITLE = /(?:^|\n)#{1,6}[^\n]*(?:cookbook|recipe|how to (?:add|build|write|create)|配方|做法)/i
+const MONOREPO_HINT = /\b(?:monorepo|pnpm-workspace|packages\/[a-z0-9-]+\/|\.tsx?\b)/i
+
 const PREREQ_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:前置|先决|准备|依赖|注意|安全|prerequisit|preconditions?|pre-?flight|before you start|requirements|safety|guardrails?|required configuration|setup)/i
 const PREREQ_LINE = /^[^\n]*(?:前置条件[：:，\s]|先决条件[：:，\s]|需要先|prerequisites?[：:\s])/i
 // 判据是「文档里有真的会改变环境的命令」。标题里出现「Upgrade Posture」不算
@@ -78,9 +97,18 @@ export function lintOpsRunbook(text, rules = {}) {
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = text.split('\n')
 
+  if (isReferenceCatalog(text)) {
+    add('warn', 'reference-not-runbook', 1, '这是参考/目录页（按形态分节、没有编号步骤），不是一份运维手册——它的读者在查契约，不在照着做')
+    const orderEarly = { error: 0, warn: 1 }
+    findings.sort((a, b) => orderEarly[a.level] - orderEarly[b.level] || a.line - b.line)
+    return { ok: true, checked: { steps: 0, lines: lines.length, genre: 'reference' }, errors: 0, warnings: findings.length, findings }
+  }
+
+  const recipe = RECIPE_TITLE.test(text) || (MONOREPO_HINT.test(text) && numberedSteps(text).length >= 3)
+
   // Prerequisites: what you must have in hand before starting.
   const hasPrereq = lines.some(line => PREREQ_HEADING.test(`\n${line}`)) || lines.some(line => PREREQ_LINE.test(line))
-  if (!hasPrereq) add('error', 'prereq-missing', 0, '没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限')
+  if (!hasPrereq && !recipe) add('error', 'prereq-missing', 0, '没有前置条件段（认得：## 前置条件、需要先…、Prerequisites）——没有前置的手册让人在半路发现缺权限')
 
   // Steps: numbered, because a runbook is followed one line at a time.
   const steps = numberedSteps(text)
@@ -115,7 +143,7 @@ export function lintOpsRunbook(text, rules = {}) {
   // 纯演练/前置检查类（zoom 的 preflight）没有可回滚的对象，问它回滚等于问
   // 「读一遍文档怎么回滚」。2026-11-20 实测：不加这个条件，纯检查类必报。
   const doesChange = CHANGE_VERB.test(text)
-  if (requireRollback && doesChange && !hasRollback) {
+  if (requireRollback && doesChange && !hasRollback && !recipe) {
     add('error', 'rollback-missing', 0, '没有回滚段（认得：## 回滚、回滚：…、Rollback）——这份 runbook 会改变环境，出问题时读者没有退路')
   }
 
@@ -133,7 +161,7 @@ export function lintOpsRunbook(text, rules = {}) {
   const errors = findings.filter(finding => finding.level === 'error').length
   return {
     ok: errors === 0,
-    checked: { steps: steps.length, lines: lines.length },
+    checked: { steps: steps.length, lines: lines.length, genre: recipe ? 'recipe' : 'runbook' },
     errors,
     warnings: findings.length - errors,
     findings,

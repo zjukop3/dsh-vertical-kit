@@ -193,3 +193,66 @@ test('「Rolling back from a newer version…」这段散文就算回滚说明',
   const result = lintOpsRunbook(text)
   assert.ok(!result.findings.some(f => f.rule === 'rollback-missing'), JSON.stringify(result.findings.map(f => f.rule)))
 })
+
+// 2026-11-24：拿 DSH 自带的 cookbook 5 份（别人写的）校准，撞出两种误报：
+// 开发配方（往 monorepo 里加一个包）被要求写「前置条件/回滚」；参考目录页（按形态分节）
+// 被要求写「编号步骤」。前者是代码改动、回滚就是 git checkout；后者在查契约，不在照着做。
+const RECIPE = `# Cookbook: adding a workspace package
+
+## 1. Create the package
+
+Add \`packages/my-package/package.json\` and \`packages/my-package/src/index.ts\`.
+
+## 2. Register it in the root configs
+
+Edit \`pnpm-workspace.yaml\` and the root \`tsconfig.json\`.
+
+## 3. Write the package README
+
+Describe what the package owns.
+`
+
+const CATALOG = `# Tool authoring reference
+
+Reference for the contracts a model-facing tool must satisfy.
+
+## The minimal shape
+
+\`\`\`ts
+export function apply(ctx: Context) {}
+\`\`\`
+
+## Parameters
+
+Every parameter carries a description.
+
+## Output
+
+Declare a schema and a render function.
+
+## Limits
+
+Keep the first version small.
+`
+
+test('开发配方：不要求前置条件与回滚，它改的是仓库不是生产', () => {
+  const result = lintOpsRunbook(RECIPE)
+  assert.equal(result.checked.genre, 'recipe')
+  assert.deepEqual(result.findings.filter(finding => ['prereq-missing', 'rollback-missing'].includes(finding.rule)), [])
+})
+
+test('参考目录页只说一句 reference-not-runbook，别的规则不适用', () => {
+  const result = lintOpsRunbook(CATALOG)
+  assert.equal(result.checked.genre, 'reference')
+  assert.deepEqual(result.findings.map(finding => finding.rule), ['reference-not-runbook'])
+  assert.equal(result.ok, true, '参考页不是坏手册，它根本不是手册')
+})
+
+test('真 runbook 照样拿得到 prereq / rollback / steps 这些判定', () => {
+  const runbook = '# 发布手册\n\n```bash\nkubectl apply -f deploy.yaml\n```\n'
+  const result = lintOpsRunbook(runbook)
+  assert.equal(result.checked.genre, 'runbook')
+  const rules = result.findings.map(finding => finding.rule)
+  assert.ok(rules.includes('prereq-missing'), JSON.stringify(rules))
+  assert.ok(!rules.includes('reference-not-runbook'))
+})
