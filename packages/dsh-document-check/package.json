@@ -65,7 +65,7 @@
     "dsh-license-check": "^0.2.3",
     "dsh-listing-check": "^0.2.2",
     "dsh-meeting-notes-check": "^0.1.5",
-    "dsh-migration-guide-check": "^0.1.4",
+    "dsh-migration-guide-check": "^0.1.5",
     "dsh-numberlint": "^0.1.4",
     "dsh-onboarding-check": "^0.3.5",
     "dsh-ops-runbook-check": "^0.2.4",

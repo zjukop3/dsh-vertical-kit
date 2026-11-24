@@ -18,7 +18,10 @@ export function titleOf(text) {
   const source = String(text).replace(/^\uFEFF/, '')
   const front = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (front && /^title:\s*\S+/m.test(front[1])) return 'frontmatter'
-  if (/^#\s+\S/.test(source)) return 'heading'
+  // 必须用多行锚点：带 frontmatter 的文档第一行是 `---`，H1 在第 5 行左右。
+  // 单行锚点的 `/^#/` 在这种情况下永远不匹配——2026-11-24 用 DSH 自带的 169 份
+  // upgrade-guide 校准，145 份被这条误判成「没有标题」。
+  if (/^#\s+\S/m.test(source)) return 'heading'
   return null
 }
 
@@ -32,10 +35,25 @@ function headOf(text) {
   return (source.match(/^#\s+[^\n]*/) || [''])[0]
 }
 
+export function frontmatterKind(text) {
+  const source = String(text).replace(/^\uFEFF/, '')
+  const front = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
+  if (!front) return null
+  const kind = front[1].match(/^kind:\s*(\S+)/m)
+  return kind && /(?:upgrade|migrat|迁移|升级)/i.test(kind[1]) ? kind[1] : null
+}
+
 const MIGRATION_WORD = /(?:迁移|升级|migrat|upgrad)/i
 
 // A span: 从 x 到 y, x → y, from x to y. A single version is not a span.
 const VERSION_SPAN = /(?:(?:从|from)\s*)?v?\d+\.\d+(?:\.\d+)?[^\n]{0,24}?(?:→|->|到|至|to|升级为|upgrade to)\s*v?\d+\.\d+/i
+// 第二种真实形态：单点迁移笔记（DSH 自己的 upgrade-guide 就是这种，169 份）。
+// 它不写跨度，只在正文说「After upgrading from 0.2.2-rc.1」或「升级前如果你是 0.1.x」。
+// 判据是「文档指名了它从哪里开始」，不是「两段版本号中间有箭头」。
+const VERSION_FROM = /(?:(?:from|after upgrading from|since)\s+v?\d+\.\d+(?:\.\d+)?(?:-[\w.]+)?|(?:从|升级前[^\n]{0,8})\s*v?\d+\.\d+(?:\.\d+)?)/i
+
+// 单点迁移笔记的形状：frontmatter 里有 kind，或同时有 Change 与 Migration 两节。
+const SINGLE_CHANGE = /(?:^|\n)#{1,6}\s*[^\n]*(?:\bChange\b|变更|改动)[^\n]*\n[\s\S]*?(?:^|\n)#{1,6}\s*[^\n]*(?:\bMigration\b|迁移步骤|怎么改)/i
 
 // Breaking changes: a section or an explicit labelled list. A sentence in prose
 // that happens to contain 不兼容 is a mention, not a list — the reader cannot
@@ -60,7 +78,7 @@ export function changeSections(text) {
 const NUMBERED = /^\s*\d+\s*[.、)）]\s*\S/
 
 const ROLLBACK = /(?:回滚|退回|降级回|恢复备份|rollback|roll back|revert)/i
-const VERIFY = /(?:验证|确认|自检|冒烟|smoke|verify|check that|should show)/i
+const VERIFY = /(?:验证|确认|自检|冒烟|smoke|verify|check that|should show|confirm)/i
 const BACKUP = /(?:备份|导出|backup|snapshot)/i
 
 export function versionSpan(text) {
@@ -83,6 +101,14 @@ export function numberedSteps(text) {
     .filter(entry => NUMBERED.test(entry.text))
 }
 
+// 索引页不是指南：DSH 的 upgrade-guide/README.md 是一张表，每一行指向一份单点笔记
+// （170 份文档的入口）。对它问「你的版本跨度」「你的破坏性变更清单」是把目录当正文。
+// 判据：链接到 ≥10 份 .md，且没有 Migration 一节。
+export function isIndexPage(text) {
+  const links = (String(text).match(/\]\([^)]*\.md\)/g) ?? []).length
+  return links >= 10 && !/(?:^|\n)#{1,6}\s*[^\n]*(?:Migration|迁移步骤|怎么改)/i.test(text)
+}
+
 export function lintMigrationGuide(text, rules = {}) {
   const minSteps = rules.minSteps ?? 3
   const requireSteps = rules.requireSteps ?? false
@@ -93,15 +119,35 @@ export function lintMigrationGuide(text, rules = {}) {
   const lines = text.split('\n')
   const has = pattern => lines.some(line => pattern.test(line))
 
+  if (isIndexPage(text)) {
+    // 它是一份目录：只说这一句，别的规则一律不适用。
+    add('warn', 'pointer-guide', 1, `这像是一份索引页（链到 ${(text.match(/\]\([^)]*\.md\)/g) ?? []).length} 份文档），不是一份迁移指南——逐份看它指向的文档`)
+    return {
+      ok: true,
+      checked: { span: 'index', steps: 0, lines: lines.length },
+      errors: 0,
+      warnings: findings.length,
+      findings,
+    }
+  }
+
   if (!titleOf(text)) add('error', 'title-missing', 1, '没有标题（认得：`# 标题`，或 frontmatter 里的 `title:`）——迁移指南的标题要写出「从哪到哪」')
 
+  const singleChange = SINGLE_CHANGE.test(text)
+  // 第三种形态：文档自己在 frontmatter 里声明了 kind（DSH 的 upgrade-guide 系列），
+  // 版本写在**路径**里（upgrade-guide/v0.2.2-rc.1/…），正文里一个版本号都没有。
+  // 要求正文写跨度，等于要求作者把目录名再抄一遍——量的是拼写，不是「读者知不知道
+  // 自己在哪一跳」这件性质。声明了 genre 就算它交代了。
+  const declaredGuide = frontmatterKind(text) !== null
   const span = versionSpan(text)
+    ?? (singleChange && VERSION_FROM.test(text) ? 'from' : null)
+    ?? (declaredGuide ? 'declared' : null)
   if (!span) {
     add('error', 'from-to-missing', 0, '没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南')
   }
 
   const changes = changeSections(text)
-  if (!has(BREAKING_HEADING) && !has(BREAKING_LABEL) && changes.length < 3) {
+  if (!has(BREAKING_HEADING) && !has(BREAKING_LABEL) && changes.length < 3 && !singleChange) {
     add('error', 'breaking-missing', 0, '没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单')
   }
 
@@ -122,12 +168,14 @@ export function lintMigrationGuide(text, rules = {}) {
     add('warn', 'verify-missing', 0, '没有验证方式（认得：## 验证、确认、冒烟、should show）——迁移完不知道该看哪，等于不知道自己成没成')
   }
 
-  if (procedural && !has(ROLLBACK)) {
+  // 单点迁移笔记改的是代码（加一个属性、换一个 import），没有可回滚的数据，
+  // 也没有可备份的东西。对它要求「回滚方案」等于要求「改这行 CSS 之前先备份」。
+  if (procedural && !singleChange && !has(ROLLBACK)) {
     const level = requireRollback ? 'error' : 'warn'
     add(level, 'rollback-missing', 0, '没有回滚方案（认得：## 回滚、rollback、恢复备份）——迁移失败时，回滚是唯一不用求人的路')
   }
 
-  if (procedural && !has(BACKUP)) {
+  if (procedural && !singleChange && !has(BACKUP)) {
     add('warn', 'backup-missing', 0, '没有备份提示（认得：备份、导出、backup）——改之前先留一份，是最便宜的一条建议')
   }
 

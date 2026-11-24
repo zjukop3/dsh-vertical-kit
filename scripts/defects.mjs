@@ -246,6 +246,18 @@ export const DEFECTS = [
     now: { kind: 'route', lint: 'lintAdr', path: '/adr-check/api', input: '# ADR-014 采用事件溯源\n\n## 背景\n\n订单服务写放大严重。\n' },
   },
 
+  {
+    n: 22,
+    check: 'migration-guide-check',
+    rule: 'title-missing / from-to-missing / backup-missing / rollback-missing',
+    fixedIn: '0.2.0',
+    foundBy: 'third-party corpus',
+    wrong: '在 DSH 自带的 170 份 upgrade-guide 上：145 份被判「没有标题」，143 份「没有版本跨度」，132 份「没有备份提示」，141 份「没有回滚方案」',
+    right: '三种体裁分开判：版本升级指南、单点迁移笔记、索引页。单点笔记的版本写在路径里、改的是代码，索引页根本不是指南',
+    lesson:
+      '规则是在两份版本升级指南（Vite、TanStack）上定的，于是「迁移指南」这四个字被我当成了一种体裁。真实生态里更常见的是单点笔记：一条行为变更一份文档。四种误报同一个毛病——按我见过的写法判，而不是按文档真实承担的角色判。',
+    now: { kind: 'silent', input: '---\nkind: upgrade-guide\ndescription: x\n---\n\n# Explicit window regions\n\n## Change\n\nAfter upgrading from 0.2.2-rc.1, macOS excludes controls only inside rows.\n\n## Migration\n\n1. Inspect the overlays.\n2. Add the attribute.\n3. Load it and confirm.\n', rule: 'from-to-missing' },
+  },
 ]
 
 export const LEDGER = {

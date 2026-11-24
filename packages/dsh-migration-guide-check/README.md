@@ -45,6 +45,14 @@ fail: span unstated, 0 steps, 2 errors, 1 warnings
 
 Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin).
 
+## 三种体裁
+
+真实的「迁移」文档有三种形态，规则按体裁走，不按关键词走：
+
+1. **版本升级指南**（Vite 的 `docs/guide/migration.md`、TanStack 的 Migrating to v5）：写清 from→to、给变更清单、可能带编号步骤。恢复三问（验证/回滚/备份）只对「有编号步骤的流程型指南」查。
+2. **单点迁移笔记**（DSH 自带的 170 份 `upgrade-guide/`）：一条行为变更一份文档，版本写在**路径**里，正文只说「After upgrading from 0.2.2-rc.1」。它改的是代码不是数据，所以不问备份与回滚；frontmatter 的 `kind:` 或 `## Change` + `## Migration` 的结构就算它交代了体裁。
+3. **索引页**：一张表，每行指向一份笔记。对它只说一句 `pointer-guide`，别的规则一律不适用。
+
 ## What it decides
 
 | rule | level | meaning |

@@ -696,7 +696,7 @@ export const CHECKS = [
       "npx dsh-migration-guide-check guide.md --check-recovery"],
     example: { "command": "migration-guide-check migration-sample.md", "fixture": "# 升级说明\n\n我们改了参数名，升级后注意一下。\n", "output": "$ migration-guide-check migration-sample.md\nerror from-to-missing 第0行 没有版本跨度（认得：从 0.1.0 到 0.2.0、0.1.7 → 0.2.0、from v1 to v2）——「升级到 0.2.0」是发布说明，不是迁移指南\nerror breaking-missing 第0行 没有可逐条对照的变更清单（认得：## 破坏性变更、## Breaking changes，或至少三节讲变更的小节）——散文里提一句「这次不兼容」不是清单\nwarn steps-missing 第0行 没有编号步骤（认得：1. … 2. …）——有步骤的指南能照着做，没有的只能照着读\nfail: span unstated, 0 steps, 2 errors, 1 warnings", "exit": "1" },
     note: "实测两份真实指南（Vite docs/guide/migration.md 与 TanStack Query 的 Migrating to v5）：0 error、1 warn（steps-missing）。恢复类三问（验证/回滚/备份）只对流程型指南（有编号步骤）查——不加这个条件，三条在 100% 的真实指南上都会开火。只管指南的形状，不管内容对不对：步骤本身错、跨度漏了一个版本，都验不出来——那要在临时 profile 里真跑一遍。项目符号刻意不算步骤：迁移是有序动作，`-` 列表不承诺顺序。",
-    corpus: { layer: 'strangers', source: '真实迁移指南（Vite、TanStack Query）', count: 2, first: '恢复类三问在 100% 的真实指南上开火；改成只对流程型指南查' },
+    corpus: { layer: 'strangers', source: 'DSH 自带的 170 份 upgrade-guide（别人写的单点迁移笔记，版本写在路径里）+ Vite 与 TanStack 的版本升级指南', count: 173, first: '四种误报：H1 不在第一行被判无标题（145 份）、版本写在路径里被判无跨度、单点笔记被要求写备份与回滚、索引页被当成指南' },
   },
   // 隐私声明检查 / 隐私政策检查
   {

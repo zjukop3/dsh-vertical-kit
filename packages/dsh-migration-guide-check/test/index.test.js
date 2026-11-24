@@ -116,3 +116,47 @@ test('没有一级标题时 title-missing 报错，且指在第一行', () => {
   assert.equal(finding.level, 'error')
   assert.equal(finding.line, 1)
 })
+
+// 2026-11-24：拿 DSH 自带的 170 份 upgrade-guide（别人写的真实文档）校准，撞出四种误报：
+// 标题（H1 不在第一行）、版本跨度（版本写在路径里）、恢复三问（单点笔记没有可回滚的数据）、
+// 以及把一份**索引页**当成指南。四条都补了判据，两个方向各留一条断言。
+const SINGLE = `---
+kind: upgrade-guide
+description: "Custom overlays must declare their window regions."
+---
+
+# Explicit window regions for custom Client overlays
+
+## Change
+
+After upgrading from 0.2.2-rc.1, macOS excludes controls only inside data-window-drag rows.
+
+## Migration
+
+1. Inspect the overlays that cover a header.
+2. Add \`data-window-drag-exclude\` to the visible viewport.
+3. Load the plugin and confirm the controls act without dragging.
+`
+
+test('单点迁移笔记：frontmatter 有 kind、版本在正文用散文写——不算缺跨度', () => {
+  const result = lintMigrationGuide(SINGLE)
+  assert.deepEqual(result.findings.filter(finding => ['title-missing', 'from-to-missing', 'breaking-missing'].includes(finding.rule)), [])
+})
+
+test('单点笔记不要求备份与回滚：它改的是代码，不是数据', () => {
+  const result = lintMigrationGuide(SINGLE)
+  assert.ok(!result.findings.some(finding => ['backup-missing', 'rollback-missing'].includes(finding.rule)))
+})
+
+test('索引页只说一句 pointer-guide，别的规则一律不适用', () => {
+  const links = Array.from({ length: 12 }, (_, index) => `| item ${index} | [guide](v0/${index}/guide.md) |`).join('\n')
+  const result = lintMigrationGuide(`# Upgrade guides\n\n## v0.2.2-rc.4\n\n${links}\n`)
+  assert.deepEqual(result.findings.map(finding => finding.rule), ['pointer-guide'])
+  assert.equal(result.ok, true, '索引页不是坏指南，它根本不是指南')
+})
+
+test('真指南不会拿到 pointer-guide', () => {
+  assert.ok(!lintMigrationGuide(SINGLE).findings.some(finding => finding.rule === 'pointer-guide'))
+  const versioned = `# Migrating to v5\n\n从 0.1.0 到 0.2.0 需要改三处。\n\n## 破坏性变更\n\n- a\n\n## 步骤\n\n1. 改 import\n2. 改配置\n3. 跑一遍\n\n## 验证\n\n确认页面能开。\n\n## 回滚\n\nrevert 提交。\n`
+  assert.ok(!lintMigrationGuide(versioned).findings.some(finding => finding.rule === 'pointer-guide'))
+})
