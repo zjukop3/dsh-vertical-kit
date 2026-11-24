@@ -42,10 +42,9 @@ test('empty：空文件是一句明确的 error', () => {
   assert.deepEqual(rules(result), ['empty'])
 })
 
-test('yaml-shape：列表、块标量、制表符、过深嵌套都明确报错而不是猜', () => {
+test('yaml-shape：列表、制表符、过深嵌套都明确报错而不是猜', () => {
   for (const [text, hint] of [
     ['url: x\n- item\n', '列表'],
-    [`url: x\ndescription: |\n  many lines\n`, '块标量'],
     ['url: x\n\tcategory: tools\n', '制表符'],
     ['url: x\ndescription:\n  meta:\n    deep: 1\n', '嵌套'],
   ]) {
@@ -54,6 +53,27 @@ test('yaml-shape：列表、块标量、制表符、过深嵌套都明确报错�
   }
   const ok = lintPluginEntry(GOOD)
   assert.ok(!rules(ok).includes('yaml-shape'))
+})
+
+// 块标量、跨行引号标量、CRLF、内容行里出现 `词: 值` —— 这四件事第一版都不支持，
+// 于是 160 份已合并条目里有 23 份被判「格式不对」。YAML 支持它们，我就得支持。
+test('真实条目的四种写法都要读对：块标量、跨行引号、CRLF、内容里的冒号行', () => {
+  const folded = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: >-\n    Skills for a thing, vendored from upstream\n    only: no binaries are bundled\n  zh: '一句话。'\n`
+  const parsed = parseEntry(folded)
+  assert.deepEqual(parsed.problems, [])
+  assert.equal(parsed.description.get('en'), 'Skills for a thing, vendored from upstream only: no binaries are bundled')
+  assert.equal(lintPluginEntry(folded).ok, true)
+
+  const literal = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: |\n    one\n    two\n  zh: '一句话。'\n`
+  assert.equal(parseEntry(literal).description.get('en'), 'one\ntwo')
+
+  const quotedAcrossLines = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'Provides 14 tools through a local server. Requires the\n    separately installed runtime.'\n  zh: '一句话。'\n`
+  assert.deepEqual(parseEntry(quotedAcrossLines).problems, [], JSON.stringify(parseEntry(quotedAcrossLines).problems))
+  assert.match(parseEntry(quotedAcrossLines).description.get('en'), /^Provides 14 tools.*runtime\.'?$/)
+
+  const crlf = `url: https://github.com/acme/repo\r\nname: acme/repo\r\ncategory: tools\r\ndescription:\r\n  en: 'A thing.'\r\n  zh: '一个东西。'\r\n`
+  assert.deepEqual(parseEntry(crlf).problems, [])
+  assert.equal(parseEntry(crlf).fields.get('category'), 'tools')
 })
 
 test('duplicate-key：同一个键写两次会被 YAML 静默取后一个', () => {
@@ -210,4 +230,77 @@ test('语料来源写清楚了（别人的条目进仓库要交代出处）', as
   const files = (await readdir(FIXTURES)).filter(name => name.endsWith('.yml'))
   for (const file of files) assert.ok(note.includes(file), `${file} 没在 SOURCE.md 里交代`)
   assert.ok(existsSync(resolve(HERE, 'src', 'index.js')))
+})
+// 条目 ↔ 仓库的交叉核对：上游第一号打回理由是「只声明了 dsh.client」，
+// 而那件事在 yaml 里完全看不出来——必须去看仓库里那个包的 package.json。
+// 判据用 160 份已合并的真实条目校准过：全部 160 份在正确的仓库上零 error。
+test('条目与仓库对不上时报 repo-* 系列，而不是沉默通过', async () => {
+  const { checkEntryAgainstRepo } = await import('../src/index.js')
+  const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+
+  const root = mkdtempSync(join(tmpdir(), 'entry-repo-'))
+  const entry = `url: https://github.com/acme/tools/tree/main/packages/thing
+name: acme/tools#thing
+category: tools
+description:
+  en: 'A thing that does the thing, and says so in one sentence.'
+  zh: '一个做那件事的东西，一句话说清楚。'
+`
+  try {
+    // 1) monorepo 子包里没有 package.json
+    mkdirSync(join(root, 'packages', 'thing'), { recursive: true })
+    const missing = checkEntryAgainstRepo(entry, root, { filename: 'acme__tools--packages-thing.yml' })
+    assert.ok(missing.findings.some(f => f.rule === 'repo-package-missing'), JSON.stringify(missing.findings.map(f => f.rule)))
+
+    // 2) 有 package.json 但只有 dsh.client——上游最常见的打回原因
+    writeFileSync(join(root, 'packages', 'thing', 'package.json'), JSON.stringify({ name: 'thing', dsh: { client: { platform: 'web' } } }))
+    const noBundle = checkEntryAgainstRepo(entry, root, { filename: 'acme__tools--packages-thing.yml' })
+    assert.ok(noBundle.findings.some(f => f.rule === 'repo-bundle-missing'), JSON.stringify(noBundle.findings.map(f => f.rule)))
+    assert.equal(noBundle.ok, false)
+
+    // 3) 声明了 bundle.patch 但文件不存在
+    writeFileSync(join(root, 'packages', 'thing', 'package.json'), JSON.stringify({ name: 'thing', dsh: { bundle: { patch: './cordis.patch.yml' } } }))
+    const noPatch = checkEntryAgainstRepo(entry, root, { filename: 'acme__tools--packages-thing.yml' })
+    assert.ok(noPatch.findings.some(f => f.rule === 'repo-patch-missing'), JSON.stringify(noPatch.findings.map(f => f.rule)))
+
+    // 4) 都齐了：条目通过，仓库也对得上
+    writeFileSync(join(root, 'packages', 'thing', 'cordis.patch.yml'), '- insert:\n    - id: thing\n      name: thing\n')
+    const good = checkEntryAgainstRepo(entry, root, { filename: 'acme__tools--packages-thing.yml' })
+    assert.equal(good.ok, true, JSON.stringify(good.findings))
+    assert.deepEqual(good.findings, [])
+    assert.equal(good.checked.repoChecked.includes('packages/thing'), true)
+
+    // 5) 条目里的 #sub 与包里 name 不一致 → 只提示（上游会自己改）
+    writeFileSync(join(root, 'packages', 'thing', 'package.json'), JSON.stringify({ name: 'other-name', dsh: { bundle: { patch: './cordis.patch.yml' } } }))
+    const mismatch = checkEntryAgainstRepo(entry, root, { filename: 'acme__tools--packages-thing.yml' })
+    assert.ok(mismatch.findings.some(f => f.rule === 'repo-name-mismatch' && f.level === 'warn'))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// 三条新规则各自都要有「会报」的那一半，否则等于写下就没被看见过。
+test('新规则会报：句号缺失、tarball 形状、package.json 读不出来', async () => {
+  const noPeriod = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'A thing that does exactly one thing and says so'\n  zh: '一个只做一件事的东西。'\n`
+  assert.ok(lintPluginEntry(noPeriod).findings.some(f => f.rule === 'description-period'));
+
+  const badTarball = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ntarball: ./build/repo.tgz\ndescription:\n  en: 'A thing that does one thing.'\n  zh: '一个只做一件事的东西。'\n`
+  assert.ok(lintPluginEntry(badTarball).findings.some(f => f.rule === 'tarball-shape'));
+
+  const { checkEntryAgainstRepo } = await import('../src/index.js')
+  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'entry-broken-'))
+  try {
+    writeFileSync(join(dir, 'package.json'), '{ this is not json')
+    const entry = `url: https://github.com/acme/repo\nname: acme/repo\ncategory: tools\ndescription:\n  en: 'A thing that does one thing.'\n  zh: '一个只做一件事的东西。'\n`
+    const result = checkEntryAgainstRepo(entry, dir, { filename: 'acme__repo.yml' })
+    assert.equal(result.ok, false)
+    assert.ok(result.findings.some(f => f.rule === 'repo-manifest-unparsable'), JSON.stringify(result.findings.map(f => f.rule)))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
 })

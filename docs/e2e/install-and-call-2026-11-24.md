@@ -118,3 +118,30 @@ POST /privacy-notice-check/api  → {"ok":true,"checked":{"lines":26},"errors":0
 - 镜像的 `dist-tags.latest` 这次五个包都对（`0.2.6 / 0.3.7 / 0.1.5 / 0.1.9 / 0.1.2`），
   但上一轮踩过 `0.0.0-stage` 的坑，所以每次发版后仍然要显式查一遍。
 - `probe-kit-20261124` 这个 profile 留着，方便复现；它不持有任何凭证。
+## 下午补记：bug-report-check 0.1.4 的同一套验证
+
+`dsh plugin --profile … add dsh-bug-report-check@0.1.4` 第一次**失败**：
+
+```
+The latest release of dsh-bug-report-check is "0.1.3". Published at 11/23/2026
+```
+
+npmjs 上 0.1.4 的 metadata 与 tarball 都在，但镜像的 `dist-tags.latest` 还停在 0.1.3。
+PUT 触发 sync 后仍等了约 5 分钟才翻（`0.1.3 → 0.1.4`、`0.1.10 → 0.1.11`、`0.1.2 → 0.1.3`
+三个一起翻）。装成功之后直接打已发布的端点：
+
+```
+POST /bug-report-check/api {"path":"/tmp/b1.md"}   # "# bug"
+→ ok=false mode=review {"steps":0,"repro":"none","env":"none","emptySubmission":true,...}
+  error:env-missing, error:repro-missing, warn:expectation-unstated
+
+POST /bug-report-check/api {"path":"/tmp/b2.md"}   # "# 崩溃" + 一个链接
+→ 同上（一条链接不算最小复现）
+
+POST /bug-report-check/api {"path":"/tmp/b3.md"}   # 真实形状：加粗段名 + VS Code 版本 + 3 步 + Expected/Actual
+→ ok=true mode=review {"steps":3,"repro":"steps","env":"label","expectedActual":"pair"}
+  同一份文档 strict 模式也 ok
+```
+
+`checked` 里写清楚判据看到了什么（`repro`/`env`/`expectedActual`/`emptySubmission`），
+不是一个笼统的 `ok`——这样一条误报可以直接看出是哪一路判据认错了。

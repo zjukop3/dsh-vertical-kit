@@ -379,6 +379,18 @@ export const DEFECTS = [
       '同一个错误的两个方向：这个分支让 `repro-missing` 对「只有标题」的报告永不触发（假阴性），而它看起来又像「认得命令行」——一条会在两个方向上都错、而且测试还绿着的规则。markdown 标题和 shell 提示符都长成 `#`，这类同形不同义的字符只能靠上下文（在不在代码块里）区分。',
     now: { kind: 'fires', input: `# bug\n`, rule: 'repro-missing' },
   },
+  {
+    n: 33,
+    check: 'plugin-entry-check',
+    rule: 'unknown-key / yaml-shape / description-keys',
+    fixedIn: '0.1.2',
+    foundBy: 'third-party corpus',
+    wrong: '160 份已合并的真实目录条目，24% 被判错：35 份说「不认识的键 tarball」、23 份说格式不对、1 份 CRLF 整份读不出、2 份因为缺 zh 被判 error',
+    right: '`tarball` 进键名单；支持块标量（`|`、`>`）、跨行引号标量、CRLF 与内容行里的 `词: 值`；zh 降为 warn（上游原文：只有 en 必填）',
+    lesson:
+      '四条全是「我在猜上游要什么」：`tarball` 是 contributing.md 里写着的可选字段，我照印象列键名单时漏了；块标量与跨行引号标量是合法 YAML，我为了不引依赖手写解析器，就把不支持的形状判成错——那是把自己的实现限制说成别人的错误；CRLF 那份更纯粹，`.` 不匹配 `\r`、`$` 落不到行尾，一行都读不出来却报了一排「不是键: 值」；zh 那条是把维护者的客气（「缺翻译我们的活」）当成了投稿者的义务。校准之后 160/160 零 error，剩下的 4 条 warn 都是真话。',
+    now: { kind: 'silent', input: `url: https://github.com/acme/tools/tree/main/packages/thing\nname: acme/tools#thing\ncategory: tools\ntarball: https://github.com/acme/tools/releases/download/v1.0.0/thing-1.0.0.tgz\ndescription:\n  en: >-\n    A thing that does the thing, vendored from upstream\n    only: no binaries are bundled\n  zh: '一个做那件事的东西。'\n`, rule: 'unknown-key' },
+  },
 ]
 
 export const LEDGER = {
