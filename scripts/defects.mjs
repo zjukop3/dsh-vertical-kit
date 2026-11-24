@@ -355,6 +355,30 @@ export const DEFECTS = [
       '这是同一个行锚点缺陷的第四处（resume、spec-doc、migration-guide 之后）。带 frontmatter 或语言切换行的文档，H1 在第五行左右，不带 m 的 `/^#/` 只在文件开头找。前三处都是真实文档撞出来的，这一处是静态闸扫出来的——说明「等下一个用户踩到」不是唯一的学习方式。',
     now: { kind: 'silent', input: `[English](en.md) | [简体中文](zh.md)\n\n# 插件隐私声明\n\n## 我们收集的信息\n\n只收集插件调用次数。\n\n## 使用目的\n\n改进稳定性。\n\n## 保留期限\n\n30 天。\n\n## 第三方共享\n\n不共享。\n\n## 联系我们\n\nprivacy@example.com\n\n生效日期：2026-11-01\n`, rule: 'title-missing' },
   },
+  {
+    n: 31,
+    check: 'bug-report-check',
+    rule: 'env-missing / repro-missing',
+    fixedIn: '0.1.4',
+    foundBy: 'third-party corpus',
+    wrong: '404 份真实 GitHub bug issue，只有 2% 通过：88% 报「没有环境」、86% 报「没有复现步骤」',
+    right: '量性质而不是量拼写：环境证据（版本号带语境 / Platform / commit）、可复现证据（编号步骤、命令、代码块、最小复现链接、先后动作的散文）任一即成立；段名认 `**Steps**`、`### Environment` 这类加粗与标题混写',
+    lesson:
+      '旧判据三处都在量拼写：段名只认 `#` 开头的标题（真实报告的 `**Steps**`、`### The problem` 一个都看不见）；环境只认行首的「版本：/OS：」（真实写成 `- VS Code: 1.92.0`、`core-2022.5.0b6`、`Commit: ade7f1b`）；复现只数「段名之后紧跟的编号行」（真实是编号 + 代码块 + 最小复现链接的任意组合）。88% 不是「真实报告都写坏了」，是判据在替读者挑剔写法。另外把「提交前给自己过一遍」和「看别人的报告」混成一种判据也是错的：review 模式下环境、步骤、预期/实际都只是 warn，只有「几乎没有正文」才是 error；strict 模式才是缺项即 error。',
+    now: { kind: 'silent', input: `# 隐藏的 Helpers 不出现在 HomeKit 配置里\n\n### The problem\n\n在 HomeKit 配置流程里，隐藏的 Helpers 不显示，因此不会推送到 Apple Home。已经启用的 Helpers 会出现在配置流程里；之后再隐藏它们，Apple Home 里仍然留着。\n\n### What version of Home Assistant Core has the issue?\n\ncore-2022.5.0b6\n`, rule: 'env-missing' },
+  },
+  {
+    n: 32,
+    check: 'bug-report-check',
+    rule: 'repro-missing',
+    fixedIn: '0.1.4',
+    foundBy: 'third-party corpus',
+    wrong: '只有一行标题的 `# bug` 被判「有能跑的命令」——复现证据的判据把 `^#\s` 当成了 shell 提示符',
+    right: '提示符只在代码块里算（`$`、`>`）；正文里只认反引号包住的已知命令名',
+    lesson:
+      '同一个错误的两个方向：这个分支让 `repro-missing` 对「只有标题」的报告永不触发（假阴性），而它看起来又像「认得命令行」——一条会在两个方向上都错、而且测试还绿着的规则。markdown 标题和 shell 提示符都长成 `#`，这类同形不同义的字符只能靠上下文（在不在代码块里）区分。',
+    now: { kind: 'fires', input: `# bug\n`, rule: 'repro-missing' },
+  },
 ]
 
 export const LEDGER = {

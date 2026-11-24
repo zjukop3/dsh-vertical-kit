@@ -324,7 +324,7 @@
       "noun": "缺陷报告检查 / bug 报告检查",
       "title": "缺陷报告检查清单",
       "decides": "这份 bug 报告是否交代了在哪发生、怎么触发、差在哪",
-      "description": "缺陷报告提交前的书记检查：一行能看懂的标题、环境信息、编号复现步骤、预期与实际的对照。没有编号步骤的散文不算复现步骤——散文无法重放。",
+      "description": "缺陷报告提交前的书记检查：一行能看懂的标题、环境证据（版本号/平台/commit）、可复现的证据（编号步骤、能跑的命令、代码片段、最小复现链接、写了先后动作的散文）、以及预期与实际的对照。两种模式：review（看别人的报告，只把「读不出这是 bug」算 error）与 strict（提交前给自己过一遍，缺项即 error）。",
       "rules": [
         {
           "rule": "title-missing",
@@ -332,19 +332,19 @@
         },
         {
           "rule": "env-missing",
-          "meaning": "没有环境信息（## 环境、版本：、OS：、Node：）→ error"
+          "meaning": "没有环境证据（版本号带语境、`## 环境`、`Platform: darwin`、`Commit: abc1234`）→ review 为 warn，strict 为 error"
         },
         {
           "rule": "repro-missing",
-          "meaning": "没有复现步骤标题下的编号步骤 → error"
+          "meaning": "没有任何可复现证据（编号步骤、命令、代码块、最小复现链接、先后动作的散文）→ review 仅在几乎没有正文时才是 error"
         },
         {
-          "rule": "expected-actual-missing",
-          "meaning": "预期与实际都没写 → error"
+          "rule": "expectation-unstated",
+          "meaning": "没有「预期 vs 实际」的对照 → warn；strict 下为 error"
         },
         {
           "rule": "expected-missing / actual-missing",
-          "meaning": "只写一边 → error，指出缺哪边"
+          "meaning": "只写一边 → 指出缺哪边"
         },
         {
           "rule": "repro-thin",
@@ -353,11 +353,11 @@
       ],
       "usage": [
         "npx dsh-bug-report-check report.md --json",
-        "npx dsh-bug-report-check report.md --min-steps 5"
+        "npx dsh-bug-report-check report.md --strict --min-steps 5"
       ],
       "page": "https://zjukop3.github.io/dsh-vertical-kit/bug-report-check/",
       "route": "POST /bug-report-check/api",
-      "scope": "只验书记层面，不验缺陷严重性：它验证报告说了在哪、怎么复现、差在哪；bug 是否真实存在，靠复现。"
+      "scope": "判据被 404 份真实 GitHub bug issue 校准过（vscode / kibana / pandas / TypeScript / deno / home-assistant）。旧判据只有 2% 通过：88% 报「没有环境」、86% 报「没有复现步骤」——那是判据在量拼写（只认 `#` 标题、只认行首「版本：」、只认段名下的编号行）。现在量性质：环境证据、可复现证据、坏掉的证据。两种模式分开，是因为「提交前给自己过一遍」和「看别人的报告」要的严格程度不同。"
     },
     {
       "name": "dsh-api-doc-check",

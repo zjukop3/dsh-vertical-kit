@@ -25,6 +25,7 @@ import { lintSpecDoc } from '../packages/dsh-spec-doc-check/src/index.js'
 import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 import { lintResume } from '../packages/dsh-resume-check/src/index.js'
 import { lintPrivacyNotice } from '../packages/dsh-privacy-notice-check/src/index.js'
+import { lintBugReport } from '../packages/dsh-bug-report-check/src/index.js'
 import { createServer } from 'node:http'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -49,6 +50,7 @@ const LINTERS = {
   'api-doc-check': lintApiDoc,
   'resume-check': lintResume,
   'privacy-notice-check': lintPrivacyNotice,
+  'bug-report-check': lintBugReport,
 }
 
 const ruleOf = name => name.split(' / ')[0]
@@ -82,7 +84,8 @@ test('every rule that was missing a firing path now fires on its reproducer', ()
   // Three were dead code (never reachable) and one was a false negative (a rule
   // that existed but accepted a non-answer). Both kinds must fire now.
   const dead = DEFECTS.filter(defect => defect.now.kind === 'fires')
-  assert.equal(dead.length, 4, 'three dead rules plus one false negative')
+  // 不写死条数：数字会跟着台账过期，这是这一族里最后剩下的那处手写。
+  assert.ok(dead.length >= 4, `expected at least four firing defects, found ${dead.length}`)
   for (const defect of dead) {
     const result = LINTERS[defect.check](defect.now.input)
     assert.ok(result.findings.some(finding => finding.rule === defect.now.rule),

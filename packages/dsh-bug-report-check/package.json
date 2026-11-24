@@ -1,6 +1,6 @@
 {
   "name": "dsh-bug-report-check",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Bug-report hygiene from markdown: a one-line title, the environment, numbered reproduction steps, and the expected-vs-actual pair that makes a bug a bug.",
   "type": "module",
   "main": "./src/index.js",
