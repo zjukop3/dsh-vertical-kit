@@ -106,3 +106,58 @@ test('简历正文里提到 checkpoint 这个词，不会被判成续点', () =>
   const text = '# 张三\n\n邮箱：zhang@example.com\n\n## 经历\n\n2018 - 2021 某安全公司，做过 Checkpoint 防火墙的策略迁移。\n'
   assert.ok(!lintResume(text).findings.some(f => f.rule === 'checkpoint-doc'))
 })
+
+// 2026-11-24：用三份真实中文简历（本地私有文件，内容不入仓）校准，撞出三处误报：
+// 倒序时间线被按文档顺序比较、项目经历被当成雇佣区间、`项目经历` 后面的 `\b` 让整节匹配不上。
+const REVERSED = `# 王五
+
+- 邮箱：wangwu@example.com
+
+## 工作经历
+
+**丙公司** 工程师 2017.7 - 至今
+**乙公司** 工程师 2013.11 - 2017.6
+**甲公司** 工程师 2012.4 - 2012.9
+
+## 教育经历
+
+某大学 硕士 2012.9 - 2017.3
+某大学 本科 2008.9 - 2012.6
+`
+
+const PROJECTS = `# 赵六
+
+- 邮箱：zhaoliu@example.com
+
+## 工作经历
+
+**A公司** 2020.1 - 2022.6
+
+## 项目经历
+
+- 项目甲 2021.1-2022.1
+- 项目乙 2021.6-2022.3
+`
+
+test('倒序时间线：按开始月份排序后比较，正常简历不报重叠', () => {
+  const result = lintResume(REVERSED)
+  assert.deepEqual(result.findings.filter(finding => finding.rule === 'dates-overlap'), [])
+})
+
+test('项目经历天生重叠，不当雇佣区间判', () => {
+  const result = lintResume(PROJECTS)
+  assert.deepEqual(result.findings.filter(finding => finding.rule === 'dates-overlap'), [])
+})
+
+test('真重叠仍然报：同节内、重叠超过 3 个月', () => {
+  const overlapping = `# 钱七
+
+- 邮箱：qianqi@example.com
+
+## 工作经历
+
+**A公司** 2020.1 - 2022.6
+**B公司** 2021.1 - 2023.1
+`
+  assert.ok(lintResume(overlapping).findings.some(finding => finding.rule === 'dates-overlap'))
+})

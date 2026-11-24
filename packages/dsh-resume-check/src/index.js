@@ -24,6 +24,33 @@ function toMonths(year, month) {
 }
 
 // Every date range in the document, in order, with the line it sits on.
+// 简历按节组织：教育/工作/项目。判时间线要先知道每一行属于哪一节——
+// 教育经历与工作经历之间「重叠」是常态（在职读书），项目经历更是天生重叠。
+const SECTION_MARKS = [
+  // `\b` 只对英文分词有意义：`项目经历` 后面接行尾时 `\b` 不成立（汉字不是 word 字符），
+  // 于是这一节永远匹配不上——同一个坑这个仓库里已经踩过第三次。
+  ['education', /^#{0,6}\s*(?:教育|学历|education\b)/i],
+  ['work', /^#{0,6}\s*(?:工作经历|工作经验|职业经历|experience|employment)/i],
+  ['project', /^#{0,6}\s*(?:项目经历|项目经验|projects?\b)/i],
+]
+
+export function sectionTagsOf(text) {
+  const tags = []
+  let current = 'other'
+  String(text).split('\n').forEach((line, index) => {
+    for (const [name, pattern] of SECTION_MARKS) if (pattern.test(line)) current = name
+    tags[index + 1] = current
+  })
+  return tags
+}
+
+export function sectionOf(tags, line) {
+  for (let index = Math.min(line, tags.length - 1); index > 0; index -= 1) {
+    if (tags[index]) return index
+  }
+  return 0
+}
+
 export function dateRanges(text) {
   const out = []
   text.split('\n').forEach((line, index) => {
@@ -103,13 +130,29 @@ export function lintResume(text, rules = {}) {
   }
 
   // Timeline: stints must not overlap; long gaps are informative, not defects.
-  const ranges = dateRanges(text).filter(range => range.end !== null)
-  for (let index = 1; index < ranges.length; index += 1) {
-    const previous = ranges[index - 1]
-    const current = ranges[index]
+  //
+  // 2026-11-24 用一份真实中文简历校准，这条判据报出五个 error，全是误报：
+  //   ① 简历是**倒序**写的（最新在上），按文档顺序比较「current.start < previous.end」
+  //      必然成立，于是一份正常简历被判成处处重叠；判据要先按开始月份排序。
+  //   ② 项目经历本来就互相重叠（同一段时间做几个项目），它们不是雇佣区间。
+  //   ③ 同一家公司里的转岗、兼职、顾问期本来就允许短暂重叠。
+  // 现在的判据：按开始时间排序；只在**同一节**内比较；跳过项目/教育节；重叠超过 3 个月
+  // 才算，且两边都不是 open-ended。
+  const sections = sectionTagsOf(text)
+  const allRanges = dateRanges(text).filter(range => range.end !== null)
+  const tagged = allRanges.map(range => ({ ...range, section: sections[sectionOf(sections, range.line)] ?? 'other' }))
+  const ranked = [...tagged].sort((a, b) => a.start - b.start)
+  const OVERLAP_TOLERANCE = 3
+  for (let index = 1; index < ranked.length; index += 1) {
+    const previous = ranked[index - 1]
+    const current = ranked[index]
+    if (current.section !== previous.section) continue
+    if (['project', 'education'].includes(current.section)) continue
+    // 只看「上一段没有结束」这一种：它的区间算不出来。当前段是「至今」时照常比较——
+    // 一份 2022.3 开始的「至今」压在 2021.5-2023.1 上，那是真的重叠。
     if (previous.end === 'open') continue
-    if (current.start < previous.end) {
-      add('error', 'dates-overlap', current.line, `第 ${current.line} 段经历（${current.text}）与上一段（${previous.text}）时间重叠`)
+    if (current.start < previous.end - OVERLAP_TOLERANCE) {
+      add('error', 'dates-overlap', current.line, `第 ${current.line} 段经历（${current.text}）与 ${previous.text} 重叠超过 ${OVERLAP_TOLERANCE} 个月`)
     } else if (!allowGaps && previous.end !== null && current.start - previous.end > 12) {
       add('warn', 'date-gap', current.line, `第 ${current.line} 段与上一段之间空窗 ${current.start - previous.end} 个月`)
     }
@@ -118,9 +161,9 @@ export function lintResume(text, rules = {}) {
   // An open-ended range followed by a later-STARTING closed range reads as a
   // typo. Education lines legitimately sit below the current job in the
   // document but start earlier, so the comparison is on months, not on lines.
-  for (let index = 1; index < ranges.length; index += 1) {
-    const previous = ranges[index - 1]
-    const current = ranges[index]
+  for (let index = 1; index < ranked.length; index += 1) {
+    const previous = ranked[index - 1]
+    const current = ranked[index]
     if (previous.end === 'open' && current.end !== 'open' && current.start > previous.start) {
       add('error', 'dates-order', current.line, `第 ${current.line} 段（${current.text}）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期`)
     }
@@ -133,7 +176,7 @@ export function lintResume(text, rules = {}) {
   const order = { error: 0, warn: 1 }
   findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
   const errors = findings.filter(finding => finding.level === 'error').length
-  return { ok: errors === 0, checked: { ranges: ranges.length, lines: lines.length }, errors, warnings: findings.length - errors, findings }
+  return { ok: errors === 0, checked: { ranges: ranked.length, lines: lines.length }, errors, warnings: findings.length - errors, findings }
 }
 
 export function apply(ctx, config = {}) {

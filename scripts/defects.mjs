@@ -306,6 +306,18 @@ export const DEFECTS = [
       '第五次同一个跟头。区别在于这次「接口」两个字让我更自信：API 当然有 METHOD 和路径——除非它是类库的 API。另外这条闸自己暴露了一个死规则：signature-missing 要求「成员小节 + 代码块」才算参考，于是它永远打不到「有成员小节但没有签名」的目标，等于不存在。',
     now: { kind: 'silent', input: '# Service\n\nThe base class for context services. A subclass registers itself as `ctx.<name>`.\n\n[Source](../../vendor/cordis/src/service.ts#L11)\n\n### service.name\n\n```ts cordis-catalog\npublic name!: string\n```\n\nThe service name this instance is registered under.\n', rule: 'endpoints-missing' },
   },
+  {
+    n: 27,
+    check: 'resume-check',
+    rule: 'dates-overlap',
+    fixedIn: '0.1.7',
+    foundBy: 'own real artifacts',
+    wrong: '一份真实中文简历报出 5 个 dates-overlap，全是误报',
+    right: '按开始月份排序后比较、只在同一节内比、跳过项目与教育节、重叠超过 3 个月才算',
+    lesson:
+      '简历是倒序写的（最新在上），而判据按文档顺序比较相邻两段——「current.start < previous.end」在一份倒序简历上必然成立。另外项目经历天生重叠，它们不是雇佣区间。还有一处老朋友：`项目经历` 后面的 `\\b` 永远不成立（汉字不是 word 字符），于是整节标记静默失效。',
+    now: { kind: 'silent', input: '# 王五\n\n- 邮箱：wangwu@example.com\n\n## 工作经历\n\n**丙公司** 工程师 2017.7 - 至今\n**乙公司** 工程师 2013.11 - 2017.6\n**甲公司** 工程师 2012.4 - 2012.9\n\n## 教育经历\n\n某大学 硕士 2012.9 - 2017.3\n某大学 本科 2008.9 - 2012.6\n', rule: 'dates-overlap' },
+  },
 ]
 
 export const LEDGER = {

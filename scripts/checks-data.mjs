@@ -149,11 +149,11 @@ export const CHECKS = [
     example: {
       "command": "resume-check resume-sample.md",
       "fixture": "# 李四\n\n- 邮箱：lisi..wrong@site\n- 电话：12345\n\n## 工作经历\n\n**A公司** 工程师 2020.1 - 2022.6\n**B公司** 工程师 2021.5 - 2023.1\n**C公司** 工程师 2022.3 - 至今\n**D公司** 工程师 2023.2 - 2024.1",
-      "output": "$ resume-check resume-sample.md\nerror email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）\nerror phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间\nerror dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与上一段（2020.1 - 2022.6）时间重叠\nerror dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与上一段（2021.5 - 2023.1）时间重叠\nerror dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期\nwarn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）\nfail: 4 stints, 5 errors, 1 warnings",
+      "output": "$ resume-check resume-sample.md\nerror email-invalid 第3行 第 3 行邮箱「lisi..wrong@site」不是合法形态（连续点或域缺尾）\nerror phone-invalid 第4行 第 4 行电话位数 5 不在 7-15 位之间\nerror dates-overlap 第9行 第 9 段经历（2021.5 - 2023.1）与 2020.1 - 2022.6 重叠超过 3 个月\nerror dates-overlap 第10行 第 10 段经历（2022.3 - 至今）与 2021.5 - 2023.1 重叠超过 3 个月\nerror dates-order 第11行 第 11 段（2023.2 - 2024.1）开始于「至今」的经历之后——如果是笔误请改成结束日期，如果确实是新经历请把上一段改为结束日期\nwarn education-missing 第0行 没有教育/学历信息（认得：## 教育背景、本科/硕士/博士、毕业院校）\nfail: 4 stints, 5 errors, 1 warnings",
       "exit": "1"
 },
     note: '只验书记层面，不验内容真伪：它验证文档可达、形态合法、时间自洽；内容是否诚实是面试的事。认得的日期形态：2020.3-2022.5、2020年3月-2022年5月、2020/3 ~ 2022/5、2020-03 至今。',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: { layer: 'strangers', source: '三份真实中文简历（本机私有文件；只记结构与份数，内容不入仓）', count: 3, first: '三处误报：倒序时间线按文档顺序比较（一份正常简历 5 个 error）、项目经历被当成雇佣区间、以及 `项目经历` 后面的 \\b 让整节匹配不上' },
   },
   {
     slug: 'release-notes-check',
