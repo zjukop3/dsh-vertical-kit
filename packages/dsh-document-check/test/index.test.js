@@ -11,7 +11,7 @@ const HERE = resolve(import.meta.dirname, '..')
 const ROOT = resolve(HERE, '../..')
 const SIBLING = resolve(ROOT, '../dsh-verify-kit/packages')
 
-// 这条工具的价值全压在一句话上：「31 个检查，一个都能调」。
+// 这条工具的价值全压在一句话上：「每个检查都能调」。
 // 一旦清单漏了、导出名写错、或者某个检查的签名变了，这句话就是假的，而调用方看到的
 // 只是「这个检查不认识」——比报错更没有信息量。所以每个 slug 都要真的跑一遍。
 test('清单里每个 slug 都指向一个真实存在、能跑出结果的检查', async () => {
