@@ -533,7 +533,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '愿望词表：良好/优秀/合理/友好/快速/流畅/尽量/适当/完善/稳定/高效/简洁（含英文同级词）。只要同一条里出现数字、阈值或可观测对象（状态码、字段、命令、百分比）就放行——规则只在「只剩下愿望」时才响。只验文档形状，不验方案是否正确：标准是不是错的标准、问题陈述是不是事后合理化、范围外是不是回避了难点，这些评审才能说。',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: { layer: 'strangers', source: 'DSH 自带的 52 份设计文档（47 份 subsystems + architecture / agent-lifecycle / capability-seams / tool-catalog / persistence-catalog）', count: 52, first: '四种误报：参考文档被要求写验收标准（47 份）、生成的图页被当成提案、索引页被逐条判、以及「背景/目标」这类关键词让讲概念的文档被当成提案' },
   },
   {
     slug: 'adr-check',

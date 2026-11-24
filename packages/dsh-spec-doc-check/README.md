@@ -50,6 +50,17 @@ fail: 2 criteria, 4 errors, 0 warnings
 
 Listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin).
 
+## 四种体裁
+
+「规格」不是一种文档，是四种。规则按体裁走，不按关键词走：
+
+1. **提案型规格**（要解决的问题 + 验收标准 + 范围外）：`problem-missing`、`criteria-missing`、`criteria-vague`、`out-of-scope-missing`。这是这个包最早只认的一种。
+2. **参考文档**（一个子系统一页：它是什么、搬哪些数据结构、公开哪些服务）：`summary-missing`（标题后要有一句定义）、`source-missing`（要指向它描述的实现）、`surface-missing`（要写出公开面的标识符）。DSH 自带的 47 份 `subsystems/` 就是这种——对它问「验收标准」等于问说明书。
+3. **生成的图页**（一段 mermaid + 一句说明）：只要求有标题。
+4. **索引页**（一张表，每行指向一页）：只说一句 `pointer-guide`，别的规则一律不适用。
+
+体裁由结构判：`Source:` 行、`## Service/Events/API` 节、或高密度代码标识符 ⇒ 参考文档；出现验收标准或范围外节 ⇒ 提案；有 mermaid ⇒ 图页；十个以上链接且几乎没有标识符 ⇒ 索引页。
+
 ## What it decides
 
 | rule | level | meaning |

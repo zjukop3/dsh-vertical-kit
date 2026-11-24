@@ -77,7 +77,7 @@
     "dsh-release-notes-check": "^0.3.3",
     "dsh-resume-check": "^0.1.6",
     "dsh-security-advisory-check": "^0.1.4",
-    "dsh-spec-doc-check": "^0.1.4",
+    "dsh-spec-doc-check": "^0.1.5",
     "dsh-tablelint": "^0.2.2",
     "dsh-test-report-check": "^0.1.6",
     "dsh-weekly-report-check": "^0.1.3"

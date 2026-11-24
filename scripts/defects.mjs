@@ -258,6 +258,18 @@ export const DEFECTS = [
       '规则是在两份版本升级指南（Vite、TanStack）上定的，于是「迁移指南」这四个字被我当成了一种体裁。真实生态里更常见的是单点笔记：一条行为变更一份文档。四种误报同一个毛病——按我见过的写法判，而不是按文档真实承担的角色判。',
     now: { kind: 'silent', input: '---\nkind: upgrade-guide\ndescription: x\n---\n\n# Explicit window regions\n\n## Change\n\nAfter upgrading from 0.2.2-rc.1, macOS excludes controls only inside rows.\n\n## Migration\n\n1. Inspect the overlays.\n2. Add the attribute.\n3. Load it and confirm.\n', rule: 'from-to-missing' },
   },
+  {
+    n: 23,
+    check: 'spec-doc-check',
+    rule: 'criteria-missing / out-of-scope-missing / problem-missing',
+    fixedIn: '0.2.0',
+    foundBy: 'third-party corpus',
+    wrong: 'DSH 自带的 52 份设计文档：47 份被判「没有验收标准」、47 份「没有范围外」、44 份「没有背景」',
+    right: '四种体裁分开判：提案型规格、参考文档、生成的图页、索引页。参考文档要求「说清是什么 / 指向实现 / 写出公开面」',
+    lesson:
+      '「规格」被我当成了一种文体，而生态里多数设计文档是**参考文档**：一个子系统一页，讲它是什么、搬哪些数据结构。对它要求验收标准，等于对说明书要求验收标准。另有一个更细的错：用「背景/目标」这类**关键词**判提案，于是叫 Background Job Runtime 的参考页被当成有背景一节的提案。',
+    now: { kind: 'silent', input: '# The approval seam\n\nEnglish | [中文](approval.zh.md)\n\nThe approval seam answers one question: may this specific action proceed? It owns the `ctx.approval` dispatch service and the `approval/request` waterfall.\n\nSource: [`packages/interaction/user-approval/src/index.ts`](../../packages/interaction/user-approval/src/index.ts)\n\n## The service\n\n`ctx.approval` exposes `request` and `onRequest`.\n', rule: 'criteria-missing' },
+  },
 ]
 
 export const LEDGER = {
