@@ -264,7 +264,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '只验书记层面，不验接口正确性：它验证文档写了方法+路径、有示例、点了鉴权、说了失败长什么样；接口是否真那样行为，靠契约测试。',
-    corpus: { layer: 'own', source: '本项目 host 路由的接口参考', count: 1, first: '文档写对了，但探针发现六处形状写错——那是文档的错，不是检查的错' },
+    corpus: { layer: 'strangers', source: '本项目的接口参考 + DSH 自带的 8 份（6 份 cordis-api 库参考 + api-gateway 架构参考 + tool-catalog 目录表）', count: 9, first: '三种误报：库参考（一个类、成员、签名块）被要求写 METHOD 路径与鉴权；架构参考被要求写端点；目录表被逐条当成接口' },
   },
   {
     slug: 'test-report-check',

@@ -22,6 +22,7 @@ import { lintTables } from '../../dsh-verify-kit/packages/dsh-tablelint/src/inde
 import { lintPerfReport } from '../packages/dsh-perf-report-check/src/index.js'
 import { lintMigrationGuide } from '../packages/dsh-migration-guide-check/src/index.js'
 import { lintSpecDoc } from '../packages/dsh-spec-doc-check/src/index.js'
+import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 import { createServer } from 'node:http'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -43,6 +44,7 @@ const LINTERS = {
   'perf-report-check': lintPerfReport,
   'migration-guide-check': lintMigrationGuide,
   'spec-doc-check': lintSpecDoc,
+  'api-doc-check': lintApiDoc,
 }
 
 const ruleOf = name => name.split(' / ')[0]

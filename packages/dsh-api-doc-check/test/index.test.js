@@ -84,3 +84,53 @@ test('分页里的 token 不算鉴权说明', () => {
   assert.ok(lintApiDoc(text).findings.some(f => f.rule === 'auth-missing'), '只有分页 token 不该算鉴权')
   assert.ok(!lintApiDoc(text.replace('错误：4xx。', '使用 Authorization: Bearer <token>。错误：4xx。')).findings.some(f => f.rule === 'auth-missing'))
 })
+
+// 2026-11-24：拿 DSH 自带的接口类文档 8 份（6 份 cordis-api + api-gateway + tool-catalog）校准。
+// 「接口文档」被我当成一种：全部要求「METHOD + 路径 + 鉴权」，而其中六份是**库参考**
+// （一个类、它的成员、每个成员的签名块），一份是**架构参考**，一份是**目录表**。
+const LIBRARY = `# Service
+
+The base class for context services. A subclass registers itself as \`ctx.<name>\`.
+
+[Source](../../vendor/cordis/src/service.ts#L11)
+
+### service.name
+
+\`\`\`ts cordis-catalog
+public name!: string
+\`\`\`
+
+The service name this instance is registered under.
+`
+
+test('库参考：不要求 METHOD 路径与鉴权，只问定义、形状、实现出处', () => {
+  const result = lintApiDoc(LIBRARY)
+  assert.equal(result.checked.genre, 'library')
+  assert.deepEqual(result.findings.map(finding => finding.rule), [])
+})
+
+test('库参考缺定义/缺形状/缺出处时分别报得出', () => {
+  const noSummary = lintApiDoc(LIBRARY.replace(/^The base class[^\n]*$/m, ''))
+  assert.ok(noSummary.findings.some(finding => finding.rule === 'summary-missing'))
+  // 没有签名也没有标识符、但**有成员小节**的参考页：这才是不该被放过的那种。
+  const noShape = lintApiDoc('# X\n\n一句定义，写了四十个字符以上的说明文字用来占位，但是没有形状也没有标识符。\n\n### a\n\n### b\n')
+  assert.ok(noShape.findings.some(finding => finding.rule === 'signature-missing'))
+  const noSource = lintApiDoc(LIBRARY.replace(/^\[Source\].*$/m, ''))
+  assert.ok(noSource.findings.some(finding => finding.rule === 'source-missing'))
+})
+
+test('目录表只给一句 reference-catalog', () => {
+  const table = ['# Catalog', '', '| Name | Description |', '| --- | --- |', ...Array.from({ length: 9 }, (_, i) => `| tool-${i} | does ${i} |`)].join('\n')
+  const result = lintApiDoc(table)
+  assert.equal(result.checked.genre, 'catalog')
+  assert.deepEqual(result.findings.map(finding => finding.rule), ['reference-catalog'])
+  assert.equal(result.ok, true)
+})
+
+test('HTTP 接口文档仍是 http 体裁：端点、鉴权、错误形状照旧判', () => {
+  const http = '# API\n\n## 鉴权\n\nBearer token。\n\n```\nGET /v1/items\n```\n\n错误返回 4xx。\n'
+  const result = lintApiDoc(http)
+  assert.equal(result.checked.genre, 'http')
+  const rules = result.findings.map(finding => finding.rule)
+  assert.ok(!rules.includes('reference-catalog'))
+})

@@ -17,11 +17,73 @@ export function endpoints(text) {
   return out
 }
 
+// 第二体裁：**库/类型参考**（DSH 的 cordis-api/：一个类、它的成员、每个成员的签名块）。
+// 它不是 HTTP 接口——问它「GET 哪个路径」等于问一本类库手册它的 URL。判据：有签名块
+// （```ts 里出现 class/interface/function/public/declare），且没有 METHOD + 路径。
+const SIGNATURE_BLOCK = /```(?:ts|tsx|typescript|js)\b[\s\S]{0,600}?\b(?:class|interface|function|public|declare|export)\b/i
+const ENDPOINT_LINE = /^\s*(?:GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s+\//m
+
+export function isLibraryReference(text) {
+  const source = String(text)
+  if (ENDPOINT_LINE.test(source)) return false
+  // 成员级参考（cordis-api 的每份都是这种）：`### member` + 签名块。
+  const members = (source.match(/^###\s+\S/gm) ?? []).length
+  const fences = (source.match(/^```/gm) ?? []).length / 2
+  // 架构参考（api-gateway.md）：正文 + 两个以上代码块，但没有成员小节。
+  // 列表型参考（inherited.md）：一条一条列成员并指向源码文件，没有签名块也没有成员小节。
+  const sourceLinks = (source.match(/\]\([^)]*\.(?:ts|tsx|js)\b/g) ?? []).length
+  const bullets = (source.match(/^-\s+`/gm) ?? []).length
+  // 成员小节本身就是强信号：一份列了两个以上成员、却没有签名也没有标识符的参考页，
+  // 正是要报 signature-missing 的那种——第一版要求「成员小节 + 代码块」才算参考，
+  // 于是这条规则永远打不到它该打的目标。
+  return members >= 2
+    || SIGNATURE_BLOCK.test(source)
+    || (fences >= 2 && /\bthe\b[\s\S]{0,80}\bdescribes\b/i.test(source))
+    || (sourceLinks >= 3 && bullets >= 8)
+}
+
+// 第三体裁：**目录表**（DSH 的 tool-catalog.md：一张表列全部工具，生成、不许手改）。
+export function isCatalogPage(text) {
+  const source = String(text)
+  const rows = (source.match(/^\|\s/gm) ?? []).length
+  return rows >= 8 && !ENDPOINT_LINE.test(source)
+}
+
 export function lintApiDoc(text, rules = {}) {
   const minEndpoints = rules.minEndpoints ?? 1
   const findings = []
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
   const lines = text.split('\n')
+
+  if (isCatalogPage(text)) {
+    add('warn', 'reference-catalog', 1, '这是一份目录表（逐行列出条目），不是一份接口文档——每一行该去它自己的参考页')
+    const orderC = { error: 0, warn: 1 }
+    findings.sort((a, b) => orderC[a.level] - orderC[b.level] || a.line - b.line)
+    return { ok: true, checked: { endpoints: 0, lines: lines.length, genre: 'catalog' }, errors: 0, warnings: findings.length, findings }
+  }
+
+  if (isLibraryReference(text)) {
+    // 库参考的三条：自称是什么（标题下一段）、有签名块、指向实现。
+    // 定义段只在第一个成员小节**之前**找：否则删掉定义之后，成员说明会被当成定义，
+    // summary-missing 永不响（spec-doc 那边踩过同一个坑）。
+    const headOnly = String(text).split(/\n#{2,6}\s/)[0]
+    const body = headOnly.split(/\n\s*\n/).map(block => block.trim())
+    const BOILER = /^(?:English\s*\||<!--|```|\[Source|Source:|源码：)/
+    const firstProse = body.find(block => block && !block.startsWith('#') && !BOILER.test(block)) ?? ''
+    if (firstProse.length < 40) add('error', 'summary-missing', 0, '标题后面没有一句「这个东西是什么」——库参考的第一段就是它的定义')
+    // 「看得见形状」有两条路：代码块，或者行内标识符（inherited.md 用 `ctx.on` 这种
+    // 一条条列出成员并链到源码）。只认代码块会把列表型参考判成空文档。
+    const anyFence = (String(text).match(/^```/gm) ?? []).length / 2
+    const inlineIdents = (String(text).match(/`[A-Za-z_$][\w.$()/-]*`/g) ?? []).length
+    if (anyFence === 0 && inlineIdents < 5) add('error', 'signature-missing', 0, '既没有代码块也没有行内标识符——读者看不到它长什么样（签名、示例、成员名都行）')
+    if (!/(?:Source|源码|实现见)[:：\s]|\]\([^)]*\.(?:ts|tsx|js)\b/.test(String(text))) {
+      add('warn', 'source-missing', 0, '没有指向实现的路径（认得：[Source](../../vendor/…/service.ts)）——库参考不指明它在描述哪份代码')
+    }
+    const order = { error: 0, warn: 1 }
+    findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
+    const errors = findings.filter(finding => finding.level === 'error').length
+    return { ok: errors === 0, checked: { endpoints: 0, lines: lines.length, genre: 'library' }, errors, warnings: findings.length - errors, findings }
+  }
 
   const eps = endpoints(text)
   if (eps.length < minEndpoints) {
@@ -57,7 +119,7 @@ export function lintApiDoc(text, rules = {}) {
   const order = { error: 0, warn: 1 }
   findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
   const errors = findings.filter(finding => finding.level === 'error').length
-  return { ok: errors === 0, checked: { endpoints: eps.length, fences: Math.floor(fences / 2) }, errors, warnings: findings.length - errors, findings }
+  return { ok: errors === 0, checked: { endpoints: eps.length, fences: Math.floor(fences / 2), lines: lines.length, genre: 'http' }, errors, warnings: findings.length - errors, findings }
 }
 
 export function apply(ctx, config = {}) {

@@ -294,6 +294,18 @@ export const DEFECTS = [
       '同一个跟头第四次：把「写给人照着做的东西」当成一种。cookbook 里往 monorepo 加一个包，回滚就是 git checkout，没有生产可炸；而 adding-a-tool.md 是契约参考，按形态分节，不按步骤分节。前两种判据我用「有没有 monorepo 路径 + 编号步骤」与「四个以上小节 + 零步骤」区分，都是结构，不是关键词。',
     now: { kind: 'silent', input: `# Cookbook: adding a workspace package\n\n## 1. Create the package\n\nAdd \`packages/my-package/package.json\`.\n\n## 2. Register it\n\nEdit \`pnpm-workspace.yaml\`.\n\n## 3. Write the README\n\nDescribe what it owns.\n`, rule: 'prereq-missing' },
   },
+  {
+    n: 26,
+    check: 'api-doc-check',
+    rule: 'endpoints-missing / auth-missing / examples-missing',
+    fixedIn: '0.1.5',
+    foundBy: 'third-party corpus',
+    wrong: 'DSH 自带的 8 份接口类文档：6 份 cordis-api 库参考被判「没有端点、没有鉴权」；tool-catalog.md 被判「没有端点」',
+    right: '三种体裁：HTTP 接口（端点+鉴权+错误形状）、库/架构参考（定义+形状+实现出处）、目录表（一句 reference-catalog）',
+    lesson:
+      '第五次同一个跟头。区别在于这次「接口」两个字让我更自信：API 当然有 METHOD 和路径——除非它是类库的 API。另外这条闸自己暴露了一个死规则：signature-missing 要求「成员小节 + 代码块」才算参考，于是它永远打不到「有成员小节但没有签名」的目标，等于不存在。',
+    now: { kind: 'silent', input: '# Service\n\nThe base class for context services. A subclass registers itself as `ctx.<name>`.\n\n[Source](../../vendor/cordis/src/service.ts#L11)\n\n### service.name\n\n```ts cordis-catalog\npublic name!: string\n```\n\nThe service name this instance is registered under.\n', rule: 'endpoints-missing' },
+  },
 ]
 
 export const LEDGER = {
