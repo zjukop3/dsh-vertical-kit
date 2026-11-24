@@ -25,7 +25,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,21 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
-      - uses: actions/deploy-pages@v4
+      # 第一次部署偶尔报「Found 0 artifact(s)」——同日 5 次里 2 次这样，日志自己
+      # 都建议「稍后重试」。一个静态站点不该因为一次抓不到 artifact 就停在旧版本，
+      # 所以失败后等 20 秒再试一次；重试那一步没有 continue-on-error，两次都失败时
+      # job 才会真的红。
+      - name: Deploy Pages (first attempt)
         id: deployment
+        continue-on-error: true
+        uses: actions/deploy-pages@v4
+      - name: Wait before retry
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+      - name: Deploy Pages (retry)
+        id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
       - name: Notify IndexNow about deployed URLs
         id: indexnow
         continue-on-error: true
