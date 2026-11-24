@@ -23,7 +23,9 @@ export function titleOf(text) {
   const source = String(text).replace(/^\uFEFF/, '')
   const front = source.match(/^---\r?\n([\s\S]*?)\r?\n---/)
   if (front && /^title:\s*\S+/m.test(front[1])) return 'frontmatter'
-  if (/^#\s+\S/.test(source)) return 'heading'
+  // 一行锚点必须带 m：带 frontmatter 的文档第一行是 `---`，H1 在第五行左右，
+  // `/^#/` 不带 m 永远不匹配（resume、spec-doc、migration-guide 三处都踩过，这是第四处）。
+  if (/^#\s+\S/m.test(source)) return 'heading'
   return null
 }
 

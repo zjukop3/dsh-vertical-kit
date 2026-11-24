@@ -1,6 +1,6 @@
 {
   "name": "dsh-onboarding-check",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "description": "Onboarding doc hygiene: what must be installed first, a pasteable command, what success looks like, where to ask when it fails, and how long it takes — a doc with no time estimate does not get started.",
   "type": "module",
   "main": "./src/index.js",

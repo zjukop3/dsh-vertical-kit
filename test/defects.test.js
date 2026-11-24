@@ -24,6 +24,7 @@ import { lintMigrationGuide } from '../packages/dsh-migration-guide-check/src/in
 import { lintSpecDoc } from '../packages/dsh-spec-doc-check/src/index.js'
 import { lintApiDoc } from '../packages/dsh-api-doc-check/src/index.js'
 import { lintResume } from '../packages/dsh-resume-check/src/index.js'
+import { lintPrivacyNotice } from '../packages/dsh-privacy-notice-check/src/index.js'
 import { createServer } from 'node:http'
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -47,6 +48,7 @@ const LINTERS = {
   'spec-doc-check': lintSpecDoc,
   'api-doc-check': lintApiDoc,
   'resume-check': lintResume,
+  'privacy-notice-check': lintPrivacyNotice,
 }
 
 const ruleOf = name => name.split(' / ')[0]

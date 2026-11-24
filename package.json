@@ -10,14 +10,15 @@
   "scripts": {
     "test": "node --test packages/*/test/*.test.js test/*.test.js",
     "audit:links": "node scripts/audit-site-links.mjs",
-    "check": "npm run audit:links && npm run audit:packages && npm run audit:rules && node scripts/sync-example-output.mjs --check && node scripts/sync-locales.mjs --check && node scripts/sync-icons.mjs --check && node scripts/sync-readme-install.mjs --check && node scripts/sync-agent-tools.mjs --check && node scripts/sync-suite.mjs --check",
+    "check": "npm run audit:links && npm run audit:packages && npm run audit:rules && npm run audit:regex && node scripts/sync-example-output.mjs --check && node scripts/sync-locales.mjs --check && node scripts/sync-icons.mjs --check && node scripts/sync-readme-install.mjs --check && node scripts/sync-agent-tools.mjs --check && node scripts/sync-suite.mjs --check",
     "audit:packages": "node scripts/audit-packages.mjs",
     "audit:rules": "node scripts/audit-rules.mjs",
     "push:verified": "node scripts/push-verified.mjs",
     "audit:versions": "node scripts/audit-versions.mjs",
     "audit:mirror": "node scripts/audit-mirror.mjs",
     "sync:icons": "node scripts/sync-icons.mjs",
-    "sync:readme-install": "node scripts/sync-readme-install.mjs"
+    "sync:readme-install": "node scripts/sync-readme-install.mjs",
+    "audit:regex": "node scripts/audit-regex-assumptions.mjs"
   },
   "license": "MIT",
   "author": "zjukop3",

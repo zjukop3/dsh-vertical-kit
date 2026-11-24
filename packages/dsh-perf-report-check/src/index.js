@@ -31,7 +31,7 @@ export const LOAD =
 // Latency as a distribution: at least one percentile, or p50/p95/p99 pair.
 // 一个数字不算分布：要有分位、有吞吐、或者明确说了「N 次取中位数」。
 export const LATENCY =
-  /(?:p\d{2,3}|百分位|分位|percentile)[^\n]{0,24}\d|\b\d+(?:\.\d+)?\s*(?:ms|毫秒|s)\b[^\n]{0,24}(?:p\d{2,3}|分位)|(?:median|中位数|均值|平均|mean)[^\n]{0,24}\d+(?:\.\d+)?\s*(?:ms|毫秒|s\b)|median[s]?[^\n]{0,16}(?:of\s*)?\d+\s*(?:[a-z]+\s+)?(?:runs?|reps?|samples?)|(?:best|worst|fastest|slowest)[^\n]{0,16}\d+(?:\.\d+)?\s*(?:ms|毫秒|s\b)|\d+(?:\.\d+)?\s*(?:ops|req|files|it|iterations?|rows)\/s|\d+\s*(?:-run|runs?|reps?)\s*(?:median|medians|med\b)/i
+  /(?:p\d{2,3}|百分位|分位|percentile)[^\n]{0,24}\d|\b\d+(?:\.\d+)?\s*(?:ms|毫秒|s)\b[^\n]{0,24}(?:p\d{2,3}|分位)|(?:median|中位数|均值|平均|mean)[^\n]{0,24}\d+(?:\.\d+)?\s*(?:ms|毫秒|s\b)|median[s]?[^\n]{0,16}(?:of\s*)?\d+\s*(?:[a-z]+\s+)?(?:runs?|reps?|samples?)|(?:best|worst|fastest|slowest)[^\n]{0,16}\d+(?:\.\d+)?\s*(?:ms|毫秒|s\b)|\d+(?:\.\d+)?\s*(?:ops|req|files|it|iterations?|rows)\/s|\d+\s*(?:-run|runs?|reps?)\s*(?:median|medians|med\b)/i // cjk-branch-ok: 毫秒分支后面要求「分位在附近」，而「p95 120 毫秒」由第一条分支（分位→数字）覆盖；英文 ms|s 也要求分位，无行为差异
 
 const ENV = heading('环境|测试环境|配置|机器|硬件|environment|setup|configuration')
 // 真实报告写平台名与线程数：「Point-in-time measurement on PCWIN64, 8 compute threads」。

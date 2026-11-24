@@ -2,9 +2,10 @@
 // exposed it, what it used to say, and what it says now.
 //
 // This file exists because a project that only reports its features is selling
-// something. The interesting claim here is not "22 checks"; it is "17 rules were
-// measuring a spelling instead of the property, here is each one, and here is the
-// test that keeps it fixed."
+// something. The interesting claim here is not the check count; it is "some of
+// these rules were measuring a spelling instead of the property — here is each
+// one, the input that exposed it, and the test that keeps it fixed." The count
+// lives in LEDGER.total, computed from the list, so this sentence cannot rot."
 //
 // `now` is executable: test/defects.test.js imports this list and asserts each
 // entry against the current code, so a page generated from it cannot describe
@@ -317,6 +318,42 @@ export const DEFECTS = [
     lesson:
       '简历是倒序写的（最新在上），而判据按文档顺序比较相邻两段——「current.start < previous.end」在一份倒序简历上必然成立。另外项目经历天生重叠，它们不是雇佣区间。还有一处老朋友：`项目经历` 后面的 `\\b` 永远不成立（汉字不是 word 字符），于是整节标记静默失效。',
     now: { kind: 'silent', input: '# 王五\n\n- 邮箱：wangwu@example.com\n\n## 工作经历\n\n**丙公司** 工程师 2017.7 - 至今\n**乙公司** 工程师 2013.11 - 2017.6\n**甲公司** 工程师 2012.4 - 2012.9\n\n## 教育经历\n\n某大学 硕士 2012.9 - 2017.3\n某大学 本科 2008.9 - 2012.6\n', rule: 'dates-overlap' },
+  },
+  {
+    n: 28,
+    check: 'handover-check',
+    rule: 'access-empty',
+    fixedIn: '0.2.6',
+    foundBy: 'rules audit',
+    wrong: '交接单的账号段写着「阿里云：只读」，被判「有账号段但一条具体账号都没写」',
+    right: '英文分支的 \b 只包英文别名，中文分支（阿里云/腾讯云/数据库/飞书/钉钉）单独一条不带 \b',
+    lesson:
+      '这条不是靠读文档发现的，是靠一个静态闸扫出来的：`(?:…|阿里云|…)\b` 里的 \b 要求下一个字符是 ASCII 词字符，而中文后面跟的是「：」——那条分支从写下那天起就没匹配过一次。闸只报嫌疑，是不是真缺陷要拿一份文档验证：同一轮它还指着 perf-report 的 `(?:ms|毫秒|s)\b`，但那条分支有分位兜着，改完之后行为差别只在一种我编得出来的句子上——所以那处回滚了。闸是筛子，不是判决书。',
+    now: { kind: 'silent', input: `# 交接单\n\n交接人：张三\n接收人：李四\n交接日期：2026-11-19\n\n## 待办\n\n1. 迁移数据\n2. 交接域名\n3. 整理文档\n\n## 账号与权限\n\n阿里云：只读\n\n## 签字确认\n\n已确认\n`, rule: 'access-empty' },
+  },
+  {
+    n: 29,
+    check: 'onboarding-check',
+    rule: 'verify-missing',
+    fixedIn: '0.3.7',
+    foundBy: 'rules audit',
+    wrong: '任务型指南最后写了「确认：日志里出现 proxy 字样」，被判「没有怎么知道成了的一句」',
+    right: '\b 只包英文（confirm/verify/check that/should see/you should），中文（确认/验证/即成功/说明成功）单独一条',
+    lesson:
+      '同一个 \b，同一个位置，第 N 次。「确认」后面接冒号是最常见的中文写法，而冒号不是词字符，于是整条中文分支死掉——文档写对了，判据说没写。静态闸的价值在于它一次把这一族全指出来，而不是等下一份真实文档撞上。',
+    now: { kind: 'silent', input: `# 让 DSH 走 HTTP 代理\n\n## 1. 导出变量\n\n在 shell 里设置 \`HTTPS_PROXY\`。\n\n## 2. 确认\n\n确认：日志里出现 proxy 字样。\n`, rule: 'verify-missing' },
+  },
+  {
+    n: 30,
+    check: 'privacy-notice-check',
+    rule: 'title-missing',
+    fixedIn: '0.1.5',
+    foundBy: 'rules audit',
+    wrong: '开头是「[English](en.md) | [简体中文](zh.md)」的隐私声明，被判「没有标题」',
+    right: '`/^#\s+\S/m`——行锚点要带 m，H1 不在第一行也算标题',
+    lesson:
+      '这是同一个行锚点缺陷的第四处（resume、spec-doc、migration-guide 之后）。带 frontmatter 或语言切换行的文档，H1 在第五行左右，不带 m 的 `/^#/` 只在文件开头找。前三处都是真实文档撞出来的，这一处是静态闸扫出来的——说明「等下一个用户踩到」不是唯一的学习方式。',
+    now: { kind: 'silent', input: `[English](en.md) | [简体中文](zh.md)\n\n# 插件隐私声明\n\n## 我们收集的信息\n\n只收集插件调用次数。\n\n## 使用目的\n\n改进稳定性。\n\n## 保留期限\n\n30 天。\n\n## 第三方共享\n\n不共享。\n\n## 联系我们\n\nprivacy@example.com\n\n生效日期：2026-11-01\n`, rule: 'title-missing' },
   },
 ]
 

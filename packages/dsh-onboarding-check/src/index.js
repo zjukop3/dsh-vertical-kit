@@ -125,7 +125,8 @@ export function lintOnboarding(text, rules = {}) {
     // 任务型指南的体裁判据已经是「至少两步」，所以这里的两步不算薄；只有 0–1 步
     // （靠小节数或引用块进来的）才提醒。第一版写成 <3，把刚够格的文档判成步骤太少。
     if (steps < 2) add('warn', 'steps-thin', 1, `只有 ${steps} 步——任务型指南要能被照着做完`)
-    if (!/\b(?:confirm|verify|check that|should see|you should|即成功|说明成功|确认|验证)\b/i.test(String(text))) {
+    // 英文分支带 \b，中文分支不带：`确认：` 的冒号不是 ASCII 词字符，带 \b 就永远不匹配。
+    if (!/\b(?:confirm|verify|check that|should see|you should)\b|(?:即成功|说明成功|确认|验证)/i.test(String(text))) {
       add('warn', 'verify-missing', 0, '没有「怎么知道成了」的一句（认得：confirm、verify、确认、即成功）——做完无法自检')
     }
     return finishOnboarding(findings, { blocks: earlyBlocks, genre: 'task-guide', steps })

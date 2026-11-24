@@ -23,7 +23,9 @@ const ITEM = /^\s*(?:\d+[.、)]|[-*+])\s+\S/m
 const ACCOUNTS_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:账号|帐号|权限|凭证|密钥|access|credential|accounts?|permissions?)/i
 const ACCOUNTS_LINE = /^[^\n]*(?:账号[：:]|帐号[：:]|权限[：:]|密钥[：:]|credentials?[：:]|access[：:\s])/im
 // A named account or permission, or an explicit statement that there are none.
-const ACCOUNT_ENTRY = /\b[\w.@-]+@[\w.-]+\.\w+|(?:GitHub|GitLab|npm|AWS|阿里云|腾讯云|Jenkins|VPN|SSH|数据库|admin|root|CI|Grafana|Slack|飞书|钉钉)\b|(?:账号|权限|密钥|token|secret)/i
+// 英文与中文分支必须拆开：`(...|数据库|...)` 后面的 \b 要求下一个字符是 ASCII 词字符，
+// 而中文文本里「数据库：」的冒号不是——那条分支于是永远不匹配。静态闸逮到的。
+const ACCOUNT_ENTRY = /\b[\w.@-]+@[\w.-]+\.\w+|\b(?:GitHub|GitLab|npm|AWS|Jenkins|VPN|SSH|admin|root|CI|Grafana|Slack)\b|(?:阿里云|腾讯云|数据库|飞书|钉钉)|(?:账号|权限|密钥|token|secret)/i
 const NOTHING_TO_HAND_OVER = /(?:无账号|无权限|没有账号|没有需要交接的账号|no accounts|no credentials|nothing to hand over)/i
 const PENDING_HEADING = /(?:^|\n)#{1,6}[^\n]*(?:未完成|待办|遗留|风险|pending|open items|known issues|risks)/i
 const PENDING_LINE = /^[^\n]*(?:未完成[：:]|待办[：:]|遗留[：:]|pending[：:\s]|open items[：:\s])/im
