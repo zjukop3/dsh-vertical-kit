@@ -1,6 +1,6 @@
 {
   "meta": {
     "title": "插件目录条目检查清单",
-    "description": "提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。"
+    "description": "提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来；`--dir data/plugins` 整目录跑，抓单文件看不见的重复 url。"
   }
 }

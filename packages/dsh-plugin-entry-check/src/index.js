@@ -9,7 +9,7 @@
 // CATEGORIES 与文件名规则在测试里各有两条断言（该收的收、该拒的拒）。
 
 import { load } from 'js-yaml'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 export const CATEGORIES = [
@@ -386,6 +386,68 @@ export function checkEntryAgainstRepo(text, repoDir, options = {}) {
     warnings,
     findings,
     checked: { ...base.checked, repoChecked: (typeof repoDir === 'string' ? packageDir.replace(repoDir, '.') : packageDir).slice(0, 80) },
+  }
+}
+
+
+// --- 整目录模式 ---------------------------------------------------------------
+// 单文件检查回答「我这条会不会被打回」；整目录检查回答维护者的问题：
+// 「这批条目里有没有互相冲突的（同一个 url 两份）、哪些规则在整批上高频触发」。
+// 12960 份条目的目录里，跨条目的错只有单文件看不见的那种，所以这一层必须单独有。
+export function checkEntryDirectory(dir, options = {}) {
+  if (!existsSync(dir)) throw new Error(`目录不存在：${dir}`)
+  const files = readdirSync(dir).filter(name => /\.ya?ml$/i.test(name)).sort()
+  const entries = []
+  const byRule = new Map()
+  const byUrl = new Map()  // url → [files]
+  const perFile = []
+  let errors = 0
+  let warnings = 0
+  // 第一遍只收 url：重复 url 要在**每一份**涉及的条目上都报出来。只报「后一份」会让
+  // 作者以为自己是先来的那个，而去改别人的文件。
+  const urlOwners = new Map()
+  for (const file of files) {
+    try {
+      const { fields } = parseEntry(readFileSync(join(dir, file), 'utf8'))
+      const url = String(fields.get('url') ?? '').trim()
+      if (url) urlOwners.set(url, [...(urlOwners.get(url) ?? []), file])
+    } catch {
+      // 读不出来或解析不了的，留给第二遍按正常规则报。
+    }
+  }
+
+  for (const file of files) {
+    // 读不出来是环境问题，不是条目问题：直接抛，让 CLI 以 exit 2 说清楚，
+    // 而不是把它混成一条「规则」——那会让规则表里多一条永远只在磁盘坏掉时才出现的规则。
+    const text = readFileSync(join(dir, file), 'utf8')
+    const result = lintPluginEntry(text, { filename: file })
+    const findings = [...result.findings]
+    const { fields } = parseEntry(text)
+    const url = String(fields.get('url') ?? '').trim()
+    if (url) {
+      const owners = urlOwners.get(url) ?? []
+      if (owners.length > 1) {
+        const others = owners.filter(other => other !== file).join(', ')
+        findings.push({ level: 'error', rule: 'duplicate-url', line: 0, message: `url 同时出现在 ${others}——同一份工作在一页里会重复计数` })
+      }
+    }
+    for (const finding of findings) byRule.set(finding.rule, (byRule.get(finding.rule) ?? 0) + 1)
+    const fileErrors = findings.filter(finding => finding.level === 'error').length
+    errors += fileErrors
+    warnings += findings.length - fileErrors
+    perFile.push({ file, findings })
+    entries.push({ file, url })
+  }
+  const ruleRows = [...byRule].sort((a, b) => b[1] - a[1]).map(([rule, count]) => ({ rule, count }))
+  return {
+    ok: errors === 0,
+    dir,
+    entries: entries.length,
+    errors,
+    warnings,
+    rules: ruleRows,
+    // 默认只回有问题的文件：12960 份里绝大多数是干净的，全列出来没人看。
+    files: options.all ? perFile : perFile.filter(row => row.findings.length > 0),
   }
 }
 

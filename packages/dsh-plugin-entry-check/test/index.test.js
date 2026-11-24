@@ -342,3 +342,41 @@ test('上游会拒的形状，本地也要拒', () => {
   const goodTarball = base('tarball: https://github.com/acme/repo/releases/download/v1.0.0/repo-1.0.0.tgz\n')
   assert.ok(!lintPluginEntry(goodTarball).findings.some(f => f.rule === 'tarball-shape'))
 })
+
+// 整目录模式：单文件看不见的那类错（同一个 url 两份）只能在这一层发现。
+// 判据与上游 validateEntries 的 duplicate url 一条对齐。
+test('--dir 模式：整目录跑、按规则汇总、抓重复 url', async () => {
+  const { checkEntryDirectory } = await import('../src/index.js')
+  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs')
+  const { tmpdir } = await import('node:os')
+  const { join } = await import('node:path')
+  const dir = mkdtempSync(join(tmpdir(), 'entry-dir-'))
+  const entry = (owner, repo, category = 'tools') =>
+    `url: https://github.com/${owner}/${repo}\nname: ${owner}/${repo}\ncategory: ${category}\ndescription:\n  en: 'A thing that does one thing, stated in a single line.'\n  zh: '一个只做一件事的东西，一句话说清楚。'\n`
+  try {
+    writeFileSync(join(dir, 'acme__one.yml'), entry('acme', 'one'))
+    writeFileSync(join(dir, 'acme__two.yml'), entry('acme', 'two'))
+    // 同一个 url 出现在两个文件里——单文件检查永远看不出来
+    writeFileSync(join(dir, 'acme__one-copy.yml'), entry('acme', 'one'))
+    writeFileSync(join(dir, 'acme__bad.yml'), 'url: nope\nname: acme/bad\ncategory: tools\ndescription:\n  en: \'x\'\n')
+    const result = checkEntryDirectory(dir)
+    assert.equal(result.entries, 4)
+    assert.equal(result.ok, false)
+    const duplicate = result.files.flatMap(row => row.findings).find(finding => finding.rule === 'duplicate-url')
+    assert.ok(duplicate, JSON.stringify(result.rules))
+    // 三份有问题：重复的那两份（各报一条）+ 一条 url 写坏的
+    assert.equal(result.files.length, 3, '只列有问题的文件：干净的那份不该出现')
+    const duplicateFiles = result.files.filter(row => row.findings.some(finding => finding.rule === 'duplicate-url'))
+    assert.equal(duplicateFiles.length, 2, '重复 url 要在每一份涉及的条目上都说')
+    assert.ok(result.rules.some(row => row.rule === 'duplicate-url'))
+    // 空目录：0 份条目、0 error（整目录模式在没有任何条目的地方也要说人话）。
+    const { mkdirSync } = await import('node:fs')
+    mkdirSync(join(dir, 'empty'))
+    const empty = checkEntryDirectory(join(dir, 'empty'))
+    assert.deepEqual({ entries: empty.entries, errors: empty.errors, files: empty.files.length }, { entries: 0, errors: 0, files: 0 })
+    // 目录不存在：抛给人看的错，而不是静默返回空结果。
+    assert.throws(() => checkEntryDirectory(join(dir, 'nope')), /目录不存在/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

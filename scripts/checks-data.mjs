@@ -754,7 +754,7 @@ export const CHECKS = [
     cli: 'plugin-entry-check',
     noun: '目录条目检查 / 收录条目检查',
     title: '插件目录条目检查清单',
-    description: '提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来。',
+    description: '提交到 awesome-dsh-plugin 之前自查一份目录条目：文件名、name 与 url 是否指向同一个仓库、子包路径、上游那 23 个分类、描述（en 必填、zh 可选、要以句号结尾）、tarball 与图标。用 js-yaml 解析，与上游 CI 同一套解析结果。加 `--repo <dir>` 还会核对条目说的那个仓库里有没有 `dsh.bundle.patch`——上游第一号打回原因在 yaml 里看不出来；`--dir data/plugins` 整目录跑，抓单文件看不见的重复 url。',
     decides: '这份目录条目会不会被目录的 CI 打回，以及打回在哪一条；给了仓库还能答「那个包真的装得上吗」',
     rules: [
       ['empty', '条目是空的 → error'],
@@ -779,10 +779,12 @@ export const CHECKS = [
       ['repo-bundle-missing', '那个包的 package.json 没有 dsh.bundle.patch → error（上游最常见的打回原因）'],
       ['repo-patch-missing', 'dsh.bundle.patch 指向的文件不存在 → error'],
       ['repo-name-mismatch', '条目的 #sub 与包的 name 不一致 → warn'],
+      ['duplicate-url', '整目录模式下，同一个 url 出现在多份条目里 → error（每份都报）'],
     ],
     usage: [
       'npx dsh-plugin-entry-check data/plugins/owner__repo.yml',
       'npx dsh-plugin-entry-check data/plugins/owner__repo.yml --repo ~/code/repo',
+      'npx dsh-plugin-entry-check --dir data/plugins',
       'npx dsh-plugin-entry-check - < entry.yml',
     ],
     example: {
