@@ -270,6 +270,18 @@ export const DEFECTS = [
       '「规格」被我当成了一种文体，而生态里多数设计文档是**参考文档**：一个子系统一页，讲它是什么、搬哪些数据结构。对它要求验收标准，等于对说明书要求验收标准。另有一个更细的错：用「背景/目标」这类**关键词**判提案，于是叫 Background Job Runtime 的参考页被当成有背景一节的提案。',
     now: { kind: 'silent', input: '# The approval seam\n\nEnglish | [中文](approval.zh.md)\n\nThe approval seam answers one question: may this specific action proceed? It owns the `ctx.approval` dispatch service and the `approval/request` waterfall.\n\nSource: [`packages/interaction/user-approval/src/index.ts`](../../packages/interaction/user-approval/src/index.ts)\n\n## The service\n\n`ctx.approval` exposes `request` and `onRequest`.\n', rule: 'criteria-missing' },
   },
+  {
+    n: 24,
+    check: 'onboarding-check',
+    rule: 'prereq-missing / success-missing / help-missing / time-estimate-missing / command-missing',
+    fixedIn: '0.3.6',
+    foundBy: 'third-party corpus',
+    wrong: 'DSH 自带的 21 份 user 文档：20 份被判「没有耗时估计」、19 份「没有前置要求」、19 份「没有求助路径」、15 份「没有成功长什么样」、7 份「没有可粘贴命令」',
+    right: '四种体裁分开判：首次上手、任务型指南（只问步骤与自检）、索引页、跳转存根',
+    lesson:
+      '「上手文档」也被我当成了一种体裁。DSH 的 user/guide 是**任务型指南**：假设读者已经装好，只教把一件事做完——对它要求「前置要求/多久跑完/去哪儿求助」，等于要求一篇《怎么换轮胎》先讲「汽车是什么」。另外两条更细的：编号小节 `## 1.` 不算步骤（只认列表项）；`dsh plugin --profile x add y` 这种真实写法不算安装命令。',
+    now: { kind: 'silent', input: '# Run DSH behind a network proxy\n\nUse this guide when the machine reaches the internet through a proxy.\n\n## 1. Export the variables\n\nSet `HTTPS_PROXY` in your shell.\n\n## 2. Check that it worked\n\nRun a fetch and confirm the proxy appears in the log.\n', rule: 'time-estimate-missing' },
+  },
 ]
 
 export const LEDGER = {

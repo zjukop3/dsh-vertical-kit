@@ -263,3 +263,53 @@ test('没有可粘贴命令仍然是 error：这条在真实语料里只占 2/37
   const result = lintOnboarding(doc)
   assert.ok(result.findings.some(f => f.rule === 'command-missing' && f.level === 'error'))
 })
+
+// 2026-11-24：拿 DSH 自带的 21 份 user 文档（别人写的）校准，撞出四种误报。
+// 「上手文档」被当成一种体裁，而生态里有四种：首次上手、任务型指南、索引页、跳转存根。
+const TASK_GUIDE = `# Run DSH behind a network proxy
+
+Use this guide when the machine reaches the internet through a proxy.
+
+## 1. Export the variables
+
+Set \`HTTPS_PROXY\` in your shell.
+
+## 2. Check that it worked
+
+Run a fetch and confirm the proxy appears in the log.
+`
+
+test('任务型指南只问步骤与自检，不问前置/耗时/求助', () => {
+  const result = lintOnboarding(TASK_GUIDE)
+  assert.equal(result.checked.genre, 'task-guide')
+  assert.deepEqual(result.findings.map(finding => finding.rule), [])
+})
+
+test('任务型指南缺步骤或缺自检时才响，且报的是新规则名', () => {
+  // 去掉自检那一节，但保留两步——否则它掉回「首次上手」体裁，测的就不是这条规则了。
+  const noVerify = lintOnboarding(TASK_GUIDE.replace(/## 2\. Check that it worked\n\nRun a fetch and confirm the proxy appears in the log\./, '## 2. Restart the shell\n\nOpen a new terminal.'))
+  assert.ok(noVerify.findings.some(finding => finding.rule === 'verify-missing'))
+  const noTitle = lintOnboarding(TASK_GUIDE.replace(/^# .*$/m, ''))
+  assert.ok(noTitle.findings.some(finding => finding.rule === 'title-missing'))
+  const thin = lintOnboarding('# X\n\n## 1. do\n\n说明。\n')
+  assert.ok(thin.findings.some(finding => finding.rule === 'steps-thin') || thin.checked.genre === 'onboarding')
+})
+
+test('索引页与跳转存根只给一句 pointer-guide', () => {
+  const index = `# Docs\n\n${Array.from({ length: 12 }, (_, i) => `| [g${i}](g${i}.md) | x |`).join('\n')}\n`
+  const indexed = lintOnboarding(index)
+  assert.deepEqual(indexed.findings.map(finding => finding.rule), ['pointer-guide'])
+  assert.equal(indexed.checked.genre, 'index')
+
+  const stub = `---\nhead:\n  - - meta\n    - http-equiv: refresh\n      content: 0; url=./guide/quickstart\n---\n\n# DeepSeek Harness\n`
+  const stubbed = lintOnboarding(stub)
+  assert.deepEqual(stubbed.findings.map(finding => finding.rule), ['pointer-guide'])
+  assert.equal(stubbed.checked.genre, 'redirect')
+})
+
+test('有安装命令的文档仍是首次上手体裁：前置、耗时、求助照旧要求', () => {
+  const readme = '# my plugin\n\n## 安装\n\n```\ndsh plugin --profile web add my-plugin\n```\n\n## 1. 跑\n\n## 2. 看\n\n成功后侧边栏出现入口。\n\n## 遇到问题\n\n开 issue。跑通约 2 分钟。\n'
+  const result = lintOnboarding(readme)
+  assert.equal(result.checked.genre, 'onboarding', '有 dsh plugin add 的文档不该被当成任务指南')
+  assert.ok(!result.findings.some(finding => finding.rule === 'pointer-guide'), '上手文档不该拿到 pointer-guide')
+})

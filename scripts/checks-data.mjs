@@ -594,7 +594,7 @@ export const CHECKS = [
       "exit": "1"
 },
     note: '耗时形态：5 分钟、约 15 分钟、under 10 minutes、1 小时、半小时、30 mins。代码块按内容判断——只有含 npm/pnpm/npx/pip/brew/apt/cargo/go install/git clone/curl/docker run/make 的块才算命令块。只验文档形状，不验命令能否跑通：前置版本写错、这平台上要 sudo、「你应该看到」的输出两版前就过期了——这些要一台干净机器才能发现。',
-    corpus: { layer: 'strangers', source: '其他插件仓库的 README', count: 39, first: '不认识 `dsh plugin add`（生态里 216 个文件用它）；把所有代码块都遮蔽，连作者写在注释里的成功提示也遮蔽了' },
+    corpus: { layer: 'strangers', source: '其他插件仓库的 39 份 README + DSH 自带的 21 份 user 文档（任务指南、索引页、跳转存根）', count: 60, first: '四种误报：任务型指南被要求写前置/耗时/求助、索引页与跳转存根被当成上手文档、编号小节（## 1.）不算步骤、以及 dsh plugin --profile add 这种写法没被认成安装命令' },
   },
   {
     slug: 'handover-check',
