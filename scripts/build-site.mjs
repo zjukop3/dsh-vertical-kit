@@ -12,6 +12,34 @@ import { DEFECTS, LEDGER } from "./defects.mjs"
 
 const styles = 'body{max-width:840px;margin:6vh auto;padding:24px;background:#fafaf8;color:#0a0a0a;font:16px/1.7 system-ui,sans-serif}main{border-top:8px solid #b8860b}h1{font-size:clamp(30px,5.5vw,48px);font-weight:250;line-height:1.15;margin-bottom:16px}h2{font-size:22px;font-weight:500;margin-top:36px}p,li,td,th{color:#3d3d3d}a{color:#002fa7}code{font:.9em/1.5 ui-monospace,monospace;background:#f0f0ee;padding:2px 5px;border-radius:3px}pre{padding:14px;overflow:auto;background:#0a0a0a;color:#fff}pre code{background:none;color:inherit;padding:0}table{border-collapse:collapse;width:100%;font-size:14px;margin:16px 0}th,td{border:1px solid #d4d4d2;padding:9px 11px;text-align:left;vertical-align:top}th{background:#f0f0ee}.eyebrow{font:12px/1.4 ui-monospace,monospace;letter-spacing:.12em;color:#b8860b}.nav{margin:24px 0;font-size:14px}.nav a{margin-right:14px}.limit{margin-top:28px;padding:14px 18px;background:#f0f0ee;border-left:4px solid #b8860b}small{display:block;margin-top:32px;color:#737373}@media(max-width:600px){body{margin:2vh auto;padding:18px}}'
 
+// 「这些缺陷是怎么发现的」只有这一份定义。以前语料页里有两个数字描述同一件事
+// （21 和 24），因为它们各自用不同的减法算；缺陷页的 H1 更是手写的 17，台账已经 30。
+// 现在两边都读这里，分组合计对不上台账就抛错。
+export function defectOrigin() {
+  const buckets = [
+    ['第三方文件', key => key.startsWith('third-party')],
+    ['自家真实产物', key => key.startsWith('own')],
+    ['已合并的目录 PR', key => key === 'merged catalog PRs'],
+    ['把包装起来调一遍', key => key === 'installing it and calling it'],
+    ['静态审计', key => key === 'rules audit'],
+  ]
+  const counts = buckets.map(([label, match]) => [
+    label,
+    Object.entries(LEDGER.bySource)
+      .filter(([key]) => match(key))
+      .reduce((sum, [, count]) => sum + count, 0),
+  ])
+  const sum = counts.reduce((total, [, count]) => total + count, 0)
+  if (sum !== LEDGER.total) {
+    throw new Error(`发现方式分组合计 ${sum}，台账总数 ${LEDGER.total}——有一类没被认领`)
+  }
+  return {
+    counts,
+    sum,
+    sentence: counts.filter(([, count]) => count > 0).map(([label, count]) => `${count} 个来自${label}`).join('，'),
+  }
+}
+
 const esc = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 function page(check) {
@@ -81,8 +109,9 @@ function corpusBody() {
     return `<table>${head}${body}</table>`
   }
   const total = [...strangers, ...own].reduce((sum, check) => sum + check.corpus.count, 0)
-  const skipSources = ['rules audit', 'own honest handover', 'installing it and calling it']
-  const fromReal = LEDGER.total - skipSources.reduce((sum, key) => sum + (LEDGER.bySource[key] ?? 0), 0)
+  // 一页里出现过两个「拿真实文件跑出来的」数字（21 和 24），因为它们各自用了不同的
+  // 减法。这类数字只能有一个定义，所以两边都读 defectOrigin()。
+  const origin = defectOrigin()
   return `<p>这里的 ${CHECKS.length} 个检查，判定规则是不是「验证过」，取决于它在多少份<strong>真实文档</strong>上跑过。自己造的 fixture 只能证明「我想到的情况它判对了」，证明不了「别人写的东西它不会误报」——因为在我编的 fixture 里，「正确」和「被检查器接受」是同一件事。</p>
 <p>分三层：跑过<strong>陌生人写的</strong>文件、跑过<strong>自家真实产物</strong>、只有自造样例。合计 ${total} 份真实文档。</p>
 <h2>第一层：跑过别人写的文件（${strangers.length} 个检查）</h2>
@@ -96,7 +125,7 @@ ${fixtures.map(check => `<li>${esc(check.slug)}（${esc(check.noun)}）</li>`).j
 </ul>
 <p>要补哪一个，看<a href="../compare/">对照表</a>里你手上正好有文件的那一行；脱敏后开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>。</p>
 <h2>为什么第一层最重要</h2>
-<p>到目前为止找出 <strong>${LEDGER.total} 个检测器缺陷</strong>，其中 <strong>${fromReal} 个</strong>是拿真实文件跑出来的。这个缺陷在自造 fixture 上永远不会暴露。</p>
+<p>到目前为止找出 <strong>${LEDGER.total} 个检测器缺陷</strong>，来源分布是：${origin.sentence}。这些缺陷在自造 fixture 上永远不会暴露。</p>
 <p>最典型的一个是 <code>order</code> 报的行号系统性偏上一行——判定是对的，指针是错的，用户按报的行号找会落在空行上。这件事我写了十几轮都没发现，因为我写 fixture 时只关心「有没有报」，从不关心「报的行号对不对」。第一个陌生人的 changelog 第一次就暴露了它。</p>`
 }
 
@@ -249,14 +278,14 @@ function defectsPage() {
   return `<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${LEDGER.total} 个检测器缺陷 · dsh-vertical-kit</title><meta name="description" content="这 ${CHECKS.length} 个检查里，有 ${LEDGER.ruleCount} 条规则曾经量的是拼写而不是性质，另外 ${LEDGER.total - LEDGER.ruleCount} 条是端点。每一条的复现输入、当时的错误判定、现在的判定，以及把它找出来的方法。这些声称由 test/defects.test.js 对着当前代码验证。"><meta name="robots" content="index,follow"><link rel="canonical" href="${esc(`${ORIGIN}/defects/`)}"><style>${styles}</style></head><body><main>
 <p class="eyebrow">DSH VERTICAL KIT · DEFECT LEDGER</p>
-<h1>17 个检测器缺陷</h1>
+<h1>${LEDGER.total} 个检测器缺陷</h1>
 <p>这 ${CHECKS.length} 个检查里，有 <strong>${LEDGER.ruleCount}</strong> 条规则曾经量的是<strong>拼写</strong>而不是<strong>性质</strong>：规则要求某一种写法，而真实文档用的是另一种同样合法的写法，于是对每一份真实文档都报错。或者反过来——规则写得永远触发不了，测试却绿着。</p>
 <p>下面每一条都写了：复现输入、当时的判定、现在的判定、以及它是怎么被找出来的。<strong>这些声称不是自述</strong>——<code>test/defects.test.js</code> 会把每条复现输入喂给当前的代码，误报的那条必须不再出现，死规则的那条必须出现，行号必须落在标题上。页面里说的和代码里做的，只能是一件事。</p>
 <h2>按发现方式</h2>
 <ul>
 ${sourceList}
 </ul>
-<p>分布值得单独看一眼：<strong>${LEDGER.total - (LEDGER.bySource['rules audit'] ?? 0)} 条靠把检查器指向真实文件发现，${LEDGER.bySource['rules audit'] ?? 0} 条靠规则审计扫出</strong>。两种方法各自找到的那批，另一种都找不到——语料找"对真实文件误报"，审计找"规则本身没被验证过"。</p>
+<p>分布值得单独看一眼：<strong>${defectOrigin().sentence}</strong>。两种方法各自找到的那批，另一种都找不到——语料找「对真实文件误报」，审计找「规则本身从写下那天起就没匹配过」。</p>
 <h2>全表</h2>
 <table>
 <tr><th>#</th><th>检查 / 规则</th><th>当时的判定</th><th>现在的判定</th><th>为什么</th><th>发现方式 / 修复版本</th></tr>
