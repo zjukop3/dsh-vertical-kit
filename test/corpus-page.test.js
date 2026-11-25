@@ -61,3 +61,25 @@ test('每个检查都声明了语料层，没有漏填的', () => {
     assert.ok(check.corpus.source && check.corpus.count > 0, `${check.slug} 声称跑过陌生人的文件，却没说是什么、几份`)
   }
 })
+
+// 没有语料的检查必须说清「为什么没有」：要么给出找过的查询与看到的东西，要么给出
+// 成文规范作为依据。两者都没有的，就是一个我自己也不知道凭什么算数的检查。
+test('每个只有自造样例的检查都交代了原因：找过什么，或依据哪份文件', () => {
+  const fixtures = CHECKS.filter(check => (check.corpus?.layer ?? 'fixtures') === 'fixtures')
+  for (const check of fixtures) {
+    const hasSearched = typeof check.searched === 'string' && check.searched.trim().length > 20
+    const hasBasis = check.basis && typeof check.basis.document === 'string' && check.basis.document.trim().length > 20
+    assert.ok(hasSearched || hasBasis, `${check.slug}: fixture-only，但既没写 searched 也没写 basis`)
+  }
+})
+
+test('有 basis 的检查同时写了「不检查什么」和「为什么不引条号」', () => {
+  const withBasis = CHECKS.filter(check => check.basis)
+  assert.ok(withBasis.length >= 4, `期望至少 4 个规范型检查，实际 ${withBasis.length}`)
+  for (const check of withBasis) {
+    assert.ok(check.basis.notChecked?.trim(), `${check.slug}: basis 缺 notChecked`)
+    assert.ok(check.basis.why?.trim(), `${check.slug}: basis 缺 why`)
+    // 引号里不许出现「第N条」：没能联网核对条号，就不写条号——写了就是第二个不一致。
+    assert.ok(!/第[一二三四五六七八九十百千0-9]+条/.test(check.basis.document), `${check.slug}: 引了条号，但没核对过`)
+  }
+})

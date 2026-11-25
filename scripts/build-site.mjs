@@ -125,6 +125,11 @@ ${fixtures.map(check => `<li>${esc(check.slug)}（${esc(check.noun)}）${check.s
 </ul>
 <p>标了「找过」的，是<strong>找过但没有找到</strong>——不是没找。区别很重要：前者可能是这批文档在公开世界里根本不以 Markdown 存在（发票是 PDF、周报在公司内网），后者只是我还没动手。</p>
 <p>要补哪一个，看<a href="../compare/">对照表</a>里你手上正好有文件的那一行；脱敏后开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>。</p>
+${fixtures.some(check => check.basis) ? `<h2>第四层：没有语料，但有出处（${fixtures.filter(check => check.basis).length} 个检查）</h2>
+<p>这一组的判据不是从文档里学来的，而是从<strong>成文规范</strong>里来的。规范也是来源，只是和语料不同类——把它说成语料是自欺，把它藏起来也是。所以单列一层，逐条写出：引的是哪份文件、<strong>不检查</strong>什么、为什么不引条号。</p>
+<table><tr><th>检查</th><th>依据</th><th>不检查</th></tr>
+${fixtures.filter(check => check.basis).map(check => `<tr><td>${esc(check.slug)}</td><td>${esc(check.basis.document)}<br><small>${esc(check.basis.why)}</small></td><td>${esc(check.basis.notChecked)}</td></tr>`).join('\n')}</table>
+<p>为什么没有语料：这四个领域（合同、发票、报销、商品信息）的公开 Markdown 文档里，文件名存在但内容是别的——见每行下面「找过」的那一句。写在规范上并不比写在语料上弱，前提是<strong>说清楚是哪一个</strong>。</p>` : ''}
 <h2>为什么第一层最重要</h2>
 <p>到目前为止找出 <strong>${LEDGER.total} 个检测器缺陷</strong>，来源分布是：${origin.sentence}。这些缺陷在自造 fixture 上永远不会暴露。</p>
 <p>最典型的一个是 <code>order</code> 报的行号系统性偏上一行——判定是对的，指针是错的，用户按报的行号找会落在空行上。这件事我写了十几轮都没发现，因为我写 fixture 时只关心「有没有报」，从不关心「报的行号对不对」。第一个陌生人的 changelog 第一次就暴露了它。</p>`

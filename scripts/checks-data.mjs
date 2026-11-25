@@ -34,6 +34,11 @@ export const CHECKS = [
 },
     note: '大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。',
     searched: '合同：`filename:contract.md` 有 31 万份，但抽样看到的全是**软件契约**（`CONTRACT.md — WP-0 interface contract`、`bundlewatch rewrite contract`、`Data contract: Helios Solar Forecast`），没有一份法律合同；`合同 filename:*.md` 为 0。法律合同在企业内网与 PDF 里，公开 Markdown 形态几乎不存在。',
+    basis: {
+      document: '《中华人民共和国民法典》合同编对「合同一般条款」的列举（当事人姓名或名称、标的、数量、质量、价款或报酬、履行期限与地点与方式、违约责任、争议解决方式）',
+      notChecked: '不判断条款是否合法、是否对我方有利、签署主体是否有权代理——那是律师的活，工具只回答「这八项写了没有」',
+      why: '引文件而不引条号：条号我没能联网核对，写上去就是第二个「说法与代码不一致」。文件名的列举本身是教科书级共识，可以核对',
+    },
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -65,6 +70,11 @@ export const CHECKS = [
 },
     note: '勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。',
     searched: '发票：`filename:invoice.md` 有 8000 份，抽样全是**关于发票的代码文档**（`WebService::Fastly::Object::Invoice` 这类模型文档、ConnectWise 的 invoice cmdlet 文档、OWASP 的 print-invoice 网页），没有一份是真发票；真发票是 PDF/图片。',
+    basis: {
+      document: 'GB 32100-2015（统一社会信用代码的 18 位字符集，代码里已按它排除了 I/O/S/V/Z）+《中华人民共和国发票管理办法》对发票内容的要求（发票号码、开票日期、金额、购买方与销售方名称及纳税人识别号）',
+      notChecked: '不核验发票真伪、不查重、不做税务合规判断；勾稽只做「不含税金额 + 税额 = 价税合计」这一步算术',
+      why: '字符集与要素是硬规定，可核对；真伪核验需要税务系统，不在离线工具的范围内——写在「不检查」里，而不是假装能查',
+    },
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -96,6 +106,11 @@ export const CHECKS = [
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
     searched: '商品信息：`filename:listing.md` 有 2.7 万份，抽样是 Chrome Web Store 的 listing 字段、InnerSource 的项目上架说明、多语言商店文案翻译稿——不是电商商品详情。',
+    basis: {
+      document: '《中华人民共和国电子商务法》要求经营者全面、真实、准确、及时披露商品信息；《网络交易监督管理办法》要求标明商品名称、规格、价格等信息',
+      notChecked: '不判断描述是否夸大（那是广告法与平台规则），不判断类目是否选对（平台各有体系）；只问「读者能不能据此下单」',
+      why: '披露义务是法定义务，可核对；「有没有夸大」需要事实比对，离线做不到，所以只把它列在「不检查」里',
+    },
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -695,6 +710,11 @@ export const CHECKS = [
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
     searched: '报销单：`filename:expense-report.md` 只有 108 份，抽样是「如何创建报销单」的文档、agent 提示词模板与 Adaptive Cards 的 sample，不是填过的报销单。',
+    basis: {
+      document: '财政部《会计基础工作规范》对原始凭证要素的要求（凭证名称、填制日期、填制单位或填制人、接受凭证单位、经济业务内容、数量单价金额、经办人签名或盖章）',
+      notChecked: '不判断费用是否符合公司制度、是否超标、有没有预算——那些依赖每家公司自己的规定',
+      why: '原始凭证的要素是国家规范里写明的，可以核对；公司制度不能，所以不写进判据',
+    },
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
 
