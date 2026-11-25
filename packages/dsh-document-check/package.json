@@ -1,6 +1,6 @@
 {
   "name": "dsh-document-check",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "One agent tool, 31 document checks: the model verifies a document it produced against a genre's structural rules before delivering it, and gets findings with rule ids and line numbers.",
   "type": "module",
   "main": "./src/index.js",
@@ -67,7 +67,7 @@
     "dsh-meeting-notes-check": "^0.1.6",
     "dsh-migration-guide-check": "^0.1.5",
     "dsh-numberlint": "^0.1.4",
-    "dsh-onboarding-check": "^0.3.7",
+    "dsh-onboarding-check": "^0.3.8",
     "dsh-ops-runbook-check": "^0.2.5",
     "dsh-outline-lint": "^0.1.6",
     "dsh-perf-report-check": "^0.1.2",
@@ -80,7 +80,7 @@
     "dsh-spec-doc-check": "^0.1.5",
     "dsh-tablelint": "^0.2.2",
     "dsh-test-report-check": "^0.1.7",
-    "dsh-weekly-report-check": "^0.1.4"
+    "dsh-weekly-report-check": "^0.1.5"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-tools": "*"

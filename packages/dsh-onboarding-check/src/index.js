@@ -171,9 +171,13 @@ function finishOnboarding(findings, checked) {
   const order = { error: 0, warn: 1 }
   findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
   const errors = findings.filter(finding => finding.level === 'error').length
+  // checked 的形状必须在所有分支上一致：CLI 会印 `commandBlocks/blocks`，早退分支
+  // 少一个键就会在发布产物上打出 `ok: undefined/0 blocks runnable`。
+  // 这条被 cli-output 闸在加了新 fixture 之后当场抓到（onboarding 的 task-guide 分支）。
+  const normalized = { commandBlocks: 0, ...checked }
   return {
     ok: errors === 0,
-    checked,
+    checked: normalized,
     errors,
     warnings: findings.length - errors,
     findings,

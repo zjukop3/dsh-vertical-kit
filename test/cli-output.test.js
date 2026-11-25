@@ -20,6 +20,11 @@ const FIXTURES = {
   sessionHandover: `# Handover — Session 2026-03-03\n\n## Current State\n\n好。\n\n## Files Changed\n\n- a.js\n`,
   checkpoint: `# Session resume state — branch codex/x\n\n## checkpoint\n\n- 修了解析器\n`,
   pointerGuide: `# Contributing\n\nRead the [Contributor's Guide](https://example.com/community/contributors/guide/).\n`,
+  // 社区周报 / 渗透测试报告 / 「不是测试报告」这三种早退分支都是这一轮才加的：
+  // 每加一个分支就会有新的 checked 形状，闸必须跟着喂到。
+  communityWeekly: `---\ntitle: Weekly Report (Aug 23 - Aug 29)\ntags: [Community]\n---\n\n## Introduction\n\nCommunity weekly.\n\n## Contributor statistics\n\nNew contributors: 4.\n\n## Upcoming\n\nNext week: v3.2.\n`,
+  pentest: `# Web 渗透测试报告\n\n## 范围\n\nexample.com\n\n## 方法\n\nnmap\n\n## 发现\n\n严重：SQL 注入\n\n## 修复建议\n\n参数化查询\n`,
+  notTestReport: `# Latest Sync Report\n\n同步了 12 条记录。\n`,
 }
 
 test('每个包的 CLI 在任何 fixture 下都不会打出 undefined', () => {

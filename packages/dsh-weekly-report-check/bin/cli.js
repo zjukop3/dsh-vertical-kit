@@ -22,7 +22,12 @@ try {
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`)
   } else {
     for (const finding of result.findings) process.stdout.write(`${finding.level} ${finding.rule} 第${finding.line}行 ${finding.message}\n`)
-    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${result.checked.done} done, ${result.checked.plan} planned, ${result.checked.risks} risks, ${result.errors} errors, ${result.warnings} warnings\n`)
+    // 社区周报分支的 checked 里没有 done/plan/risks 三个字段；照抄模板就会打出
+    // 「ok: undefined done, undefined planned…」。这条已经在 cli-output 闸里被抓到过一次。
+    const summary = result.checked.done === undefined
+      ? `${result.genre ?? 'report'}`
+      : `${result.checked.done} done, ${result.checked.plan} planned, ${result.checked.risks} risks`
+    process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${summary}, ${result.errors} errors, ${result.warnings} warnings\n`)
   }
   process.exit(result.ok ? 0 : 1)
 } catch (error) {
