@@ -7,10 +7,12 @@
 
 | 目录 | 形式 | 内容 | 状态 |
 |---|---|---|---|
-| [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | 每个插件一份 `data/plugins/*.yml` | 35 条（29 个检查 + 5 个 verify-kit 检查 + review-outbox） | 已合并（见下「被拒/例外」） |
+| [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) | 每个插件一份 `data/plugins/*.yml` | 36 条（29 个检查 + 5 个 verify-kit 检查 + review-outbox + package-check） | 已合并 |
 
-`dsh-check-suite` 与 `dsh-plugin-package-check` 不在其中：前者是纯聚合包（该目录第 7 条不收），
-后者的 PR 还开着。
+最后一条 [PR #18341](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/18341)（`dsh-plugin-package-check`）
+于 2026-11-24 合并，落在 `category: dev`。
+
+`dsh-check-suite` 仍不在其中：它是纯聚合包（该目录第 7 条不收），这是规则，不是遗漏。
 
 ## 已提交、等回复
 
@@ -25,6 +27,7 @@
 | 位置 | 内容 | 日期 |
 |---|---|---|
 | [awesome-dsh-plugin#18455](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/issues/18455) | `contributing.md` 的规则比实际合并的严格：全量 12,960 份条目里有 91 份按实践写、44 份连示例的行内注释一起抄、3 份是 JSON | 2026-11-24 |
+| [awesome-dsh-plugin#18834](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin/pull/18834) | 上述 issue 的回复（维护者 fkysly：「glad to take a doc PR doing both (1) and (2)」）→ 提了文档 PR：把「CI 自动检查」与「维护者阅读」分开列，示例 YAML 去掉注释，加一行本地自查命令 | 2026-11-25 |
 
 ## 观察到的竞争
 
