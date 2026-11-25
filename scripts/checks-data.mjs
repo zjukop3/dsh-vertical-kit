@@ -618,6 +618,8 @@ export const CHECKS = [
       ['handover-person-missing', '没有交接人 → error'],
       ['receiver-missing', '没有接收人（人交接；会话交接会先判成 technical-handover） → error'],
       ['receiver-unassigned', '接收人写成「尚未指定/待定/TBD」等非人名 → error'],
+      ['project-state / project-done / project-unfinished / project-continue', '项目交接笔记的四条（状态、已完成、未完成、怎么继续）→ review 为 warn，strict 为 error'],
+      ['technical-handover', '会话交接（Current State / What Was Done / Files Changed）→ 只提醒文体不符，不套用人交接的七条'],
       ['date-missing', '没有交接日期 → error'],
       ['date-unlabelled', '有日期但没有「交接日期/生效日期」字样 → warn'],
       ['items-thin', '交接事项少于三条 → error'],
@@ -638,7 +640,12 @@ export const CHECKS = [
       "exit": "1",
     },
     note: '分工上，签名与日期这类能被人一眼看出来的东西不是这个包的理由；理由是账号那一段。一份交接单漏了某个后台的只读账号，今天不报错，三个月后审计才报错，而那时交接人已经不在。所以 access-unlisted 是 error，并且允许「无账号需交接」这样的显式豁免——但豁免必须写出来，不能靠沉默通过。只看文档形状，不验事项是否真的交接完成：那需要系统里的权限比对，不是一份 Markdown 能回答的。',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: {
+      layer: 'strangers',
+      source: 'GitHub 上真实存在的 HANDOVER.md（code search `filename:HANDOVER.md` 共 24864 份，两批共抽 50 份，49 份可用）',
+      count: 49,
+      first: '旧判据只让 21% 通过：把「默认当组织交接」写在最前面，49 份里 31 份被判「组织交接但缺人」——而那些文档压根不是组织交接。真实存在三种体裁：组织交接（角色标签/账号段/签字）、会话交接（Current State / What Was Done）、项目交接笔记（更新时间/分支/HEAD/背景/已完成/待办/怎么继续）。修成先看组织字段、再看会话线索、其余按项目交接判之后：review 模式 96% 通过，剩下 2 份是真的组织字段不全。',
+    },
   },
   {
     slug: 'expense-claim-check',

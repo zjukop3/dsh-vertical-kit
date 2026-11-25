@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { lintHandover, listItems } from '../src/index.js'
+import { lintHandover, listItems, genreOf } from '../src/index.js'
 
 const good = `# 平台组交接单
 
@@ -187,4 +187,45 @@ test('真正的人交接不会被判成会话交接', () => {
   const human = `# 交接单\n\n交接人：张三\n接收人：李四\n生效日期：2026-11-20\n\n## 事项\n\n- 交付 A（负责人：张三）\n\n## 账号与权限\n\n- 无账号需交接\n\n## 未完成事项\n\n- B\n\n接收人签字：李四\n`
   const result = lintHandover(human)
   assert.ok(!result.findings.some(f => f.rule === 'technical-handover'), JSON.stringify(result.findings.map(f => f.rule)))
+})
+
+// 49 份真实 HANDOVER.md（GitHub code search，两批）校准出三种体裁：
+//   组织交接（有角色标签/账号段/签字）、会话交接、项目交接笔记（其余全部）。
+// 旧判据把「默认当组织交接」写在最前面，49 份里 31 份被判「组织交接但缺人」——
+// 那些文档压根不是组织交接。
+test('体裁判定：组织 / 会话 / 项目，三种各自走自己的规则', () => {
+  const org = `# 项目交接单\n\n交接人：张三\n接收人：李四\n交接日期：2026-11-19\n\n## 账号与权限\n\n阿里云：只读\n\n## 签字确认\n\n已确认\n`
+  assert.equal(genreOf(org), 'org')
+  assert.equal(lintHandover(org).genre, undefined, '组织交接保持原有出口形状')
+
+  const session = `# Session Handover\n\n## Current State\n\nHalf done.\n\n## Files Changed\n\n- src/a.ts\n`
+  assert.equal(genreOf(session), 'session')
+
+  const project = `# FluidBar 交接文档\n\n> 更新时间：2026-10-19   > 分支：v2/rebuild   > HEAD：b41b293\n\n## 已完成\n\nMVP 可运行。\n\n## 待办\n\n媒体控制。\n`
+  assert.equal(genreOf(project), 'project')
+  const result = lintHandover(project)
+  assert.equal(result.genre, 'project')
+  assert.equal(result.ok, true, '项目交接笔记缺项是 warn，不是 error')
+  assert.ok(!result.findings.some(finding => finding.rule === 'receiver-missing'), '不该拿组织交接的「接收人」判它')
+})
+
+test('项目交接笔记的四条：状态 / 已完成 / 未完成 / 怎么继续；strict 下升级', () => {
+  const thin = `# 交接文档\n\n> 仓库：acme/thing\n\n写了一点背景。\n`
+  const review = lintHandover(thin)
+  assert.equal(review.genre, 'project')
+  const rules = review.findings.map(finding => `${finding.rule}:${finding.level}`)
+  assert.ok(rules.includes('project-done:warn'), JSON.stringify(rules))
+  assert.ok(rules.includes('project-unfinished:warn'))
+  assert.ok(rules.includes('project-continue:warn'))
+  assert.equal(review.ok, true)
+  const strict = lintHandover(thin, { strict: true })
+  assert.equal(strict.ok, false)
+  assert.ok(strict.findings.every(finding => finding.level === 'error'))
+})
+
+test('散落的 credential 这个词不能把项目交接判成组织交接', () => {
+  const project = `# Deploy Handover\n\nSet your credentials before running.\n\n## Status\n\nRunning.\n`
+  assert.equal(genreOf(project), 'project')
+  const result = lintHandover(project)
+  assert.ok(!result.findings.some(finding => finding.rule === 'handover-person-missing'), JSON.stringify(result.findings))
 })

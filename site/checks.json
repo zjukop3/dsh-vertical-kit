@@ -921,6 +921,14 @@
           "meaning": "接收人写成「尚未指定/待定/TBD」等非人名 → error"
         },
         {
+          "rule": "project-state / project-done / project-unfinished / project-continue",
+          "meaning": "项目交接笔记的四条（状态、已完成、未完成、怎么继续）→ review 为 warn，strict 为 error"
+        },
+        {
+          "rule": "technical-handover",
+          "meaning": "会话交接（Current State / What Was Done / Files Changed）→ 只提醒文体不符，不套用人交接的七条"
+        },
+        {
           "rule": "date-missing",
           "meaning": "没有交接日期 → error"
         },

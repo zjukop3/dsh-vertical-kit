@@ -76,10 +76,45 @@ export function listItems(text) {
 // 后者没有「接收人」这回事，拿人交接的七条规则去判它，等于用它没打算做的事评价它。
 // 2026-11-20 实测 3 份真实 HANDOVER.md：7 条规则全部误报，0/3 零发现。
 export const SESSION_HANDOVER =
-  /(?:^|\n)#{1,6}[^\n]*(?:current state|what was done|files changed|next session|session \d|handover.{0,20}session|接棒|本次已完成|关键须知|下一段(?:会话|对话)|交接给(?:下一个)?\s*agent)/i
+  /(?:^|\n)#{1,6}[^\n]*(?:current state|what was done|files changed|next session|session \d|handover.{0,20}session|session handover|agent handover|session summary|接棒|本次已完成|关键须知|下一段(?:会话|对话)|交接给(?:下一个)?\s*agent|会话交接|上下文交接)/i
 // 「人交接」的词要带角色语义。裸词 receiver 会把硬件文档里的 USB Receiver 也认成接收人
 // ——2026-11-20 实测：一份中文会话交接因此被误判成人交接，七条规则全报。
-export const HUMAN_ROLES = /(?:交接人|接收人|交出人|接手人|离职|handover\s+(?:by|to)\b|takeover\s+by|receiver\s*[：:])/i
+// 「交接给 / handover to X」不是人交接的判据：项目交接笔记也这么写
+// （`# Handover to Opus`、`交接给下一个接手的人`）。只有明确的角色标签才算。
+export const HUMAN_ROLES = /(?:交接人\s*[：:]|接收人\s*[：:]|交出人\s*[：:]|接手人\s*[：:]|接收方\s*[：:]|离职交接|handover\s+by\b|takeover\s+by\b|receiver\s*[：:]|signed\s+by|签字确认)/i
+
+// 第三种体裁：项目交接笔记——个人项目交给下一个人，写给「下一个接手的人」而不是
+// 某个具体同事。它没有接收人、没有签字、常常没有账号段，但有状态（仓库/分支/HEAD/
+// 当前能跑到哪）、背景、已完成、待办、怎么继续。
+// 2026-11-25 实测：GitHub 上 filename:HANDOVER.md 有 24864 份，抽 29 份跑旧判据，
+// 只有 6 份通过——21 份栽在「没有接收人」，多数其实是这一种。
+export const PROJECT_HANDOVER =
+  /(?:^|\n)#{1,6}[^\n]*(?:项目背景|背景|状态|现状|已完成|完成情况|待办|未完成|下一步|怎么继续|如何继续|运行方式|开发环境|交接文档|交接笔记|到手即用|快速开始|project (?:background|state|status|overview|handover)|what'?s done|done so far|current (?:state|status)|remaining|next steps|quick ?start|onboarding|how to (?:run|continue|build))/i
+export const PROJECT_META =
+  /(?:更新时间|仓库[：:]|repo(?:sitory)?[：:]|分支[：:]|branch[：:]|\bHEAD\b|\bcommit\b|\bversion[：:]|版本[：:])/i
+
+// 分类顺序（2026-11-25 两批共 49 份真实 HANDOVER.md 校准）：
+//   组织交接 —— 只有出现明确的组织字段时才算：角色标签、账号与权限、签字。
+//   会话交接 —— 有会话线索。
+//   其余全部按项目交接笔记判。
+// 反过来的顺序（默认当组织交接）在真实文件上是灾难：49 份里没有一份同时写了交接人与接收人，
+// 31 份被判成「组织交接但缺人」——而那些文档压根不是组织交接。
+// 组织字段必须是「段名或标签」，不是一个词：两批真实文档里 `credentials` 出现在
+// 「设置你的凭证」这种安装说明里，`门禁` 是项目的一个功能——拿裸词判「这是组织交接」
+// 会把 9 份项目交接笔记送进组织交接的七条规则，各报 2–5 个 error。
+export const ORG_MARKERS =
+  /(?:^|\n)#{1,6}[^\n]*(?:账号与权限|权限交接|账号移交|接入凭证|access\s*(?:list|control))|(?:账号|帐号|权限|凭证|密钥)\s*[：:]|签字确认|签署|已确认|sign-?off\s*[：:]/i
+
+export function genreOf(text) {
+  const source = String(text)
+  if (HUMAN_ROLES.test(source) || ORG_MARKERS.test(source)) return 'org'
+  if (SESSION_HANDOVER.test(source)) return 'session'
+  return 'project'
+}
+
+export function isProjectHandover(text) {
+  return genreOf(text) === 'project'
+}
 
 export function isSessionHandover(text) {
   return SESSION_HANDOVER.test(String(text)) && !HUMAN_ROLES.test(String(text))
@@ -91,20 +126,48 @@ export function lintHandover(text, rules = {}) {
   const add = (level, rule, line, message) => findings.push({ level, rule, line, message })
 
   // 会话交接：给一条 warn 说明文体不符并停在这里，不再逐条判人交接的规则。
-  if (isSessionHandover(text)) {
+  if (String(text).trim() === '') {
+    return { ok: false, genre: 'empty', checked: { items: 0 }, errors: 1, warnings: 0, findings: [{ level: 'error', rule: 'empty', line: 0, message: '交接单是空的' }] }
+  }
+  const genre = genreOf(text)
+  if (genre === 'session') {
     findings.push({
       level: 'warn',
       rule: 'technical-handover',
       line: 0,
       message: '这份文档是「会话交接」（Current State / What Was Done / Files Changed），不是人交接：交接人、接收人、账号转移、接收人签字这些概念在这里不适用。本条只提醒文体不符，未做其它判定',
     })
-    return { ok: true, checked: { sessionHandover: true, items: 0 }, errors: 0, warnings: 1, findings }
+    return { ok: true, genre: 'session', checked: { sessionHandover: true, items: 0 }, errors: 0, warnings: 1, findings }
   }
-  const prose = proseOnly(text)
+  // 项目交接笔记：判据是它自己的必填集合，缺项给 warn——这类文档本来就是随手写的，
+  // 拿组织交接单的七条去判它只会得到「全错」。
+  const strict = rules.strict === true
+  if (genre === 'project') {
+    const source = String(text)
+    const checks = [
+      ['project-state', /(?:\bHEAD\b|\bcommit\b|分支|branch|版本|version|最新|当前(?:状态|进度)|current (?:state|status))/i, '没有写当前状态（HEAD/分支/版本，或「现在能跑到哪一步」）——接手的人不知道从哪里开始'],
+      ['project-done', /(?:已完成|已实现|完成情况|done|completed|implemented|shipped|landed)/i, '没有写已经完成了什么——读者无法判断哪些不用重做'],
+      ['project-unfinished', /(?:待办|未完成|下一步|遗留|remaining|next steps|todo|open items|known issues)/i, '没有写未完成/下一步——接手的人会在第二周撞墙'],
+      ['project-continue', /(?:怎么(?:继续|运行|跑)|如何(?:继续|运行)|运行方式|开发环境|复现|\bnpm (?:run|test|start)|\bpnpm\b|\bmake\b|\bcargo\b|\bgo test\b|\bpytest\b|how to (?:run|build|test|continue)|setup|\binstall\b)/i, '没有写怎么继续（运行/测试/构建命令）——文档读完了还是不知道怎么动手'],
+    ]
+    for (const [rule, pattern, message] of checks) {
+      // review 模式是 warn：真实项目交接笔记本来就是随手写的（29 份里 19 份属于这一类，
+      // 一份都没写全）。strict 模式才是「发出去之前给我补上」。
+      if (!pattern.test(source)) findings.push({ level: strict ? 'error' : 'warn', rule, line: 0, message })
+    }
+    const errors = findings.filter(finding => finding.level === 'error').length
+    return {
+      ok: errors === 0,
+      genre: 'project',
+      mode: strict ? 'strict' : 'review',
+      checked: { sessionHandover: false, items: listItems(text).length, checks: checks.length - findings.length },
+      errors,
+      warnings: findings.length,
+      findings,
+    }
+  }
 
-  if (String(text).trim() === '') {
-    return { ok: false, checked: { items: 0 }, errors: 1, warnings: 0, findings: [{ level: 'error', rule: 'empty', line: 0, message: '交接单是空的' }] }
-  }
+  const prose = proseOnly(text)
 
   const lines = prose.split('\n')
   const has = (heading, line) => lines.some(row => heading.test(`\n${row}`)) || line.test(prose)

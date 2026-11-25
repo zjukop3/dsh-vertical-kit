@@ -427,6 +427,18 @@ export const DEFECTS = [
       '三条都在量拼写，而且量的是「我们公司怎么写」：真实纪要里负责人是「* [ ] Dominik will take the whiteboard」，没有「负责人：」；决定是「as agreed in our charter」，不是「决定：」；期限写「by next meeting」，不写日期。最刺眼的是截止时间：39/45 份实质纪要一个期限都不写——那是行业惯例，把惯例判成 error 就是拿自己的偏好当标准。这一条的正确解法不是放宽阈值，而是承认两种用法（看别人的纪要 vs 发出去之前自查）并分开判。',
     now: { kind: 'silent', input: `# June 25 SIG-Embedded Meeting\n\n## Attendees\n\n* Marcin Kolny\n* Dominik Tacke\n\n## Action Items\n\n* [ ] Dominik will take the whiteboard and start a document.\n* [ ] Youtube video upload (Emily)\n\nThe group agreed in the charter that this is one of the first items.\n`, rule: 'action-no-owner' },
   },
+  {
+    n: 37,
+    check: 'handover-check',
+    rule: 'handover-person-missing / receiver-missing / signoff-missing',
+    fixedIn: '0.2.7',
+    foundBy: 'third-party corpus',
+    wrong: '49 份真实 HANDOVER.md 里只有 21% 通过：31 份被判「组织交接但缺交接人/接收人」',
+    right: '三个体裁分开判：组织交接（有角色标签、账号段、签字）、会话交接（Current State / What Was Done）、项目交接笔记（其余全部——状态、已完成、未完成、怎么继续，缺项 warn，strict 才是 error）',
+    lesson:
+      '同一个跟头第五次：把一种体裁当成全部，而且这次把「默认当组织交接」写在了分类最前面。反过来更糟——三次修正都在扩词表（加 credentials、加门禁、加 handover to），结果 9 份项目交接笔记被这几个裸词判成组织交接，各报 2–5 个 error。真正解决它的是分类顺序：只有出现**段名或标签级**的组织字段才走组织交接，其余默认项目交接。词是证据，不是判据；结构才是。',
+    now: { kind: 'silent', input: `# FluidBar 交接文档\n\n> 更新时间：2026-10-19   > 分支：v2/rebuild   > HEAD：b41b293\n\n## 已完成\n\nMVP 可运行。\n\n## 待办\n\n媒体控制。\n`, rule: 'receiver-missing' },
+  },
 ]
 
 export const LEDGER = {
