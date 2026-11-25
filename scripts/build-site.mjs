@@ -121,8 +121,9 @@ ${table(own)}
 <h2>第三层：只有自造样例（${fixtures.length} 个检查）</h2>
 <p>这些检查的每条规则都在测试里被观察到两个方向——坏文档会报、好文档沉默——但那个「好文档」是我写的。<strong>没有陌生人的真实文件跑过它们。</strong></p>
 <ul>
-${fixtures.map(check => `<li>${esc(check.slug)}（${esc(check.noun)}）</li>`).join('\n')}
+${fixtures.map(check => `<li>${esc(check.slug)}（${esc(check.noun)}）${check.searched ? `<br><small>找过：${esc(check.searched)}</small>` : ''}</li>`).join('\n')}
 </ul>
+<p>标了「找过」的，是<strong>找过但没有找到</strong>——不是没找。区别很重要：前者可能是这批文档在公开世界里根本不以 Markdown 存在（发票是 PDF、周报在公司内网），后者只是我还没动手。</p>
 <p>要补哪一个，看<a href="../compare/">对照表</a>里你手上正好有文件的那一行；脱敏后开一个 <a href="https://github.com/zjukop3/dsh-vertical-kit/issues/new?template=corpus-report.yml">语料报告</a>。</p>
 <h2>为什么第一层最重要</h2>
 <p>到目前为止找出 <strong>${LEDGER.total} 个检测器缺陷</strong>，来源分布是：${origin.sentence}。这些缺陷在自造 fixture 上永远不会暴露。</p>

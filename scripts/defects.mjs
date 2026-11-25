@@ -439,6 +439,18 @@ export const DEFECTS = [
       '同一个跟头第五次：把一种体裁当成全部，而且这次把「默认当组织交接」写在了分类最前面。反过来更糟——三次修正都在扩词表（加 credentials、加门禁、加 handover to），结果 9 份项目交接笔记被这几个裸词判成组织交接，各报 2–5 个 error。真正解决它的是分类顺序：只有出现**段名或标签级**的组织字段才走组织交接，其余默认项目交接。词是证据，不是判据；结构才是。',
     now: { kind: 'silent', input: `# FluidBar 交接文档\n\n> 更新时间：2026-10-19   > 分支：v2/rebuild   > HEAD：b41b293\n\n## 已完成\n\nMVP 可运行。\n\n## 待办\n\n媒体控制。\n`, rule: 'receiver-missing' },
   },
+  {
+    n: 38,
+    check: 'test-report-check',
+    rule: 'counts-missing',
+    fixedIn: '0.1.7',
+    foundBy: 'third-party corpus',
+    wrong: '23 份真实 `*TEST-REPORT.md` 里只有 22% 通过：18 份被判「没有用例计数」',
+    right: '文件名一样的文档至少有四种体裁：渗透测试（范围/方法/风险等级/修复建议）、试玩（目的/过程/发现/结论）、性能（指向 perf-report-check）、用例统计（原有七条）；还有一批压根不是测试报告',
+    lesson:
+      '这是同一个跟头的第六次，也是最典型的一次：我把「测试报告」等同于「单元测试报告」。渗透报告里没有「通过 12 失败 1」不是缺陷，那是它不该有的东西。两条附带教训：①「不是测试报告」必须是一个明确出口——语料里有 Sync Report、Insight Report，对它们说「你没有用例计数」是把文件名当成内容；② 词表要含**计数词本身**（通过/失败/跳过/总计），我把它们漏了，于是「通过 10 失败 2」这种最典型的测试报告被判成「不像测试报告」——测试第一次跑就抓到了这条。',
+    now: { kind: 'silent', input: `# Web 渗透测试报告\n\n## 范围\n\nexample.com\n\n## 方法\n\nnmap + 手工\n\n## 发现\n\n严重：SQL 注入\n\n## 修复建议\n\n参数化查询\n`, rule: 'counts-missing' },
+  },
 ]
 
 export const LEDGER = {

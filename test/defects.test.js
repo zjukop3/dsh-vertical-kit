@@ -18,6 +18,7 @@ import { lintEnvExample } from '../packages/dsh-env-example-check/src/index.js'
 import { lintOutline } from '../../dsh-verify-kit/packages/dsh-outline-lint/src/index.js'
 import { lintLicense } from '../packages/dsh-license-check/src/index.js'
 import { lintHandover } from '../packages/dsh-handover-check/src/index.js'
+import { lintTestReport } from '../packages/dsh-test-report-check/src/index.js'
 import { lintTables } from '../../dsh-verify-kit/packages/dsh-tablelint/src/index.js'
 import { lintPerfReport } from '../packages/dsh-perf-report-check/src/index.js'
 import { lintMigrationGuide } from '../packages/dsh-migration-guide-check/src/index.js'
@@ -45,6 +46,7 @@ const LINTERS = {
   'outline-lint': lintOutline,
   'license-check': lintLicense,
   'handover-check': lintHandover,
+  'test-report-check': lintTestReport,
   'tablelint': lintTables,
   'perf-report-check': lintPerfReport,
   'migration-guide-check': lintMigrationGuide,

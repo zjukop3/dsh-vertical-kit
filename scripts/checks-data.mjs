@@ -33,6 +33,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。',
+    searched: '合同文本（code search `合同 in:file language:Markdown`、`合同 filename:*.md` 均为 0；真实合同多在企业内网/PDF，公开 Markdown 极少）',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -63,6 +64,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。',
+    searched: '发票文本（code search `发票 filename:*.md` 为 0、`价税合计` 命中的全是解析发票的代码而不是发票本身；真实发票是 PDF/图片，不存在公开 Markdown 形态）',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -93,6 +95,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
+    searched: '电商商品信息（`商品 in:file` 命中的是比价脚本与 README，商品详情页是 HTML/JSON，不是 Markdown 文档）',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -213,6 +216,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
+    searched: '周报（`filename:*weekly*.md` 返回 0；周报几乎只存在于公司内部系统）',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -298,11 +302,16 @@ export const CHECKS = [
     example: {
       "command": "test-report-check test-sample.md",
       "fixture": "# 测试报告\n\n今天跑了测试，大部分都过了。",
-      "output": "$ test-report-check test-sample.md\nerror counts-missing 第0行 全文没有任何用例计数（认得：通过 12、失败 3、跳过 1、总计 15）——测试报告没有计数就不是报告\nerror env-missing 第0行 没有测试环境（认得：## 测试环境、环境：…、OS：…、Node：v…）——不写环境的结果无法复跑\nfail: {}, 2 errors, 0 warnings",
-      "exit": "1",
+      "output": "$ test-report-check test-sample.md\nwarn counts-missing 第0行 全文没有任何用例计数（认得：通过 12、失败 3、跳过 1、总计 15）——测试报告没有计数就不是报告\nwarn env-missing 第0行 没有测试环境（认得：## 测试环境、环境：…、OS：…、Node：v…）——不写环境的结果无法复跑\nok: {}, 0 errors, 2 warnings",
+      "exit": "0",
 },
     note: '只验书记层面，不验测试质量：它验证数字是否对得上、环境是否写明、失败是否有去处；用例是否真的覆盖了什么，靠覆盖率和评审。',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: {
+      layer: 'strangers',
+      source: 'GitHub 上真实存在的 `*TEST-REPORT.md`（code search 共 17856 份，抽 30 份，23 份正文 ≥500 字符用于校准）',
+      count: 23,
+      first: '旧判据只有 22% 通过：18 份被判「没有用例计数」，而它们是渗透测试报告、试玩报告、性能报告——文件名一样，内容不是一回事。现在按体裁判：渗透（范围/方法/风险等级/修复建议）、试玩（目的/过程/发现/结论）、性能（指向 perf-report-check）、用例统计（原有七条）、以及「压根不是测试报告」。review 模式只把算术不平当 error，模板缺项是 warn。',
+    },
   },
   {
     slug: 'commit-msg-check',
@@ -681,6 +690,7 @@ export const CHECKS = [
       "exit": "1",
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
+    searched: '报销单据（`报销单 in:file` 命中的是流程文档与 Agent 提示词，不是真的报销单）',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
 

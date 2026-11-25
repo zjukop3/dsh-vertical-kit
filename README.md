@@ -37,7 +37,7 @@ Design rules, unchanged from verify-kit:
 - **The route and the CLI call the same function**, so a check that passes in CI cannot fail in the panel. Measured, not assumed: `test/route-parity.test.js` calls each package's `apply()` with a minimal host context, serves the registered handler over a real socket, and compares the HTTP response to the direct call byte for byte — 22 packages, plus GET→405 and empty-body→400 for each.
 
 ```bash
-npm test   # 589 tests, no network
+npm test   # 592 tests, no network
 ```
 
 ## 两道闸

@@ -1,6 +1,6 @@
 {
   "name": "dsh-test-report-check",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Test-report hygiene from markdown: the counts must add up (passed + failed + skipped = total), the environment must be stated, and each failure needs somewhere to start.",
   "type": "module",
   "main": "./src/index.js",

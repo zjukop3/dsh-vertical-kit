@@ -18,7 +18,14 @@ try {
     for (const finding of result.findings) process.stdout.write(`${finding.level} ${finding.rule} 第${finding.line}行 ${finding.message}\n`)
     // 性能报告分支没有 counts 可印；印 null 和印 undefined 一样是丑。
     // 该文体就明说文体，别把 JSON 的 null 漏到人眼前。
-    const summary = result.checked.performanceReport ? 'performance report' : JSON.stringify(result.checked.counts)
+    // 每种体裁能印的东西不一样：性能报告没有 counts，渗透/试玩报告也没有。
+    // 一律印 counts 会打出 `ok: undefined`——闸当场就抓到了这一条。
+    const summary = result.checked.counts
+      ? JSON.stringify(result.checked.counts)
+      : result.checked.performanceReport
+        ? 'performance report'
+        : `${result.genre ?? 'report'}`
+
     process.stdout.write(`${result.ok ? 'ok' : 'fail'}: ${summary}, ${result.errors} errors, ${result.warnings} warnings` + '\n')
   }
   process.exit(result.ok ? 0 : 1)
