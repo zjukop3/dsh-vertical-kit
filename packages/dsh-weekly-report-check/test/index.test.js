@@ -79,3 +79,46 @@ test('sectionItems collects bullets under the matching heading only', () => {
   const done = sectionItems(text, /(?:^|\n)#{1,6}[^\n]*(?:本周完成|已完成|成果|done|completed|shipped)/i, /本周(?:完成|做了|交付)/)
   assert.deepEqual(done.map(item => item.text), ['- 已上线 A'])
 })
+
+// 71 份真实 `weekly-report.md`（GitHub code search，抽 75 份）里，除了个人周报还有
+// 一整类「社区周报 / 项目双周报」：本期变更、contributor statistics、upcoming、
+// good first issue。拿个人周报的三段（完成/计划/风险）去判它，52/57 报「没有本周完成」。
+test('社区周报走自己那三条，不套个人周报的三段', () => {
+  const community = `---
+title: Weekly Report (Aug 23 - Aug 29)
+tags: [Community]
+---
+
+## Introduction
+
+Community weekly for contributors.
+
+## Contributor statistics
+
+New contributors this week: 4.
+
+## Upcoming
+
+Next week we ship v3.2.
+`
+  const result = lintWeeklyReport(community)
+  assert.equal(result.genre, 'community')
+  assert.equal(result.ok, true, JSON.stringify(result.findings))
+  assert.ok(!result.findings.some(finding => finding.rule === 'done-missing'))
+})
+
+test('社区周报缺后续：review 是 warn，strict 是 error', () => {
+  const thin = `# Community Weekly\n\n## Contributor statistics\n\nNew contributors: 3.\n`
+  const review = lintWeeklyReport(thin)
+  assert.equal(review.genre, 'community')
+  assert.ok(review.findings.some(finding => finding.rule === 'next-missing' && finding.level === 'warn'))
+  const strict = lintWeeklyReport(thin, { strict: true })
+  assert.equal(strict.ok, false)
+})
+
+test('个人周报仍按三段判，不会被 community 分支吞掉', () => {
+  const personal = `# 本周周报\n\n## 本周完成\n\n- 完成登录改版\n\n## 下周计划\n\n- 导出性能\n\n## 风险\n\n- 无\n`
+  const result = lintWeeklyReport(personal)
+  assert.equal(result.genre, 'personal')
+  assert.equal(result.ok, true)
+})

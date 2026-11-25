@@ -14,6 +14,20 @@ const RISK_HEADINGS = /(?:^|\n)#{1,6}[^\n]*(?:风险|阻塞|困难|问题|risk|b
 const RISK_LINE = /^[^\n]*(?:风险[：:，\s]|阻塞[：:，\s]|卡在|受阻|问题[：:，\s])/
 const METRIC = /\d+(?:\.\d+)?\s*(?:%|个|条|次|人|天|小时|万|k\b|ms|s\b|qps|fps)/i
 
+// `weekly-report.md` 在公开世界里还有第二种体裁：**社区周报 / 项目双周报**
+// （APISIX 的 Community Weekly、各类 awesome 项目周更）。它没有「本周完成 / 下周计划 /
+// 风险」这三段，而是「本期变更 / 数据 / 后续活动 / 怎么参与」。
+// 2026-11-25 实测：filename:weekly-report.md 有 1562 份，抽 75 份——44 份是「怎么写周报」
+// 的文档与 agent 技能提示，5 份是带 {{占位符}} 的模板，剩下的是社区周报、agent 生成
+// 的验证报告与个人周报。拿个人周报的三段去判社区周报，52/57 报「没有本周完成」。
+export const COMMUNITY_MARK =
+  /(?:community (?:weekly|newsletter)|weekly newsletter|双周报|社区周报|contributor statistics|contributors?\b[^\n]{0,20}(?:new|count)|good first issue|本期|upcoming|参与方式|如何参与|star\s+us|加入我们)/i
+export const COMMUNITY_SECTIONS = [
+  ['period-missing', /(?:20\d\d[-/年]\d{1,2}|(?:Aug|Sep|Oct|Nov|Dec|Jan|Feb|Mar|Apr|May|Jun|Jul)\w*\s+\d{1,2}|week of|期间|本期)/i, '没有写这一期覆盖的时间范围'],
+  ['changes-missing', /(?:##\s*(?:变更|更新|进展|development|changes|updates|highlights)|release|merged|PR[s]?\b|feat)/i, '没有写本期发生了什么（变更/合入/发布）'],
+  ['next-missing', /(?:##\s*(?:下期|后续|计划|upcoming|next)|upcoming|计划|预告)/i, '没有写后续（下期计划 / upcoming）——读者不知道下一站是什么'],
+]
+
 // Bullet items under a section are that section's items; a section with no
 // bullets reads as a heading-only stub.
 export function sectionItems(text, headingPattern, linePattern) {
@@ -51,6 +65,16 @@ export function lintWeeklyReport(text, rules = {}) {
   const plan = sectionItems(text, PLAN_HEADINGS, PLAN_LINE)
   const risks = sectionItems(text, RISK_HEADINGS, RISK_LINE)
 
+  const strict = rules.strict === true
+  if (COMMUNITY_MARK.test(String(text))) {
+    // 社区周报：三条它自己该有的，缺项 warn（社区周报本来就随手编，strict 才是 error）。
+    for (const [rule, pattern, message] of COMMUNITY_SECTIONS) {
+      if (!pattern.test(String(text))) findings.push({ level: strict ? 'error' : 'warn', rule, line: 0, message })
+    }
+    const errors = findings.filter(finding => finding.level === 'error').length
+    return { ok: errors === 0, genre: 'community', mode: strict ? 'strict' : 'review', checked: { genre: 'community', lines: text.split('\n').length }, errors, warnings: findings.length - errors, findings }
+  }
+
   if (done.length === 0) add('error', 'done-missing', 0, '没有「本周完成」段或自标识行（认得：## 本周完成、已完成：…、已上线…）——报告没有事实底座')
   if (plan.length === 0) add('error', 'plan-missing', 0, '没有「下周计划」段或自标识行（认得：## 下周计划、计划：…、下周…）——没有可被检验的承诺')
 
@@ -66,7 +90,7 @@ export function lintWeeklyReport(text, rules = {}) {
   const order = { error: 0, warn: 1 }
   findings.sort((a, b) => order[a.level] - order[b.level] || a.line - b.line)
   const errors = findings.filter(finding => finding.level === 'error').length
-  return { ok: errors === 0, checked: { done: done.length, plan: plan.length, risks: risks.length }, errors, warnings: findings.length - errors, findings }
+  return { ok: errors === 0, genre: 'personal', mode: strict ? 'strict' : 'review', checked: { done: done.length, plan: plan.length, risks: risks.length }, errors, warnings: findings.length - errors, findings }
 }
 
 export function apply(ctx, config = {}) {

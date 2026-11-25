@@ -451,6 +451,18 @@ export const DEFECTS = [
       '这是同一个跟头的第六次，也是最典型的一次：我把「测试报告」等同于「单元测试报告」。渗透报告里没有「通过 12 失败 1」不是缺陷，那是它不该有的东西。两条附带教训：①「不是测试报告」必须是一个明确出口——语料里有 Sync Report、Insight Report，对它们说「你没有用例计数」是把文件名当成内容；② 词表要含**计数词本身**（通过/失败/跳过/总计），我把它们漏了，于是「通过 10 失败 2」这种最典型的测试报告被判成「不像测试报告」——测试第一次跑就抓到了这条。',
     now: { kind: 'silent', input: `# Web 渗透测试报告\n\n## 范围\n\nexample.com\n\n## 方法\n\nnmap + 手工\n\n## 发现\n\n严重：SQL 注入\n\n## 修复建议\n\n参数化查询\n`, rule: 'counts-missing' },
   },
+  {
+    n: 39,
+    check: 'weekly-report-check',
+    rule: 'done-missing / plan-missing',
+    fixedIn: '0.1.4',
+    foundBy: 'third-party corpus',
+    wrong: '71 份真实 weekly-report.md 里只有 5% 通过：52/57 份被报「没有本周完成」',
+    right: '两种体裁：个人周报（本周完成 / 下周计划 / 风险）与社区周报（时间范围 / 本期变更 / 后续，含 contributor statistics、upcoming、good first issue）',
+    lesson:
+      '第七次同一个跟头，但这次多学了一样东西：**文件名不等于体裁**。`filename:weekly-report.md` 有 1562 份，抽样 75 份里 44 份是「怎么写周报」的文档与 agent 技能提示、5 份是带 {{占位符}} 的模板——它们出现在同一个文件名下，谁也没打算写周报。同一轮我把「找不到语料」的四个检查重新查了一遍，差点自己骗自己：`contract.md` 有 31 万份、`listing.md` 2.7 万份、`invoice.md` 8000 份——抽样一看全是软件契约、商店上架说明、发票 API 文档。文件名是个陷阱，样本内容才是证据。',
+    now: { kind: 'silent', input: `---\ntitle: Weekly Report (Aug 23 - Aug 29)\ntags: [Community]\n---\n\n## Introduction\n\nCommunity weekly for contributors.\n\n## Contributor statistics\n\nNew contributors this week: 4.\n\n## Upcoming\n\nNext week we ship v3.2.\n`, rule: 'done-missing' },
+  },
 ]
 
 export const LEDGER = {

@@ -33,7 +33,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '大写金额解析器按 GB 习惯读 壹贰叁…拾佰仟万亿元角分整，支持「拾万元整」的 leading 拾 和 角分小数；解析不了的串返回 null 并计入歧义，不会编一个数出来。',
-    searched: '合同文本（code search `合同 in:file language:Markdown`、`合同 filename:*.md` 均为 0；真实合同多在企业内网/PDF，公开 Markdown 极少）',
+    searched: '合同：`filename:contract.md` 有 31 万份，但抽样看到的全是**软件契约**（`CONTRACT.md — WP-0 interface contract`、`bundlewatch rewrite contract`、`Data contract: Helios Solar Forecast`），没有一份法律合同；`合同 filename:*.md` 为 0。法律合同在企业内网与 PDF 里，公开 Markdown 形态几乎不存在。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -64,7 +64,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '勾稽是发票自己的算术，不是税务合规：税率是否适用、抬头是否对，都不在这五个判定里。',
-    searched: '发票文本（code search `发票 filename:*.md` 为 0、`价税合计` 命中的全是解析发票的代码而不是发票本身；真实发票是 PDF/图片，不存在公开 Markdown 形态）',
+    searched: '发票：`filename:invoice.md` 有 8000 份，抽样全是**关于发票的代码文档**（`WebService::Fastly::Object::Invoice` 这类模型文档、ConnectWise 的 invoice cmdlet 文档、OWASP 的 print-invoice 网页），没有一份是真发票；真发票是 PDF/图片。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -95,7 +95,7 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '堆砌检测两种形态都认：连写（手机支架手机支架手机支架）和分隔重复；单字重复在中文标题里是常态，永不计入。认得的列名：标题 title/商品名称/名称，价格 price/售价，SKU sku/编码/货号。',
-    searched: '电商商品信息（`商品 in:file` 命中的是比价脚本与 README，商品详情页是 HTML/JSON，不是 Markdown 文档）',
+    searched: '商品信息：`filename:listing.md` 有 2.7 万份，抽样是 Chrome Web Store 的 listing 字段、InnerSource 的项目上架说明、多语言商店文案翻译稿——不是电商商品详情。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
   {
@@ -216,8 +216,12 @@ export const CHECKS = [
       "exit": "1",
 },
     note: '只验结构，不验工作真伪：它验证汇报分开了完成与计划、点了风险、量化了至少一行；工作是否真的发生，看 demo 和 diff。段内 bullet 与自标识行不会重复计数，标题行永不算项。',
-    searched: '周报（`filename:*weekly*.md` 返回 0；周报几乎只存在于公司内部系统）',
-    corpus: { layer: 'fixtures', source: null, count: 0, first: null },
+    corpus: {
+      layer: 'strangers',
+      source: 'GitHub 上名为 `weekly-report.md` 的真实文件（code search 共 1562 份，抽 75 份、71 份正文 ≥400 字符）',
+      count: 71,
+      first: '旧判据只让 5% 通过：52/57 份被报「没有本周完成」。原因是这一类文件里混着两种体裁——个人周报（完成/计划/风险）与社区周报（本期变更 / contributor statistics / upcoming / good first issue）。按体裁分开后 66% 通过。另外这 71 份里有 44 份根本不是周报，而是「怎么写周报」的文档与 agent 技能提示、5 份是带 {{占位符}} 的模板——文件名不等于体裁，这一批是最好的例子。',
+    },
   },
   {
     slug: 'bug-report-check',
@@ -690,7 +694,7 @@ export const CHECKS = [
       "exit": "1",
     },
     note: '合计那行是这个包的理由：明细相加 1,513.50、合计写 1,600.00 的报销单，页面上看起来完全正常——数字整齐、表格对齐，而合计正是审批人真正读的那个数。差出来的要么是从上一张抄的，要么是往上凑的，两者都不会自己喊。发票号重复同理：一张单子两行、日期不同、号码一样，没有人会去数位数。只看文档，不验这笔钱：同号发票上个月是否已在另一张单子里报过，需要账本，不是一份 Markdown 能回答的。',
-    searched: '报销单据（`报销单 in:file` 命中的是流程文档与 Agent 提示词，不是真的报销单）',
+    searched: '报销单：`filename:expense-report.md` 只有 108 份，抽样是「如何创建报销单」的文档、agent 提示词模板与 Adaptive Cards 的 sample，不是填过的报销单。',
     corpus: { layer: 'fixtures', source: null, count: 0, first: null },
   },
 
